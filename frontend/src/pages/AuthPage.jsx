@@ -39,6 +39,10 @@ export default function AuthPage() {
       });
       const data = await response.json();
       
+      if (!response.ok) {
+        throw new Error(data.message || 'Server error during authentication');
+      }
+      
       // 3. Save to global Context
       login(data);
       
@@ -50,7 +54,9 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error('Google Login error:', error);
-      alert('Failed to login with Google. Check console for details.');
+      // Clear any corrupted session data
+      localStorage.removeItem('hostelx_user');
+      alert(`Login failed: ${error.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -83,7 +89,14 @@ export default function AuthPage() {
         navigate('/dashboard');
       } else {
         const errData = await response.json();
-        alert(`Setup failed: ${errData.message || 'Unknown error'}`);
+        if (response.status === 401) {
+          // Token is invalid — clear session and send back to login
+          localStorage.removeItem('hostelx_user');
+          alert('Your session expired. Please sign in again.');
+          setStep(1);
+        } else {
+          alert(`Setup failed: ${errData.message || 'Unknown error. Please try again.'}`);
+        }
       }
     } catch (error) {
        console.error('Profile update error:', error);
@@ -116,6 +129,11 @@ export default function AuthPage() {
           </div>
         ) : (
           <div>
+            <div className="flex items-center gap-3 mb-2">
+              <button onClick={() => { setStep(1); localStorage.removeItem('hostelx_user'); }} className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                ← Back
+              </button>
+            </div>
             <h2 className="text-2xl font-bold text-card-foreground mb-2">Complete Your Profile</h2>
             <p className="text-muted-foreground mb-6">Tell us where you live to find items near you.</p>
             

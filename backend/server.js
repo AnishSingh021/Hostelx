@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 
 dotenv.config();
 
-const FRONTEND_URLS = ['https://hostelx-frontend.vercel.app', 'http://localhost:5173'];
+const FRONTEND_URLS = ['https://hostelx-frontend.vercel.app', 'http://localhost:5173', 'https://hostelx-frontend.onrender.com'];
 
 const app = express();
 const server = http.createServer(app);

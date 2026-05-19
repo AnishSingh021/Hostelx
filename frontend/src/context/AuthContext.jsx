@@ -8,9 +8,20 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Check local storage for user token/data on load
-    const storedUser = localStorage.getItem('hostelx_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('hostelx_user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        // Only restore user if they have a valid token
+        if (parsed && parsed.token) {
+          setUser(parsed);
+        } else {
+          // Corrupted/tokenless data — clear it
+          localStorage.removeItem('hostelx_user');
+        }
+      }
+    } catch {
+      localStorage.removeItem('hostelx_user');
     }
     setLoading(false);
   }, []);
