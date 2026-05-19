@@ -1,16 +1,28 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
 
-dotenv.config();
-
-const FRONTEND_URLS = ['https://hostelx-frontend.vercel.app', 'http://localhost:5173', 'https://hostelx-frontend.onrender.com'];
-
 const app = express();
 const server = http.createServer(app);
+
+// ======================
+// FRONTEND URLS
+// ======================
+
+const FRONTEND_URLS = [
+  'http://localhost:5173',
+  'https://hostelx-frontend.onrender.com',
+  'https://your-vercel-url.vercel.app'
+];
+
+// ======================
+// SOCKET.IO
+// ======================
+
 const io = new Server(server, {
   cors: {
     origin: FRONTEND_URLS,
@@ -19,26 +31,40 @@ const io = new Server(server, {
   },
 });
 
-// Middleware
+// ======================
+// MIDDLEWARE
+// ======================
+
 app.use(cors({
   origin: FRONTEND_URLS,
-  credentials: true
+  credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
+// ======================
+// DATABASE CONNECTION
+// ======================
+
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/hostelx';
+const MONGO_URI = process.env.MONGO_URI;
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('MongoDB Connected Successfully');
+  })
+  .catch((err) => {
+    console.log('MongoDB Connection Error:', err);
+  });
 
-// Socket.io Setup
+// ======================
+// SOCKET CONNECTION
+// ======================
+
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+
+  console.log('User Connected:', socket.id);
 
   socket.on('setup', (userData) => {
     socket.join(userData._id);
@@ -49,30 +75,46 @@ io.on('connection', (socket) => {
     socket.join(room);
   });
 
-  socket.on('new message', (newMessageRecieved) => {
-    const chat = newMessageRecieved.chat;
+  socket.on('new message', (newMessageReceived) => {
+
+    const chat = newMessageReceived.chat;
+
     if (!chat.participants) return;
-    chat.participants.forEach(user => {
-      if (user._id == newMessageRecieved.sender._id) return;
-      socket.in(user._id).emit('message recieved', newMessageRecieved);
+
+    chat.participants.forEach((user) => {
+
+      if (user._id === newMessageReceived.sender._id) return;
+
+      socket.in(user._id).emit('message received', newMessageReceived);
     });
   });
 
-  // Typing indicators
-  socket.on('typing', (room) => socket.in(room).emit('typing'));
-  socket.on('stop typing', (room) => socket.in(room).emit('stop typing'));
+  // Typing Indicator
+  socket.on('typing', (room) => {
+    socket.in(room).emit('typing');
+  });
 
-  // Read receipt broadcast
+  socket.on('stop typing', (room) => {
+    socket.in(room).emit('stop typing');
+  });
+
+  // Read Receipts
   socket.on('messages read', ({ chatId, userId }) => {
-    socket.in(chatId).emit('messages read', { chatId, userId });
+    socket.in(chatId).emit('messages read', {
+      chatId,
+      userId,
+    });
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log('User Disconnected:', socket.id);
   });
 });
 
-// Routes
+// ======================
+// ROUTES
+// ======================
+
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const chatRoutes = require('./routes/chatRoutes');
@@ -83,12 +125,18 @@ app.use('/api/products', productRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Basic route
+// ======================
+// TEST ROUTE
+// ======================
+
 app.get('/', (req, res) => {
   res.send('HostelX API is running...');
 });
 
-// Start server
+// ======================
+// START SERVER
+// ======================
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
