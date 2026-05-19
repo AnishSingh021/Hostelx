@@ -17,7 +17,7 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`);
+        const response = await fetch(`https://hostelx-backend.onrender.com/api/products/${id}`);
         const data = await response.json();
         setProduct(data);
         setLikeCount(data.likes?.length || 0);
@@ -33,7 +33,7 @@ export default function ProductDetailsPage() {
 
   const handleStartChat = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chats', {
+      const response = await fetch('https://hostelx-backend.onrender.com/api/chats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
         body: JSON.stringify({ userId: product.seller._id, productId: product._id })
@@ -51,7 +51,7 @@ export default function ProductDetailsPage() {
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}/like`, {
+      const response = await fetch(`https://hostelx-backend.onrender.com/api/products/${id}/like`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${user.token}` }
       });

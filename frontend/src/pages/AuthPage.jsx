@@ -28,7 +28,7 @@ export default function AuthPage() {
       const user = result.user;
 
       // 2. Send the Firebase user details to our backend
-      const response = await fetch('http://localhost:5000/api/auth/google', {
+      const response = await fetch('https://hostelx-backend.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -64,7 +64,7 @@ export default function AuthPage() {
     const user = JSON.parse(localStorage.getItem('hostelx_user'));
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch('https://hostelx-backend.onrender.com/api/auth/profile', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -81,9 +81,13 @@ export default function AuthPage() {
         const data = await response.json();
         updateProfile(data);
         navigate('/dashboard');
+      } else {
+        const errData = await response.json();
+        alert(`Setup failed: ${errData.message || 'Unknown error'}`);
       }
     } catch (error) {
        console.error('Profile update error:', error);
+       alert(`Network error: ${error.message}`);
     } finally {
       setLoading(false);
     }

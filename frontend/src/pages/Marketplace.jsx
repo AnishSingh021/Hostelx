@@ -61,7 +61,7 @@ export default function Marketplace() {
       if (kw) queryParams.append('keyword', kw);
       if (cat && cat !== 'All') queryParams.append('category', cat);
 
-      const response = await fetch(`http://localhost:5000/api/products?${queryParams}`);
+      const response = await fetch(`https://hostelx-backend.onrender.com/api/products?${queryParams}`);
       let data = await response.json();
 
       // Client-side nearby sorting using saved geolocation

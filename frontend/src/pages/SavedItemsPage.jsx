@@ -12,7 +12,7 @@ export default function SavedItemsPage() {
   useEffect(() => {
     const fetchSaved = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/products/saved', {
+        const res = await fetch('https://hostelx-backend.onrender.com/api/products/saved', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const data = await res.json();
@@ -28,7 +28,7 @@ export default function SavedItemsPage() {
 
   const handleUnlike = async (productId) => {
     try {
-      await fetch(`http://localhost:5000/api/products/${productId}/like`, {
+      await fetch(`https://hostelx-backend.onrender.com/api/products/${productId}/like`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${user.token}` }
       });

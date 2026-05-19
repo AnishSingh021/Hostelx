@@ -12,7 +12,7 @@ export default function MyListingsPage() {
 
   const fetchMyListings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products/my/listings', {
+      const response = await fetch('https://hostelx-backend.onrender.com/api/products/my/listings', {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -33,7 +33,7 @@ export default function MyListingsPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this listing? This cannot be undone.')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+        const response = await fetch(`https://hostelx-backend.onrender.com/api/products/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${user.token}`

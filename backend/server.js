@@ -7,17 +7,23 @@ const { Server } = require('socket.io');
 
 dotenv.config();
 
+const FRONTEND_URLS = ['https://hostelx-frontend.vercel.app', 'http://localhost:5173'];
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // We'll update this with the frontend URL later
+    origin: FRONTEND_URLS,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
   },
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: FRONTEND_URLS,
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

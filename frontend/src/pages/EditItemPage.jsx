@@ -30,7 +30,7 @@ export default function EditItemPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${id}`);
+        const response = await fetch(`https://hostelx-backend.onrender.com/api/products/${id}`);
         const data = await response.json();
         
         if (response.ok) {
@@ -102,7 +102,7 @@ export default function EditItemPage() {
       // Append any new image files
       newImages.forEach(img => submitData.append('images', img));
 
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const response = await fetch(`https://hostelx-backend.onrender.com/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user.token}`
