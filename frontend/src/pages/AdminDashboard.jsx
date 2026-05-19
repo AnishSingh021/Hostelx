@@ -14,7 +14,7 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('https://hostelx-backend.onrender.com/api/admin/stats', {
+      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
       const data = await response.json();
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   const handleDeleteProduct = async (id) => {
     if(window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`https://hostelx-backend.onrender.com/api/admin/product/${id}`, {
+        const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/admin/product/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${user.token}` }
         });

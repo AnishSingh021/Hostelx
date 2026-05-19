@@ -64,7 +64,7 @@ export default function SellItemPage() {
     });
 
     try {
-      const response = await fetch('https://hostelx-backend.onrender.com/api/products', {
+      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`

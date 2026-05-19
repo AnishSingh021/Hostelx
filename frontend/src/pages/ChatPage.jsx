@@ -5,7 +5,7 @@ import { Send, ArrowLeft, Image, X, CheckCheck, Check, Smile } from 'lucide-reac
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ENDPOINT = 'https://hostelx-backend.onrender.com';
+const ENDPOINT = 'https://hostelx-backend-a228.onrender.com';
 const EMOJI_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🔥'];
 let socket;
 
@@ -34,7 +34,7 @@ export default function ChatPage() {
   // Fetch chats
   const fetchChats = useCallback(async () => {
     try {
-      const res = await fetch('https://hostelx-backend.onrender.com/api/chats', {
+      const res = await fetch('https://hostelx-backend-a228.onrender.com/api/chats', {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
@@ -88,7 +88,7 @@ export default function ChatPage() {
 
   const markRead = async (chatId) => {
     try {
-      const res = await fetch(`https://hostelx-backend.onrender.com/api/chats/${chatId}/read`, {
+      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/chats/${chatId}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${user.token}` },
       });
@@ -149,7 +149,7 @@ export default function ChatPage() {
       }
 
       const res = await fetch(
-        `https://hostelx-backend.onrender.com/api/chats/${selectedChat._id}/messages`,
+        `https://hostelx-backend-a228.onrender.com/api/chats/${selectedChat._id}/messages`,
         { method: 'POST', headers, body }
       );
 
@@ -197,7 +197,7 @@ export default function ChatPage() {
     setReactionMenu(null);
     try {
       const res = await fetch(
-        `https://hostelx-backend.onrender.com/api/chats/${selectedChat._id}/messages/${msgId}/react`,
+        `https://hostelx-backend-a228.onrender.com/api/chats/${selectedChat._id}/messages/${msgId}/react`,
         {
           method: 'PUT',
           headers: {

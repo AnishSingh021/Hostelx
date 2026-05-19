@@ -17,7 +17,7 @@ export default function Dashboard() {
     if (!user?.token) return;
     const fetchUnread = async () => {
       try {
-        const res = await fetch('https://hostelx-backend.onrender.com/api/chats/unread', {
+        const res = await fetch('https://hostelx-backend-a228.onrender.com/api/chats/unread', {
           headers: { 'Authorization': `Bearer ${user.token}` }
         });
         const data = await res.json();
@@ -29,7 +29,7 @@ export default function Dashboard() {
     const interval = setInterval(fetchUnread, 10000);
 
     // Also react immediately when another user reads messages (socket)
-    const sock = io('https://hostelx-backend.onrender.com');
+    const sock = io('https://hostelx-backend-a228.onrender.com');
     sock.emit('setup', user);
     sock.on('messages read', () => fetchUnread());
     sock.on('message recieved', () => fetchUnread());
