@@ -32,7 +32,7 @@ export default function Dashboard() {
     const sock = io('https://hostelx-backend-a228.onrender.com');
     sock.emit('setup', user);
     sock.on('messages read', () => fetchUnread());
-    sock.on('message recieved', () => fetchUnread());
+    sock.on('message received', () => fetchUnread());
 
     return () => {
       clearInterval(interval);

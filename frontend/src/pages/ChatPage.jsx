@@ -54,7 +54,7 @@ export default function ChatPage() {
     socket.on('typing', () => setIsTyping(true));
     socket.on('stop typing', () => setIsTyping(false));
 
-    socket.on('message recieved', (newMsg) => {
+    socket.on('message received', (newMsg) => {
       if (!selectedChatRef.current || selectedChatRef.current._id !== newMsg.chat._id) {
         fetchChats();
       } else {
