@@ -22,6 +22,7 @@ const createProduct = async (req, res) => {
       isAuction,
       startingBid,
       isRental,
+      rentType,
       rentPrice,
       rentalDuration,
       tags
@@ -36,8 +37,29 @@ const createProduct = async (req, res) => {
       }
     }
 
+    const isNeedRequest = 
+      listingType === 'emergency' || 
+      (listingType === 'rent' && rentType === 'seek') || 
+      listingType === 'lost';
+
     if (imageUrls.length === 0) {
-      return res.status(400).json({ message: 'At least one image is required' });
+      if (isNeedRequest) {
+        const placeholders = {
+          'Electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=500&q=80',
+          'Books': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=500&q=80',
+          'Cycle': 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=500&q=80',
+          'Mattress': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=500&q=80',
+          'Gaming': 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=500&q=80',
+          'Kitchen': 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=500&q=80',
+          'Fashion': 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=500&q=80',
+          'Notes': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=500&q=80',
+          'Accessories': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80',
+          'Others': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'
+        };
+        imageUrls.push(placeholders[category] || placeholders['Others']);
+      } else {
+        return res.status(400).json({ message: 'At least one image is required' });
+      }
     }
 
     // Auto-generate a secure random Meetup Exchange Code
@@ -77,6 +99,7 @@ const createProduct = async (req, res) => {
       isAuction: isAuction === 'true' || isAuction === true,
       startingBid: Number(startingBid) || 0,
       isRental: isRental === 'true' || isRental === true,
+      rentType: rentType || 'offer',
       rentPrice: Number(rentPrice) || 0,
       rentalDuration: rentalDuration || 'day',
       meetupCode,
@@ -95,7 +118,7 @@ const createProduct = async (req, res) => {
 // @access  Public
 const getProducts = async (req, res) => {
   try {
-    const { keyword, category, hostel, listingType, tag, userHostel, userLat, userLng } = req.query;
+    const { keyword, category, hostel, listingType, tag, userHostel, userLat, userLng, rentType } = req.query;
     
     let query = { status: 'available' };
     
@@ -142,6 +165,11 @@ const getProducts = async (req, res) => {
     // Filter by Listing Type
     if (listingType && listingType !== 'All') {
       query.listingType = listingType;
+    }
+
+    // Filter by Rental Type (Offer vs Seek)
+    if (rentType) {
+      query.rentType = rentType;
     }
 
     // Filter by Tag

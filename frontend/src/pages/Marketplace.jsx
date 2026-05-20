@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronLeft, Sparkles, X, Heart, HelpCircle, AlertOctagon, RefreshCw, ShoppingCart, Calendar, HelpCircle as FoundIcon, Hammer, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -41,14 +41,22 @@ function useAnimatedPlaceholder(suggestions, interval = 3000) {
 export default function Marketplace() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const initialTab = searchParams.get('tab') || 'All';
+  const initialCategory = searchParams.get('category') || 'All';
+  const initialTag = searchParams.get('tag') || '';
+  const initialDelivery = searchParams.get('delivery') === 'true';
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [keyword, setKeyword] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeListingType, setActiveListingType] = useState('All');
-  const [roomEssentialsOnly, setRoomEssentialsOnly] = useState(false);
-  const [aiSearch, setAiSearch] = useState(false);
-  const [nearbyOnly, setNearbyOnly] = useState(false);
+  const [keyword, setKeyword] = useState(initialSearch);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [activeListingType, setActiveListingType] = useState(initialTab);
+  const [roomEssentialsOnly, setRoomEssentialsOnly] = useState(initialTag === 'room-essentials');
+  const [aiSearch, setAiSearch] = useState(initialSearch ? true : false);
+  const [nearbyOnly, setNearbyOnly] = useState(initialDelivery);
+  const [activeRentType, setActiveRentType] = useState('offer');
   
   const animatedPlaceholder = useAnimatedPlaceholder(CATEGORY_SUGGESTIONS);
   const inputRef = useRef(null);
@@ -75,6 +83,9 @@ export default function Marketplace() {
         if (type === 'lost') {
           // Client or controller handles grouping, we can just send query or fetch all and filter
           queryParams.append('listingType', 'lost');
+        } else if (type === 'rent') {
+          queryParams.append('listingType', 'rent');
+          queryParams.append('rentType', activeRentType);
         } else {
           queryParams.append('listingType', type);
         }
@@ -150,7 +161,7 @@ export default function Marketplace() {
   useEffect(() => {
     fetchProducts(activeCategory, keyword, activeListingType, roomEssentialsOnly);
     // eslint-disable-next-line
-  }, [activeCategory, activeListingType, roomEssentialsOnly, aiSearch, nearbyOnly]);
+  }, [activeCategory, activeListingType, roomEssentialsOnly, aiSearch, nearbyOnly, activeRentType]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -325,6 +336,37 @@ export default function Marketplace() {
             ))}
           </div>
 
+          {activeListingType === 'rent' && (
+            <motion.div 
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex gap-2 bg-muted/40 p-1.5 rounded-2xl max-w-xs border border-border mt-3"
+            >
+              <button
+                type="button"
+                onClick={() => setActiveRentType('offer')}
+                className={`flex-1 text-center py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                  activeRentType === 'offer'
+                    ? 'bg-card border border-border text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Rental Offers
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveRentType('seek')}
+                className={`flex-1 text-center py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                  activeRentType === 'seek'
+                    ? 'bg-card border border-border text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Buyer Demands
+              </button>
+            </motion.div>
+          )}
+
         </div>
       </header>
 
@@ -431,9 +473,14 @@ export default function Marketplace() {
                             )}
 
                             {/* Rental Duration badge */}
-                            {isRental && (
+                            {isRental && product.rentType === 'seek' && (
+                              <span className="bg-purple-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                Looking to Rent ⏳
+                              </span>
+                            )}
+                            {isRental && product.rentType !== 'seek' && (
                               <span className="bg-sky-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                                Rental Pack ⏱
+                                Rental Offer 💰
                               </span>
                             )}
 

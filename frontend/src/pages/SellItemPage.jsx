@@ -28,6 +28,7 @@ export default function SellItemPage() {
     isRental: false,
     rentPrice: '',
     rentalDuration: 'day',
+    rentType: 'offer',
   });
 
   const [priceSuggestion, setPriceSuggestion] = useState(null);
@@ -87,7 +88,8 @@ export default function SellItemPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (images.length === 0) {
+    const isNeedRequest = formData.listingType === 'emergency' || (formData.listingType === 'rent' && formData.rentType === 'seek') || formData.listingType === 'lost';
+    if (!isNeedRequest && images.length === 0) {
       alert('Please upload at least one image.');
       return;
     }
@@ -107,6 +109,7 @@ export default function SellItemPage() {
     submitData.append('isAuction', formData.isAuction);
     submitData.append('startingBid', formData.isAuction ? formData.startingBid || 0 : 0);
     submitData.append('isRental', formData.listingType === 'rent');
+    submitData.append('rentType', formData.listingType === 'rent' ? formData.rentType : 'offer');
     submitData.append('rentPrice', formData.listingType === 'rent' ? formData.rentPrice || 0 : 0);
     submitData.append('rentalDuration', formData.rentalDuration);
     
@@ -152,6 +155,8 @@ export default function SellItemPage() {
   const lowercaseTitle = formData.title.toLowerCase();
   const essentialsList = ['bucket', 'mattress', 'induction', 'books', 'cycle', 'chair', 'table', 'lamp', 'cooker', 'kettle', 'fan'];
   const isEssential = essentialsList.some(item => lowercaseTitle.includes(item)) || formData.category === 'Mattress' || formData.category === 'Books';
+  
+  const isNeedRequest = formData.listingType === 'emergency' || (formData.listingType === 'rent' && formData.rentType === 'seek') || formData.listingType === 'lost';
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 relative">
@@ -229,11 +234,57 @@ export default function SellItemPage() {
                 </button>
               ))}
             </div>
+
+            {formData.listingType === 'rent' && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="bg-muted/20 border border-border p-4.5 rounded-2xl space-y-3 mt-4"
+              >
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
+                  <Hourglass className="w-3.5 h-3.5 text-primary" />
+                  Select Rental Intent
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, rentType: 'offer' })}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition cursor-pointer ${
+                      formData.rentType === 'offer'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                        : 'bg-muted/50 border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <span className="text-xs font-bold">Rent Out (Offer Item)</span>
+                    <span className="text-[9px] text-muted-foreground mt-0.5">I have an item to offer for rent (Requires image upload)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, rentType: 'seek' })}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition cursor-pointer ${
+                      formData.rentType === 'seek'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                        : 'bg-muted/50 border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <span className="text-xs font-bold">Ask for Rent (Seek Need)</span>
+                    <span className="text-[9px] text-muted-foreground mt-0.5">I need an item on rent (Bypasses image upload)</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">Product Images (Max 5)</label>
+            <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Product Images (Max 5)
+              {isNeedRequest && (
+                <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded ml-2">
+                  Optional (Unsplash campus graphics will be assigned)
+                </span>
+              )}
+            </label>
             <div className="flex flex-wrap gap-4">
               {previewUrls.map((url, index) => (
                 <div key={index} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-border shadow-sm group">

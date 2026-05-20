@@ -382,9 +382,13 @@ export default function ProductDetailsPage() {
                   <div className="bg-sky-500/5 border border-sky-500/20 p-3.5 rounded-2xl flex gap-3 text-sm">
                     <Clock className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-sky-500 block">Rental Plan Active ⏱</span>
+                      <span className="font-bold text-sky-500 block">
+                        {product.rentType === 'seek' ? 'Rental Request Active ⏱' : 'Rental Plan Active ⏱'}
+                      </span>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        You can rent this item on a recurring <strong>{product.rentalDuration}ly</strong> schedule. Handover return coordination and deposit options are handled inside the messenger.
+                        {product.rentType === 'seek'
+                          ? `This student is seeking this item on rent for ₹${product.price} per ${product.rentalDuration}. If you have it, you can chat with them directly to fix your deal!`
+                          : `You can rent this item on a recurring ${product.rentalDuration}ly schedule. Handover return coordination and deposit options are handled inside the messenger.`}
                       </p>
                     </div>
                   </div>
@@ -572,7 +576,8 @@ export default function ProductDetailsPage() {
                   onClick={handleStartChat}
                   className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition cursor-pointer"
                 >
-                  <MessageCircle className="w-5 h-5" /> Chat with Seller
+                  <MessageCircle className="w-5 h-5" /> 
+                  {product.listingType === 'rent' && product.rentType === 'seek' ? 'Offer my Item / Start Chat' : 'Chat with Seller'}
                 </button>
               ) : (
                 <Link

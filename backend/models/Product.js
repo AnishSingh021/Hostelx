@@ -112,6 +112,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  rentType: {
+    type: String,
+    enum: ['offer', 'seek'],
+    default: 'offer',
+  },
   rentPrice: {
     type: Number,
     default: 0,
