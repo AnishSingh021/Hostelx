@@ -14,7 +14,27 @@ export function AuthProvider({ children }) {
         const parsed = JSON.parse(storedUser);
         // Only restore user if they have a valid token
         if (parsed && parsed.token) {
+          // Check for 30-minute tab-close session expiration
+          const hasSession = sessionStorage.getItem('hostelx_session_active');
+          const lastActiveStr = localStorage.getItem('hostelx_last_active');
+          
+          if (!hasSession && lastActiveStr) {
+            const lastActive = parseInt(lastActiveStr, 10);
+            const now = Date.now();
+            const thirtyMinutes = 30 * 60 * 1000;
+            if (now - lastActive > thirtyMinutes) {
+              // Expired! Clear session
+              localStorage.removeItem('hostelx_user');
+              localStorage.removeItem('hostelx_last_active');
+              setUser(null);
+              setLoading(false);
+              return;
+            }
+          }
+          
           setUser(parsed);
+          sessionStorage.setItem('hostelx_session_active', 'true');
+          localStorage.setItem('hostelx_last_active', Date.now().toString());
         } else {
           // Corrupted/tokenless data — clear it
           localStorage.removeItem('hostelx_user');
@@ -26,14 +46,39 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  // Sync active status on user interaction
+  useEffect(() => {
+    if (!user) return;
+
+    const updateLastActive = () => {
+      localStorage.setItem('hostelx_last_active', Date.now().toString());
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(e => window.addEventListener(e, updateLastActive));
+    window.addEventListener('beforeunload', updateLastActive);
+
+    // Initial update
+    updateLastActive();
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, updateLastActive));
+      window.removeEventListener('beforeunload', updateLastActive);
+    };
+  }, [user]);
+
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem('hostelx_user', JSON.stringify(userData));
+    sessionStorage.setItem('hostelx_session_active', 'true');
+    localStorage.setItem('hostelx_last_active', Date.now().toString());
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('hostelx_user');
+    localStorage.removeItem('hostelx_last_active');
+    sessionStorage.removeItem('hostelx_session_active');
   };
 
   const updateProfile = (updatedData) => {

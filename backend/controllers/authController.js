@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { uploadToCloudinary } = require('../utils/cloudinary');
 
 // Helper to generate JWT
 const generateToken = (id) => {
@@ -54,16 +55,22 @@ const googleLogin = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const { college, hostel, room } = req.body;
+  const { name, college, hostel, room } = req.body;
   const userId = req.user.id; // From authMiddleware
 
   try {
     const user = await User.findById(userId);
 
     if (user) {
+      user.name = name || user.name;
       user.college = college || user.college;
       user.hostel = hostel || user.hostel;
-      user.room = room || user.room;
+      user.room = room !== undefined ? room : user.room;
+
+      if (req.file) {
+        const result = await uploadToCloudinary(req.file.buffer);
+        user.profileImage = result.secure_url;
+      }
 
       const updatedUser = await user.save();
 

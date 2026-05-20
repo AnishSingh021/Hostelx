@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { auth, googleProvider } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 
 export default function AuthPage() {
+  const { user, login, updateProfile } = useAuth();
   const [step, setStep] = useState(1); // 1: Login, 2: Profile Completion
   const [formData, setFormData] = useState({
     name: 'Test Student',
@@ -16,8 +17,18 @@ export default function AuthPage() {
     room: ''
   });
   const [loading, setLoading] = useState(false);
-  const { login, updateProfile } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && (!user.college || !user.hostel)) {
+      setStep(2);
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
 
   // Actual Firebase Google Login
   const handleGoogleLogin = async () => {
