@@ -35,6 +35,30 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  reviews: [{
+    reviewer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+    comment: {
+      type: String
+    },
+    date: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  boostCredits: {
+    type: Number,
+    default: 5
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],

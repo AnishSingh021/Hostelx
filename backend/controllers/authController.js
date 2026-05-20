@@ -94,4 +94,54 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { googleLogin, updateProfile };
+const addReview = async (req, res) => {
+  const { userId, rating, comment } = req.body;
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'Please provide a rating between 1 and 5' });
+  }
+
+  try {
+    const userToReview = await User.findById(userId);
+    if (!userToReview) {
+      return res.status(404).json({ message: 'User to review not found' });
+    }
+
+    if (userId.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'You cannot review yourself' });
+    }
+
+    // Check if reviewer already reviewed
+    const alreadyReviewedIndex = userToReview.reviews.findIndex(
+      r => r.reviewer.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewedIndex > -1) {
+      userToReview.reviews[alreadyReviewedIndex].rating = Number(rating);
+      userToReview.reviews[alreadyReviewedIndex].comment = comment || '';
+      userToReview.reviews[alreadyReviewedIndex].date = new Date();
+    } else {
+      userToReview.reviews.push({
+        reviewer: req.user._id,
+        rating: Number(rating),
+        comment: comment || ''
+      });
+    }
+
+    // Recalculate average ratings
+    const totalRating = userToReview.reviews.reduce((sum, r) => sum + r.rating, 0);
+    userToReview.ratings = Number((totalRating / userToReview.reviews.length).toFixed(1));
+
+    await userToReview.save();
+
+    res.json({ 
+      message: 'Review added successfully', 
+      reviews: userToReview.reviews, 
+      ratings: userToReview.ratings 
+    });
+  } catch (error) {
+    console.error('Review Error:', error.message);
+    res.status(500).json({ message: 'Server error adding review' });
+  }
+};
+
+module.exports = { googleLogin, updateProfile, addReview };

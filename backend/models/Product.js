@@ -58,7 +58,79 @@ const productSchema = new mongoose.Schema({
   views: {
     type: Number,
     default: 0,
-  }
+  },
+  listingType: {
+    type: String,
+    enum: ['buy', 'rent', 'lost', 'found', 'emergency'],
+    default: 'buy',
+  },
+  isUrgent: {
+    type: Boolean,
+    default: false,
+  },
+  isBoosted: {
+    type: Boolean,
+    default: false,
+  },
+  boostedUntil: {
+    type: Date,
+  },
+  canDeliver: {
+    type: Boolean,
+    default: false,
+  },
+  deliveryFee: {
+    type: Number,
+    default: 0,
+  },
+  originalPrice: {
+    type: Number,
+  },
+  isAuction: {
+    type: Boolean,
+    default: false,
+  },
+  startingBid: {
+    type: Number,
+    default: 0,
+  },
+  bids: [{
+    bidder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    amount: {
+      type: Number,
+      required: true
+    },
+    time: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  isRental: {
+    type: Boolean,
+    default: false,
+  },
+  rentPrice: {
+    type: Number,
+    default: 0,
+  },
+  rentalDuration: {
+    type: String,
+    enum: ['day', 'week', 'month'],
+    default: 'day',
+  },
+  meetupCode: {
+    type: String,
+  },
+  meetupConfirmed: {
+    type: Boolean,
+    default: false,
+  },
+  tags: [{
+    type: String,
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

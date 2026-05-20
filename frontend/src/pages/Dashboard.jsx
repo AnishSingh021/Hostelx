@@ -12,6 +12,7 @@ export default function Dashboard() {
     document.documentElement.classList.contains('dark')
   );
   const [unreadCount, setUnreadCount] = useState(0);
+  const [emergencyListings, setEmergencyListings] = useState([]);
 
   // Settings states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -139,6 +140,21 @@ export default function Dashboard() {
       sock.disconnect();
     };
   }, [user?.token]);
+
+  useEffect(() => {
+    const fetchEmergencies = async () => {
+      try {
+        const res = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=emergency');
+        if (res.ok) {
+          const data = await res.json();
+          setEmergencyListings(data.slice(0, 10));
+        }
+      } catch (e) {
+        console.error('Failed to fetch emergencies:', e);
+      }
+    };
+    fetchEmergencies();
+  }, []);
 
   const toggleDarkMode = () => {
     if (darkMode) {
@@ -315,6 +331,48 @@ export default function Dashboard() {
             <Settings className="w-5 h-5" />
           </button>
         </motion.div>
+
+        {/* Emergency "Need Now" Ticker */}
+        {emergencyListings.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="flex items-center gap-2 text-rose-500 font-bold text-sm uppercase tracking-wider animate-pulse">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                Need Now: Campus Emergencies 🚨
+              </span>
+              <Link to="/marketplace?listingType=emergency" className="text-xs text-rose-500 font-semibold hover:underline">
+                View All
+              </Link>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto py-2 no-scrollbar scroll-smooth">
+              {emergencyListings.map((item) => (
+                <div
+                  key={item._id}
+                  onClick={() => navigate(`/product/${item._id}`)}
+                  className="flex-shrink-0 w-64 bg-card border border-rose-500/30 hover:border-rose-500 rounded-xl p-3 cursor-pointer hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={item.images?.[0] || 'https://via.placeholder.com/150'}
+                      alt={item.title}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="overflow-hidden">
+                      <h4 className="font-bold text-sm truncate">{item.title}</h4>
+                      <p className="text-xs text-muted-foreground truncate">{item.hostel}</p>
+                      <p className="text-xs text-rose-500 font-semibold mt-0.5">Budget: ₹{item.price}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Action Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
