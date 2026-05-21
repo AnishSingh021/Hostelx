@@ -1,6 +1,6 @@
 {
   "packageId": "com.hostelx.app",
-  "host": "hostelx-frontend.onrender.com",
+  "host": "hostelx-pi.vercel.app",
   "name": "HostelX",
   "launcherName": "HostelX",
   "display": "standalone",
@@ -13,17 +13,17 @@
   "backgroundColor": "#FFFFFF",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://hostelx-frontend.onrender.com/logo.png",
+  "iconUrl": "https://hostelx-pi.vercel.app/logo.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "C:\\Users\\HP\\Desktop\\HostelX\\HostelX-App\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "3",
-  "appVersionCode": 3,
+  "appVersionName": "6",
+  "appVersionCode": 6,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://hostelx-frontend.onrender.com/manifest.webmanifest",
+  "webManifestUrl": "https://hostelx-pi.vercel.app/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {
     "playBilling": {
@@ -39,15 +39,19 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://hostelx-frontend.onrender.com/",
+  "fullScopeUrl": "https://hostelx-pi.vercel.app/",
   "minSdkVersion": 21,
   "orientation": "portrait",
-  "fingerprints": [],
+  "fingerprints": [
+    {
+      "value": "6B:9E:05:0A:2E:EB:48:7C:30:37:E9:06:E3:A0:C0:2B:93:63:D7:78:80:E6:7F:38:8B:41:DB:A7:B0:7D:10:EF"
+    }
+  ],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "protocolHandlers": [],
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "3"
+  "appVersion": "6"
 }
