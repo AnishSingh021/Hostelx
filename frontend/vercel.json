@@ -1,23 +1,18 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/.well-known/assetlinks.json",
-      "destination": "/.well-known/assetlinks.json"
+      "src": "/.well-known/assetlinks.json",
+      "dest": "/.well-known/assetlinks.json",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
-  "headers": [
+      "handle": "filesystem"
+    },
     {
-      "source": "/.well-known/assetlinks.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
