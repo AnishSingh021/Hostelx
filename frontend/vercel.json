@@ -1,3 +1,9 @@
 {
-  "cleanUrls": true
+  "redirects": [
+    {
+      "source": "/.well-known/assetlinks.json",
+      "destination": "/assetlinks.json",
+      "permanent": false
+    }
+  ]
 }
