@@ -42,13 +42,6 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
-
-  // VERY IMPORTANT FIX FOR TWA
-  // Prevent React Router from hijacking .well-known routes
-  if (window.location.pathname.startsWith('/.well-known')) {
-    return null;
-  }
-
   return (
     <Router>
       <div className="min-h-screen bg-background text-foreground font-sans">
