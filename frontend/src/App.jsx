@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
@@ -15,113 +16,149 @@ import SavedItemsPage from './pages/SavedItemsPage';
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+
   if (loading) return <div>Loading...</div>;
-  if (!user) return <Navigate to="/auth" />;
-  if (!user.college || !user.hostel) return <Navigate to="/auth" />;
+
+  if (!user) return <Navigate to="/auth" replace />;
+
+  if (!user.college || !user.hostel) {
+    return <Navigate to="/auth" replace />;
+  }
+
   return children;
 };
 
-// Public Route Component (redirects to dashboard if logged in)
+// Public Route Component
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
+
   if (loading) return <div>Loading...</div>;
-  if (user && user.college && user.hostel) return <Navigate to="/dashboard" />;
+
+  if (user && user.college && user.hostel) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 };
 
 function App() {
+
+  // VERY IMPORTANT FIX FOR TWA
+  // Prevent React Router from hijacking .well-known routes
+  if (window.location.pathname.startsWith('/.well-known')) {
+    return null;
+  }
+
   return (
     <Router>
       <div className="min-h-screen bg-background text-foreground font-sans">
         <Routes>
-          <Route 
-            path="/" 
+
+          <Route
+            path="/"
             element={
               <PublicRoute>
                 <LandingPage />
               </PublicRoute>
-            } 
+            }
           />
-          <Route 
-            path="/auth" 
+
+          <Route
+            path="/auth"
             element={
               <PublicRoute>
                 <AuthPage />
               </PublicRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard" 
+
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/sell" 
+
+          <Route
+            path="/sell"
             element={
               <ProtectedRoute>
                 <SellItemPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/marketplace" 
+
+          <Route
+            path="/marketplace"
             element={
               <ProtectedRoute>
                 <Marketplace />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/product/:id" 
+
+          <Route
+            path="/product/:id"
             element={
               <ProtectedRoute>
                 <ProductDetailsPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/chat" 
+
+          <Route
+            path="/chat"
             element={
               <ProtectedRoute>
                 <ChatPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin" 
+
+          <Route
+            path="/admin"
             element={
               <ProtectedRoute>
                 <AdminDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/my-listings" 
+
+          <Route
+            path="/my-listings"
             element={
               <ProtectedRoute>
                 <MyListingsPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/edit-item/:id" 
+
+          <Route
+            path="/edit-item/:id"
             element={
               <ProtectedRoute>
                 <EditItemPage />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/saved" 
+
+          <Route
+            path="/saved"
             element={
               <ProtectedRoute>
                 <SavedItemsPage />
               </ProtectedRoute>
-            } 
+            }
           />
+
+          {/* Catch-all Route */}
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+
         </Routes>
       </div>
     </Router>
