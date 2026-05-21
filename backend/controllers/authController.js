@@ -14,10 +14,25 @@ const googleLogin = async (req, res) => {
   const { name, email, profileImage } = req.body;
 
   try {
+    // Define admin emails here
+    const ADMIN_EMAILS = [
+      'admin@hostelx.com',
+      'anishsingh10121@gmail.com', // Added as a default based on repo/DB credentials
+      // You can add your email here to automatically receive admin access!
+    ];
+
+    const shouldBeAdmin = ADMIN_EMAILS.includes(email?.toLowerCase());
+
     // Check if user exists
     let user = await User.findOne({ email });
 
     if (user) {
+      // Dynamic upgrade to admin if user exists and their email is in the admin list
+      if (shouldBeAdmin && user.role !== 'admin') {
+        user.role = 'admin';
+        await user.save();
+      }
+
       // User exists, just log them in
       res.json({
         _id: user._id,
@@ -36,6 +51,7 @@ const googleLogin = async (req, res) => {
         name,
         email,
         profileImage,
+        role: shouldBeAdmin ? 'admin' : 'user',
       });
 
       res.status(201).json({

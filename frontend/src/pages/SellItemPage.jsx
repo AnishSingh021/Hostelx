@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, X, MapPin, CheckCircle, Sparkles, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info } from 'lucide-react';
+import { UploadCloud, X, MapPin, CheckCircle, Sparkles, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera } from 'lucide-react';
+import CameraCapture from '../components/CameraCapture';
 
 export default function SellItemPage() {
   const { user } = useAuth();
@@ -11,6 +12,16 @@ export default function SellItemPage() {
   const [success, setSuccess] = useState(false);
   const [images, setImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [showCamera, setShowCamera] = useState(false);
+
+  const handleCameraCapture = (file) => {
+    if (images.length + 1 > 5) {
+      alert('You can only upload a maximum of 5 images');
+      return;
+    }
+    setImages(prev => [...prev, file]);
+    setPreviewUrls(prev => [...prev, URL.createObjectURL(file)]);
+  };
   
   const [formData, setFormData] = useState({
     title: '',
@@ -301,11 +312,22 @@ export default function SellItemPage() {
                 </div>
               ))}
               {images.length < 5 && (
-                <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-primary/50 rounded-2xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-all duration-300">
-                  <UploadCloud className="w-7 h-7 text-muted-foreground mb-1 group-hover:text-primary" />
-                  <span className="text-xs text-muted-foreground font-semibold">Upload</span>
-                  <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageChange} />
-                </label>
+                <div className="flex gap-4">
+                  <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-primary/50 rounded-2xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-all duration-300">
+                    <UploadCloud className="w-7 h-7 text-muted-foreground mb-1 group-hover:text-primary" />
+                    <span className="text-xs text-muted-foreground font-semibold">Upload</span>
+                    <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageChange} />
+                  </label>
+                  
+                  <button 
+                    type="button"
+                    onClick={() => setShowCamera(true)}
+                    className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-primary/50 rounded-2xl bg-muted/20 hover:bg-muted/40 transition-all duration-300 cursor-pointer group"
+                  >
+                    <Camera className="w-7 h-7 text-muted-foreground mb-1 group-hover:text-primary" />
+                    <span className="text-xs text-muted-foreground font-semibold font-semibold">Camera</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -605,6 +627,12 @@ export default function SellItemPage() {
           </button>
         </form>
       </div>
+
+      <CameraCapture 
+        isOpen={showCamera} 
+        onClose={() => setShowCamera(false)} 
+        onCapture={handleCameraCapture} 
+      />
     </div>
   );
 }

@@ -399,7 +399,7 @@ export default function Marketplace() {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse bg-card border border-border rounded-2xl h-80" />
             ))}
@@ -413,7 +413,7 @@ export default function Marketplace() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <AnimatePresence>
               {products.map((product, i) => {
                 const isUrgent = product.isUrgent;

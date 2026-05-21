@@ -316,10 +316,7 @@ export default function Dashboard() {
               </span>
             )}
           </button>
-          {/* Dark mode */}
-          <button onClick={toggleDarkMode} className="p-2.5 rounded-full bg-muted hover:bg-secondary transition active:scale-95 cursor-pointer" title="Toggle Theme">
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
+
           {/* Settings */}
           <button
             onClick={openSettings}

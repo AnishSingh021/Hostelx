@@ -88,8 +88,6 @@ io.on('connection', (socket) => {
       socket.in(user._id).emit('message received', newMessageReceived);
     });
   });
-
-  // Typing Indicator
   socket.on('typing', (room) => {
     socket.in(room).emit('typing');
   });
@@ -98,22 +96,18 @@ io.on('connection', (socket) => {
     socket.in(room).emit('stop typing');
   });
 
-  // Read Receipts
   socket.on('messages read', ({ chatId, userId }) => {
     socket.in(chatId).emit('messages read', {
       chatId,
       userId,
     });
   });
-
+//C:\Users\HP\AppData\Local\Android\Sdk
   socket.on('disconnect', () => {
     console.log('User Disconnected:', socket.id);
   });
 });
 
-// ======================
-// ROUTES
-// ======================
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
