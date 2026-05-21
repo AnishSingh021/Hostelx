@@ -42,6 +42,9 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
+  if (window.location.pathname.startsWith('/.well-known')) {
+  return null;
+}
   return (
     <Router>
       <div className="min-h-screen bg-background text-foreground font-sans">
