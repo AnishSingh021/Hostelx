@@ -1,4 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/.well-known/assetlinks.json",
+      "destination": "/.well-known/assetlinks.json"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
   "headers": [
     {
       "source": "/.well-known/assetlinks.json",
@@ -8,12 +18,6 @@
           "value": "application/json"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!\\.well-known).*)",
-      "destination": "/"
     }
   ]
 }
