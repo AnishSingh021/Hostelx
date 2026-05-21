@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { BACKEND_URL } from '../config';
 
 export default function Dashboard() {
   const { user, logout, updateProfile } = useAuth();
@@ -160,7 +161,7 @@ export default function Dashboard() {
     const interval = setInterval(fetchUnread, 10000);
 
     // Also react immediately when another user reads messages (socket)
-    const sock = io('https://hostelx-backend-a228.onrender.com');
+    const sock = io(BACKEND_URL);
     sock.emit('setup', user);
     sock.on('messages read', () => fetchUnread());
     sock.on('message received', () => fetchUnread());

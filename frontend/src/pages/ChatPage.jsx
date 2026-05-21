@@ -4,8 +4,9 @@ import { io } from 'socket.io-client';
 import { Send, ArrowLeft, Image, X, CheckCheck, Check, Smile } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BACKEND_URL } from '../config';
 
-const ENDPOINT = 'https://hostelx-backend-a228.onrender.com';
+const ENDPOINT = BACKEND_URL;
 const EMOJI_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🔥'];
 let socket;
 

@@ -16,7 +16,8 @@ const server = http.createServer(app);
 const FRONTEND_URLS = [
   'http://localhost:5173',
   'https://hostelx-frontend.onrender.com',
-  'https://your-vercel-url.vercel.app'
+  'https://hostelx-pi.vercel.app',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(url => url.trim()) : [])
 ];
 
 // ======================
