@@ -5,7 +5,6 @@ import {
   ChevronLeft, 
   Flame, 
   Clock, 
-  Sparkles, 
   Package, 
   ShieldCheck, 
   BadgeAlert, 

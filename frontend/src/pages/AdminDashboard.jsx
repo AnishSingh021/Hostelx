@@ -11,7 +11,6 @@ import {
   TrendingUp, 
   PieChart, 
   BarChart3, 
-  Sparkles,
   ShieldCheck,
   ChevronRight,
   TrendingDown
@@ -440,7 +439,7 @@ export default function AdminDashboard() {
         <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl">
-              <Sparkles className="w-5 h-5" />
+              <Zap className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-xl">Platform Feature Conversion</h3>

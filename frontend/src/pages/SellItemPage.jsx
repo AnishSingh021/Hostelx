@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, X, MapPin, CheckCircle, Sparkles, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera, TrendingDown } from 'lucide-react';
+import { UploadCloud, X, MapPin, CheckCircle, Tag, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera, TrendingDown } from 'lucide-react';
 import CameraCapture from '../components/CameraCapture';
 
 export default function SellItemPage() {
@@ -175,11 +175,7 @@ export default function SellItemPage() {
     }
   };
 
-  // Checks if item name triggers Roommate Essentials auto-tagging
-  const lowercaseTitle = formData.title.toLowerCase();
-  const essentialsList = ['bucket', 'mattress', 'induction', 'books', 'cycle', 'chair', 'table', 'lamp', 'cooker', 'kettle', 'fan'];
-  const isEssential = essentialsList.some(item => lowercaseTitle.includes(item)) || formData.category === 'Mattress' || formData.category === 'Books';
-  
+
   const isNeedRequest = formData.listingType === 'emergency' || (formData.listingType === 'rent' && formData.rentType === 'seek') || formData.listingType === 'lost';
 
   return (
@@ -233,7 +229,7 @@ export default function SellItemPage() {
             <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Listing Category Mode</label>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
               {[
-                { type: 'buy', label: 'Sell Item', icon: <Sparkles className="w-4 h-4" /> },
+                { type: 'buy', label: 'Sell Item', icon: <Tag className="w-4 h-4" /> },
                 { type: 'rent', label: 'Rent Item', icon: <Hourglass className="w-4 h-4" /> },
                 { type: 'lost', label: 'Lost Item', icon: <AlertTriangle className="w-4 h-4" /> },
                 { type: 'found', label: 'Found Item', icon: <CheckCircle className="w-4 h-4" /> },
@@ -363,15 +359,7 @@ export default function SellItemPage() {
                     : "e.g. Mattress, Cycle, Kettle"
                 }
               />
-              {isEssential && (
-                <motion.span 
-                  initial={{ opacity: 0, y: 5 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md"
-                >
-                  <Sparkles className="w-3 h-3" /> Auto-tagged: Roommate Essentials Category!
-                </motion.span>
-              )}
+
             </div>
             
             {/* Price Fields based on category */}
@@ -419,7 +407,7 @@ export default function SellItemPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
-                      <Sparkles className="w-5 h-5 animate-pulse" />
+                      <TrendingDown className="w-5 h-5 animate-pulse" />
                     </div>
                     <div>
                       <h4 className="text-base font-extrabold tracking-tight text-foreground flex items-center gap-2">

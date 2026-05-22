@@ -17,7 +17,6 @@ import {
   X, 
   Loader2,
   Search,
-  Sparkles,
   Zap,
   Bell,
   Truck,
@@ -28,7 +27,9 @@ import {
   ArrowRight,
   TrendingDown,
   Info,
-  BadgeAlert
+  BadgeAlert,
+  Menu,
+  Shirt
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [emergencyListings, setEmergencyListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showBoostInfo, setShowBoostInfo] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Settings states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -340,10 +342,11 @@ export default function Dashboard() {
 
   // Pre-flight quick search items
   const quickSearches = [
-    { text: 'Chair under 2000', query: 'chair under 2000' },
     { text: 'Mattress', query: 'mattress' },
-    { text: 'Cycle under 3k', query: 'cycle under 3000' },
-    { text: 'Study Books', query: 'books' }
+    { text: 'Cycle', query: 'cycle' },
+    { text: 'Calculator', query: 'calculator' },
+    { text: 'Sneakers', query: 'sneakers' },
+    { text: 'Study Table', query: 'study table' }
   ];
 
   return (
@@ -372,19 +375,13 @@ export default function Dashboard() {
             )}
           </button>
 
-          {/* Settings */}
+          {/* Menu Hamburger */}
           <button
-            onClick={openSettings}
+            onClick={() => setIsDrawerOpen(true)}
             className="p-2.5 rounded-full bg-muted hover:bg-secondary transition active:scale-95 cursor-pointer"
-            title="Settings"
+            title="Menu"
           >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-2 rounded-xl transition cursor-pointer border border-transparent hover:border-destructive/10"
-          >
-            <LogOut className="w-4 h-4" /> Logout
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </header>
@@ -399,8 +396,8 @@ export default function Dashboard() {
         >
           <div>
             <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-              {greetingData.mood}
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {user.hostel ? `${user.hostel} Community` : 'Chandigarh University Hostel Community'}
             </p>
             <AnimatePresence mode="wait">
               <motion.h1
@@ -420,15 +417,14 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Stats Pill with live time */}
-          <div className="flex flex-col items-end gap-2 self-start sm:self-auto">
-            <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-2xl shadow-sm">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-              <p className="text-xs font-bold text-muted-foreground">
-                GPS Enabled: <span className="text-foreground">{user.hostel}</span>
+          <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
+            <div className="text-right">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Hostel: <span className="text-foreground font-bold">{user.hostel}</span>
               </p>
             </div>
             <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground bg-muted/40 border border-border/60 px-3 py-1 rounded-xl">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               {liveTime}
             </div>
           </div>
@@ -458,19 +454,16 @@ export default function Dashboard() {
           <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition ml-auto flex-shrink-0" />
         </motion.div>
 
-        {/* AI Semantic Search Console (Magic sparkling input box) */}
+        {/* Search Panel */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="relative overflow-hidden bg-gradient-to-b from-card/90 to-card border-2 border-primary/20 shadow-xl rounded-3xl p-6 backdrop-blur-md group"
+          className="relative overflow-hidden bg-card border border-border shadow-md rounded-3xl p-6 group"
         >
-          <div className="absolute top-0 right-0 w-36 h-36 bg-primary/10 rounded-full blur-2xl -z-10 group-hover:scale-125 transition-all"></div>
-          
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-            <h3 className="text-base font-extrabold tracking-tight">AI Semantic Query Console</h3>
-            <span className="px-2 py-0.5 text-[9px] font-extrabold text-primary bg-primary/10 border border-primary/20 rounded-full">NATURAL LANGUAGE</span>
+            <Search className="w-5 h-5 text-primary" />
+            <h3 className="text-base font-extrabold tracking-tight">Search Hostel Listings</h3>
           </div>
 
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -478,7 +471,7 @@ export default function Dashboard() {
               <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Try: 'cheap cycle under 3000' or 'mattress' or 'chair below 1k'..."
+                placeholder="Search items in your hostel..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 bg-muted/40 border border-border focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 rounded-2xl text-sm font-medium transition"
@@ -486,9 +479,9 @@ export default function Dashboard() {
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold rounded-2xl hover:bg-primary/95 shadow-md shadow-primary/20 hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold rounded-2xl hover:bg-primary/95 shadow-md shadow-primary/25 hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
-              <Sparkles className="w-4.5 h-4.5" /> AI Search
+              Search
             </button>
           </form>
 
@@ -564,9 +557,9 @@ export default function Dashboard() {
               <span className="text-[10px] text-teal-500 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20 font-bold uppercase">100m Range</span>
             </div>
             <div className="mt-4">
-              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Campus GPS Geolocation</p>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Nearby Hostel Listings</p>
               <h3 className="text-2xl font-black mt-1">Smart Nearby</h3>
-              <p className="text-xs text-muted-foreground mt-1">Same hostel ranked first, then nearest units.</p>
+              <p className="text-xs text-muted-foreground mt-1">Find items available around your hostel.</p>
             </div>
           </div>
 
@@ -614,29 +607,14 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Showcase Hub Grid of the 17 advanced campus shortcuts */}
+        {/* Campus Trading Hubs */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-extrabold text-lg tracking-tight">Advanced Campus Trading Hubs</h3>
-            <span className="text-[10px] text-muted-foreground font-semibold px-2 py-1 bg-secondary rounded-lg border border-border">MODERN FEATURES</span>
+            <h3 className="font-extrabold text-lg tracking-tight">Campus Trading Hubs</h3>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
-            {/* Shortcut 1: Room Essentials (Roommate Marketplace) */}
-            <div 
-              onClick={() => handleNavigateWithLocation('/roommate-essentials')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
-            >
-              <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-110 transition">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-foreground">Roommate Essentials</h4>
-                <p className="text-[9px] text-muted-foreground mt-0.5">Mattress, bucket, induction</p>
-              </div>
-            </div>
-
-            {/* Shortcut 2: Lost & Found Section */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+            {/* Shortcut 1: Lost & Found Section */}
             <div 
               onClick={() => handleNavigateWithLocation('/lost-found')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
@@ -650,7 +628,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Shortcut 3: Semester Exit Sale */}
+            {/* Shortcut 2: Semester Exit Sale */}
             <div 
               onClick={() => handleNavigateWithLocation('/exit-sale')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
@@ -664,7 +642,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Shortcut 4: Temporary Item Rentals */}
+            {/* Shortcut 3: Temporary Item Rentals */}
             <div 
               onClick={() => handleNavigateWithLocation('/rentals')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
@@ -678,7 +656,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Shortcut 5: Auction / Bidding System */}
+            {/* Shortcut 4: Auction / Bidding System */}
             <div 
               onClick={() => handleNavigateWithLocation('/auctions')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
@@ -692,7 +670,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Shortcut 6: Campus Fit Rental */}
+            {/* Shortcut 5: Campus Fit Rental */}
             <div 
               onClick={() => navigate('/fashion')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
@@ -701,7 +679,7 @@ export default function Dashboard() {
                 New
               </div>
               <div className="p-3 bg-violet-500/10 text-violet-500 rounded-xl group-hover:scale-110 transition">
-                <Sparkles className="w-5 h-5 fill-violet-500/20" />
+                <Shirt className="w-5 h-5 fill-violet-500/20" />
               </div>
               <div>
                 <h4 className="text-xs font-bold text-foreground">Rent Your Vibe</h4>
@@ -717,7 +695,6 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-lg tracking-tight">Core Marketplace Actions</h3>
-            <span className="text-[10px] text-muted-foreground font-semibold px-2 py-1 bg-secondary rounded-lg border border-border">PRODUCT MANAGEMENT</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -962,6 +939,165 @@ export default function Dashboard() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Slide-out glassmorphic drawer menu */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            {/* Backdrop blur overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDrawerOpen(false)}
+              className="absolute inset-0 bg-background/40 backdrop-blur-md"
+            />
+
+            {/* Drawer container */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-80 h-full bg-card/90 border-l border-border shadow-2xl p-6 flex flex-col justify-between backdrop-blur-xl z-10 overflow-y-auto"
+            >
+              <div>
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
+                    Menu
+                  </span>
+                  <button
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-2 rounded-full hover:bg-muted text-muted-foreground transition active:scale-95 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Profile Card Section */}
+                <div className="p-4 bg-muted/40 border border-border/80 rounded-2xl mb-6 flex items-center gap-3">
+                  <img
+                    src={user.profileImage || '/placeholder.png'}
+                    alt={user.name}
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-sm text-foreground truncate">{user.name}</h4>
+                    <p className="text-[10px] text-muted-foreground font-semibold truncate">{user.college}</p>
+                    <p className="text-[9px] text-primary font-bold tracking-wide uppercase mt-0.5">{user.hostel}</p>
+                  </div>
+                </div>
+
+                {/* Navigation Links list */}
+                <nav className="space-y-1.5">
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      navigate('/my-listings');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <List className="w-4.5 h-4.5" />
+                    My Listings
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      navigate('/saved');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <Bookmark className="w-4.5 h-4.5" />
+                    Saved Items
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      navigate('/chat');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <MessageCircle className="w-4.5 h-4.5" />
+                    Messages
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleNavigateWithLocation('/nearby');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <MapPin className="w-4.5 h-4.5" />
+                    Nearby
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleNavigateWithLocation('/auctions');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <Gavel className="w-4.5 h-4.5" />
+                    Auctions
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleNavigateWithLocation('/rentals');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <RotateCcw className="w-4.5 h-4.5" />
+                    Rentals
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      handleNavigateWithLocation('/lost-found');
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-muted text-sm font-semibold text-muted-foreground hover:text-foreground transition text-left cursor-pointer"
+                  >
+                    <Search className="w-4.5 h-4.5" />
+                    Lost & Found
+                  </button>
+                </nav>
+              </div>
+
+              {/* Drawer Footer Actions */}
+              <div className="space-y-2 pt-6 border-t border-border/80">
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    openSettings();
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-muted/50 border border-border/60 hover:bg-muted text-sm font-semibold text-foreground transition text-left cursor-pointer"
+                >
+                  <Settings className="w-4.5 h-4.5 text-muted-foreground" />
+                  Settings
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 text-sm font-bold text-destructive transition text-left cursor-pointer"
+                >
+                  <LogOut className="w-4.5 h-4.5" />
+                  Logout
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

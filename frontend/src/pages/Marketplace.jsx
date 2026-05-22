@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, ChevronLeft, Sparkles, X, Heart, HelpCircle, AlertOctagon, RefreshCw, ShoppingCart, Calendar, HelpCircle as FoundIcon, Hammer, ArrowUpDown } from 'lucide-react';
+import { Search, MapPin, ChevronLeft, X, HelpCircle, AlertOctagon, RefreshCw, ShoppingCart, Calendar, HelpCircle as FoundIcon, Hammer, ArrowUpDown, Tag, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORY_SUGGESTIONS = [
@@ -53,8 +53,7 @@ export default function Marketplace() {
   const [keyword, setKeyword] = useState(initialSearch);
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeListingType, setActiveListingType] = useState(initialTab);
-  const [roomEssentialsOnly, setRoomEssentialsOnly] = useState(initialTag === 'room-essentials');
-  const [aiSearch, setAiSearch] = useState(initialSearch ? true : false);
+  const [aiSearch, setAiSearch] = useState(false);
   const [nearbyOnly, setNearbyOnly] = useState(initialDelivery);
   const [activeRentType, setActiveRentType] = useState('offer');
   
@@ -65,23 +64,21 @@ export default function Marketplace() {
 
   const listingTypes = [
     { type: 'All', label: 'All Listings', icon: <ShoppingCart className="w-4 h-4" /> },
-    { type: 'buy', label: 'Items for Sale', icon: <Sparkles className="w-4 h-4" /> },
+    { type: 'buy', label: 'Items for Sale', icon: <Tag className="w-4 h-4" /> },
     { type: 'rent', label: 'Rentals', icon: <Calendar className="w-4 h-4" /> },
     { type: 'lost', label: 'Lost & Found', icon: <AlertOctagon className="w-4 h-4" /> },
     { type: 'emergency', label: 'Campus Emergencies', icon: <RadioIcon className="w-4 h-4 animate-pulse text-rose-500" /> }
   ];
 
-  const fetchProducts = async (cat = activeCategory, kw = keyword, type = activeListingType, essentials = roomEssentialsOnly) => {
+  const fetchProducts = async (cat = activeCategory, kw = keyword, type = activeListingType) => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams();
       if (kw) queryParams.append('keyword', kw);
       if (cat && cat !== 'All') queryParams.append('category', cat);
       
-      // Let lost and found fetch both 'lost' and 'found' types
       if (type && type !== 'All') {
         if (type === 'lost') {
-          // Client or controller handles grouping, we can just send query or fetch all and filter
           queryParams.append('listingType', 'lost');
         } else if (type === 'rent') {
           queryParams.append('listingType', 'rent');
@@ -89,10 +86,6 @@ export default function Marketplace() {
         } else {
           queryParams.append('listingType', type);
         }
-      }
-      
-      if (essentials) {
-        queryParams.append('tag', 'room-essentials');
       }
       
       if (aiSearch) {
@@ -119,7 +112,6 @@ export default function Marketplace() {
         if (kw) foundParams.append('keyword', kw);
         if (cat && cat !== 'All') foundParams.append('category', cat);
         foundParams.append('listingType', 'found');
-        if (essentials) foundParams.append('tag', 'room-essentials');
         if (user?.hostel) foundParams.append('userHostel', user.hostel);
         if (lat && lng) {
           foundParams.append('userLat', lat);
@@ -159,18 +151,18 @@ export default function Marketplace() {
   };
 
   useEffect(() => {
-    fetchProducts(activeCategory, keyword, activeListingType, roomEssentialsOnly);
+    fetchProducts(activeCategory, keyword, activeListingType);
     // eslint-disable-next-line
-  }, [activeCategory, activeListingType, roomEssentialsOnly, aiSearch, nearbyOnly, activeRentType]);
+  }, [activeCategory, activeListingType, aiSearch, nearbyOnly, activeRentType]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProducts(activeCategory, keyword, activeListingType, roomEssentialsOnly);
+    fetchProducts(activeCategory, keyword, activeListingType);
   };
 
   const clearSearch = () => {
     setKeyword('');
-    fetchProducts(activeCategory, '', activeListingType, roomEssentialsOnly);
+    fetchProducts(activeCategory, '', activeListingType);
   };
 
   // Helper to calculate human readable proximity tags
@@ -259,18 +251,6 @@ export default function Marketplace() {
                 Radius 1.5km
               </button>
 
-              {/* Room Essentials Filter Toggle */}
-              <button
-                onClick={() => setRoomEssentialsOnly(!roomEssentialsOnly)}
-                className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer ${
-                  roomEssentialsOnly 
-                    ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20' 
-                    : 'bg-card border-border text-muted-foreground hover:border-amber-500 hover:text-amber-500'
-                }`}
-              >
-                <Heart className="w-3.5 h-3.5" />
-                Room Essentials
-              </button>
             </div>
           </div>
 
@@ -287,26 +267,13 @@ export default function Marketplace() {
                 className="w-full pl-11 pr-24 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground font-semibold text-sm transition"
               />
               
-              {/* AI Semantic Toggle Tag */}
+              {/* Clear Search Button */}
               <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                 {keyword && (
                   <button type="button" onClick={clearSearch} className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5">
                     <X className="w-4 h-4" />
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setAiSearch(!aiSearch)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition duration-200 cursor-pointer ${
-                    aiSearch 
-                      ? 'bg-primary/20 border-primary text-primary animate-pulse' 
-                      : 'bg-muted/50 border-border text-muted-foreground hover:text-foreground'
-                  }`}
-                  title="Semantic AI automatically extracts prices like 'under 3k'"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  AI Search
-                </button>
               </div>
             </div>
             
@@ -389,13 +356,6 @@ export default function Marketplace() {
           ))}
         </div>
 
-        {/* Info banners */}
-        {aiSearch && keyword && (
-          <div className="mb-6 p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs font-semibold text-primary flex items-center gap-2">
-            <Sparkles className="w-4 h-4 flex-shrink-0 animate-spin" style={{ animationDuration: '6s' }} />
-            AI Semantic Assistant enabled: Automatically parsing budget limits and descriptions for "{keyword}"!
-          </div>
-        )}
 
         {/* Products Grid */}
         {loading ? (
@@ -461,7 +421,7 @@ export default function Marketplace() {
                             {/* Premium Boosted badge */}
                             {isBoosted && (
                               <span className="bg-violet-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-0.5 shadow-md">
-                                <Sparkles className="w-2.5 h-2.5" /> Boosted Listing
+                                <Zap className="w-2.5 h-2.5" /> Boosted Listing
                               </span>
                             )}
 
@@ -496,12 +456,6 @@ export default function Marketplace() {
                               </span>
                             )}
 
-                            {/* Room Essentials tag badge */}
-                            {product.tags?.includes('room-essentials') && (
-                              <span className="bg-amber-500/90 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                                Room Essential 🏠
-                              </span>
-                            )}
                           </div>
 
                           {/* Condition rating tag on right */}

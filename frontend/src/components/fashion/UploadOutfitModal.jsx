@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Tag, Sparkles, AlertCircle, Coins, Camera, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { X, Tag, AlertCircle, Coins, Camera, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CameraCapture from '../CameraCapture';
 
@@ -426,7 +426,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4.5 h-4.5" />
+                  <Tag className="w-4.5 h-4.5" />
                   Publish Vibe to Campus Feed
                 </>
               )}

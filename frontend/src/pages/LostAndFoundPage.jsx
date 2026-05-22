@@ -12,7 +12,7 @@ import {
   Check, 
   Info, 
   AlertCircle, 
-  Sparkles, 
+  Tag, 
   Bell, 
   ArrowRight, 
   Clock, 
@@ -420,8 +420,8 @@ export default function LostAndFoundPage() {
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-rose-950/20 via-card to-amber-950/10 border border-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <Sparkles className="w-3 h-3 animate-spin" />
-              AI Smart-Match active
+              <Search className="w-3 h-3 animate-pulse" />
+              Smart-Match Active
             </span>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight">Active Recovery Bulletin</h1>
             <p className="text-xs text-muted-foreground max-w-lg leading-relaxed font-medium">
@@ -736,7 +736,7 @@ export default function LostAndFoundPage() {
                   />
                   {liveTags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                      <span className="text-[9px] text-rose-500 font-extrabold mr-1 flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5 animate-bounce" /> Live Tags:</span>
+                      <span className="text-[9px] text-rose-500 font-extrabold mr-1 flex items-center gap-0.5"><Tag className="w-2.5 h-2.5 animate-bounce" /> Live Tags:</span>
                       {liveTags.map((tag, idx) => (
                         <span key={idx} className="text-[8px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20 px-1.5 py-0.5 rounded-md animate-pulse">
                           #{tag}

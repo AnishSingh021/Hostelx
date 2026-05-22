@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   ChevronLeft, 
   RotateCcw, 
-  Sparkles, 
   Calendar, 
   ShieldCheck, 
   Info, 

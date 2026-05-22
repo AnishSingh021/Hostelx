@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Star, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
+import { Heart, Star, MapPin, ShieldCheck } from 'lucide-react';
 
 export default function OutfitCard({ outfit, onRentClick }) {
   const [isSaved, setIsSaved] = useState(false);

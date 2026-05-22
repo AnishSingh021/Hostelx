@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, MessageCircle, ChevronLeft, Heart, Eye, Sparkles, Truck, Clock, Hammer, ShieldCheck, Star, Send, ArrowRight, ShieldAlert, Award } from 'lucide-react';
+import { MapPin, MessageCircle, ChevronLeft, Heart, Eye, TrendingDown, Truck, Clock, Hammer, ShieldCheck, Star, Send, ArrowRight, ShieldAlert, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProductDetailsPage() {
@@ -271,7 +271,7 @@ export default function ProductDetailsPage() {
             animate={{ scale: 1, opacity: 1 }}
             className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-start gap-3 text-emerald-600 dark:text-emerald-400 mb-6"
           >
-            <Sparkles className="w-5 h-5 mt-0.5 animate-pulse" />
+            <TrendingDown className="w-5 h-5 mt-0.5 animate-pulse" />
             <div>
               <span className="text-sm font-bold block">Wishlist Price Drop Alert! 🔥</span>
               <span className="text-xs">

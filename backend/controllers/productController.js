@@ -70,13 +70,6 @@ const createProduct = async (req, res) => {
     if (tags) {
       processedTags = Array.isArray(tags) ? tags : JSON.parse(tags);
     }
-    // Auto-tag roommate essentials for certain categories or descriptions
-    const lowercaseTitle = title.toLowerCase();
-    const essentials = ['bucket', 'mattress', 'induction', 'books', 'cycle', 'chair', 'table', 'lamp', 'cooker', 'kettle', 'fan'];
-    const isEssential = essentials.some(item => lowercaseTitle.includes(item)) || category === 'Mattress' || category === 'Books';
-    if (isEssential) {
-      processedTags.push('room-essentials');
-    }
 
     const product = await Product.create({
       title,

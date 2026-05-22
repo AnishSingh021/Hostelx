@@ -8,7 +8,6 @@ import {
   Compass, 
   SlidersHorizontal, 
   Search, 
-  Sparkles, 
   Navigation,
   ArrowUpDown,
   Clock,

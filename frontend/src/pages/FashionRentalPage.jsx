@@ -3,13 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   ChevronLeft, 
-  Sparkles, 
   Search, 
   SlidersHorizontal, 
   Plus, 
   ShieldCheck, 
   RotateCcw, 
-  Sparkle, 
   Star, 
   MapPin, 
   TrendingUp, 

@@ -9,7 +9,6 @@ import {
   History, 
   Tag, 
   Hourglass, 
-  Sparkles, 
   TrendingUp, 
   CheckCircle, 
   AlertCircle,

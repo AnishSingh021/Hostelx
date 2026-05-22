@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
 
 // Hardcoded particles for background motion
 const BACKGROUND_PARTICLES = Array.from({ length: 30 }).map((_, i) => ({

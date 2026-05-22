@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Shield, CreditCard, Sparkles, CheckCircle2, QrCode } from 'lucide-react';
+import { X, Calendar, Shield, CreditCard, CheckCircle2, QrCode } from 'lucide-react';
 
 export default function RentOutfitModal({ outfit, onClose, onRentSuccess }) {
   const [rentDays, setRentDays] = useState(1);
@@ -266,7 +266,7 @@ export default function RentOutfitModal({ outfit, onClose, onRentSuccess }) {
                 </div>
 
                 <div className="flex items-center gap-2 text-[10px] text-primary bg-primary/10 border border-primary/20 p-2.5 rounded-xl font-bold">
-                  <Sparkles className="w-4 h-4 flex-shrink-0 animate-pulse" />
+                  <Shield className="w-4 h-4 flex-shrink-0 animate-pulse" />
                   <span>Dry-cleaning & hygiene checked! Rent with complete peace of mind.</span>
                 </div>
               </div>

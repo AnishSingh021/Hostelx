@@ -16,7 +16,6 @@ import SavedItemsPage from './pages/SavedItemsPage';
 import FashionRentalPage from './pages/FashionRentalPage';
 import AuctionsPage from './pages/AuctionsPage';
 import NearbyPage from './pages/NearbyPage';
-import RoommateEssentialsPage from './pages/RoommateEssentialsPage';
 import LostAndFoundPage from './pages/LostAndFoundPage';
 import SemesterExitSalePage from './pages/SemesterExitSalePage';
 import TemporaryRentalsPage from './pages/TemporaryRentalsPage';
@@ -192,14 +191,6 @@ function App() {
             }
           />
 
-          <Route
-            path="/roommate-essentials"
-            element={
-              <ProtectedRoute>
-                <RoommateEssentialsPage />
-              </ProtectedRoute>
-            }
-          />
 
           <Route
             path="/lost-found"

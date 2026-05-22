@@ -13,7 +13,6 @@ import {
   EyeOff, 
   ArrowRight, 
   AlertCircle, 
-  Sparkles, 
   ShoppingBag, 
   MessageSquare, 
   ShieldCheck,
@@ -358,7 +357,7 @@ export default function AuthPage() {
             className="space-y-4"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-blue-200">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Chandigarh University
+              <MapPin className="w-3.5 h-3.5 animate-pulse" /> Chandigarh University
             </div>
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
               Buy, Sell & Connect <br />
@@ -645,7 +644,7 @@ export default function AuthPage() {
 
                 {/* Setup description */}
                 <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex gap-3 text-xs text-blue-700 leading-relaxed">
-                  <Sparkles className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold block mb-0.5">Let's find deals on campus!</span>
                     To show items nearest you, HostelX requires you to specify your local college building. This maintains campus trust.
