@@ -46,7 +46,6 @@ function App() {
     <Router>
       <div className="min-h-screen bg-background text-foreground font-sans">
         <Routes>
-
           <Route
             path="/"
             element={
@@ -55,7 +54,6 @@ function App() {
               </PublicRoute>
             }
           />
-
           <Route
             path="/auth"
             element={
@@ -127,7 +125,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/edit-item/:id"
             element={
