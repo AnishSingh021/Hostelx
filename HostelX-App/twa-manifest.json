@@ -19,8 +19,8 @@
     "path": "C:\\Users\\HP\\Desktop\\HostelX\\HostelX-App\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "6",
-  "appVersionCode": 6,
+  "appVersionName": "9",
+  "appVersionCode": 9,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://hostelx-pi.vercel.app/manifest.webmanifest",
@@ -53,5 +53,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "6"
+  "appVersion": "9"
 }

@@ -1,4 +1,0 @@
-com.hostelx.app.test.app-androidTest-0 C:\Users\HP\Desktop\HostelX\HostelX-App\app\build\generated\res\resValues\androidTest\debug
-com.hostelx.app.test.app-mergeDebugAndroidTestResources-1 C:\Users\HP\Desktop\HostelX\HostelX-App\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.hostelx.app.test.app-mergeDebugAndroidTestResources-2 C:\Users\HP\Desktop\HostelX\HostelX-App\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.hostelx.app.test.app-debugAndroidTest-3 C:\Users\HP\Desktop\HostelX\HostelX-App\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
