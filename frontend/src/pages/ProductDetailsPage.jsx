@@ -363,36 +363,22 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Support Systems (Delivery/Rental Guides) */}
-            {(product.canDeliver || product.listingType === 'rent') && (
-              <div className="space-y-2.5">
-                {product.canDeliver && (
-                  <div className="bg-primary/5 border border-primary/20 p-3.5 rounded-2xl flex gap-3 text-sm">
-                    <Truck className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-primary block">Student Delivery Available 📦</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        This seller offers to deliver the item right inside your hostel room for an additional campus service charge of <strong>₹{product.deliveryFee}</strong>.
-                      </p>
-                    </div>
-                  </div>
-                )}
 
-                {product.listingType === 'rent' && (
-                  <div className="bg-sky-500/5 border border-sky-500/20 p-3.5 rounded-2xl flex gap-3 text-sm">
-                    <Clock className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-sky-500 block">
-                        {product.rentType === 'seek' ? 'Rental Request Active ⏱' : 'Rental Plan Active ⏱'}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {product.rentType === 'seek'
-                          ? `This student is seeking this item on rent for ₹${product.price} per ${product.rentalDuration}. If you have it, you can chat with them directly to fix your deal!`
-                          : `You can rent this item on a recurring ${product.rentalDuration}ly schedule. Handover return coordination and deposit options are handled inside the messenger.`}
-                      </p>
-                    </div>
-                  </div>
-                )}
+
+            {/* Rent active panel (If listingType === rent) */}
+            {product.listingType === 'rent' && (
+              <div className="bg-sky-500/5 border border-sky-500/20 p-3.5 rounded-2xl flex gap-3 text-sm">
+                <Clock className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-sky-500 block">
+                    {product.rentType === 'seek' ? 'Rental Request Active ⏱' : 'Rental Plan Active ⏱'}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {product.rentType === 'seek'
+                      ? `This student is seeking this item on rent for ₹${product.price} per ${product.rentalDuration}. If you have it, you can chat with them directly to fix your deal!`
+                      : `You can rent this item on a recurring ${product.rentalDuration}ly schedule. Handover return coordination and deposit options are handled inside the messenger.`}
+                  </p>
+                </div>
               </div>
             )}
 

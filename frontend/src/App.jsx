@@ -12,6 +12,14 @@ import AdminDashboard from './pages/AdminDashboard';
 import MyListingsPage from './pages/MyListingsPage';
 import EditItemPage from './pages/EditItemPage';
 import SavedItemsPage from './pages/SavedItemsPage';
+import FashionRentalPage from './pages/FashionRentalPage';
+import AuctionsPage from './pages/AuctionsPage';
+import NearbyPage from './pages/NearbyPage';
+import RoommateEssentialsPage from './pages/RoommateEssentialsPage';
+import LostAndFoundPage from './pages/LostAndFoundPage';
+import SemesterExitSalePage from './pages/SemesterExitSalePage';
+import TemporaryRentalsPage from './pages/TemporaryRentalsPage';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -116,7 +124,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/my-listings"
             element={
@@ -139,6 +146,69 @@ function App() {
             element={
               <ProtectedRoute>
                 <SavedItemsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/fashion"
+            element={
+              <ProtectedRoute>
+                <FashionRentalPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/auctions"
+            element={
+              <ProtectedRoute>
+                <AuctionsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/nearby"
+            element={
+              <ProtectedRoute>
+                <NearbyPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/roommate-essentials"
+            element={
+              <ProtectedRoute>
+                <RoommateEssentialsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/lost-found"
+            element={
+              <ProtectedRoute>
+                <LostAndFoundPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/exit-sale"
+            element={
+              <ProtectedRoute>
+                <SemesterExitSalePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/rentals"
+            element={
+              <ProtectedRoute>
+                <TemporaryRentalsPage />
               </ProtectedRoute>
             }
           />

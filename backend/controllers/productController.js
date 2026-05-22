@@ -386,39 +386,189 @@ const getPriceSuggestion = async (req, res) => {
     }
 
     const matchedProducts = await Product.find(query);
-    if (matchedProducts.length === 0) {
-      const defaultAverages = {
-        'Electronics': 4500,
-        'Books': 250,
-        'Cycle': 3000,
-        'Mattress': 1200,
-        'Gaming': 5000,
-        'Kitchen': 600,
-        'Fashion': 800,
-        'Notes': 100,
-        'Accessories': 500,
-        'Others': 1000
-      };
-      const average = defaultAverages[category] || 1500;
-      return res.json({
-        average,
-        min: Math.round(average * 0.8),
-        max: Math.round(average * 1.2),
-        message: 'Calculated using global campus category average'
-      });
+    const defaultAverages = {
+      'Electronics': 4500,
+      'Books': 250,
+      'Cycle': 3000,
+      'Mattress': 1200,
+      'Gaming': 5000,
+      'Kitchen': 600,
+      'Fashion': 800,
+      'Notes': 100,
+      'Accessories': 500,
+      'Others': 1000
+    };
+
+    let baseAverage = defaultAverages[category] || 1500;
+    let databaseCount = matchedProducts.length;
+
+    if (databaseCount > 0) {
+      const prices = matchedProducts.map(p => p.price);
+      const sum = prices.reduce((acc, p) => acc + p, 0);
+      baseAverage = Math.round(sum / prices.length);
     }
 
-    const prices = matchedProducts.map(p => p.price);
-    const sum = prices.reduce((acc, p) => acc + p, 0);
-    const average = Math.round(sum / prices.length);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    // Advanced Brand and Keyword Price Modifier Engine
+    let suggestedPrice = baseAverage;
+    let confidence = 75;
+    let highDemand = false;
+    let globalRetailPrice = null;
+
+    if (keyword) {
+      const kwLower = keyword.toLowerCase();
+
+      // Brand Detection & Multipliers
+      const brandModifiers = [
+        { keys: ['apple', 'macbook', 'ipad', 'iphone'], multiplier: 8.5, confBoost: 18 },
+        { keys: ['dell', 'hp', 'lenovo', 'asus', 'acer'], multiplier: 4.5, confBoost: 12 },
+        { keys: ['sony', 'bose', 'sennheiser', 'jbl'], multiplier: 3.5, confBoost: 10 },
+        { keys: ['nike', 'adidas', 'puma', 'jordan'], multiplier: 2.5, confBoost: 8 },
+        { keys: ['samsung', 'oneplus', 'xiaomi'], multiplier: 3.0, confBoost: 9 },
+        { keys: ['casio'], multiplier: 1.5, confBoost: 15 }
+      ];
+
+      brandModifiers.forEach(brand => {
+        if (brand.keys.some(k => kwLower.includes(k))) {
+          suggestedPrice = Math.round(suggestedPrice * brand.multiplier);
+          confidence += brand.confBoost;
+        }
+      });
+
+      // Specific Item Overrides + globalRetailPrice estimates
+      if (kwLower.includes('macbook')) {
+        suggestedPrice = 38000; globalRetailPrice = 129900;
+      } else if (kwLower.includes('ipad')) {
+        suggestedPrice = 24000; globalRetailPrice = 59900;
+      } else if (kwLower.includes('iphone 15')) {
+        suggestedPrice = 42000; globalRetailPrice = 79900;
+      } else if (kwLower.includes('iphone 14')) {
+        suggestedPrice = 32000; globalRetailPrice = 69900;
+      } else if (kwLower.includes('iphone 13')) {
+        suggestedPrice = 23000; globalRetailPrice = 59900;
+      } else if (kwLower.includes('iphone')) {
+        suggestedPrice = 19000; globalRetailPrice = 49900;
+      } else if (kwLower.includes('headphones') && suggestedPrice === baseAverage) {
+        suggestedPrice = 2800; globalRetailPrice = 5500;
+      } else if (kwLower.includes('cycle') || kwLower.includes('bicycle')) {
+        suggestedPrice = 3200; globalRetailPrice = 7500;
+      } else if (kwLower.includes('calculator')) {
+        suggestedPrice = 850; globalRetailPrice = 1400;
+      } else if (kwLower.includes('induction') || kwLower.includes('cooker')) {
+        suggestedPrice = 1600; globalRetailPrice = 3200;
+      } else if (kwLower.includes('mattress') || kwLower.includes('bed')) {
+        suggestedPrice = 1350; globalRetailPrice = 5000;
+      } else if (kwLower.includes('cooler')) {
+        suggestedPrice = 2400; globalRetailPrice = 7500;
+      } else if (kwLower.includes('fan')) {
+        suggestedPrice = 950; globalRetailPrice = 2200;
+      } else if (kwLower.includes('lamp')) {
+        suggestedPrice = 450; globalRetailPrice = 1200;
+      } else if (kwLower.includes('board') || kwLower.includes('extension')) {
+        suggestedPrice = 300; globalRetailPrice = 700;
+      } else if (kwLower.includes('bucket')) {
+        suggestedPrice = 140; globalRetailPrice = 350;
+      } else if (kwLower.includes('ps5') || kwLower.includes('playstation 5')) {
+        suggestedPrice = 38000; globalRetailPrice = 54990;
+      } else if (kwLower.includes('ps4') || kwLower.includes('playstation 4')) {
+        suggestedPrice = 18000; globalRetailPrice = 29990;
+      } else if (kwLower.includes('monitor')) {
+        suggestedPrice = 7500; globalRetailPrice = 18000;
+      } else if (kwLower.includes('keyboard')) {
+        suggestedPrice = 1800; globalRetailPrice = 4500;
+      } else if (kwLower.includes('speaker') || kwLower.includes('bluetooth')) {
+        suggestedPrice = 1200; globalRetailPrice = 3000;
+      }
+
+      // Keyword-based condition detection
+      if (kwLower.includes('new') || kwLower.includes('mint') || kwLower.includes('unused') || kwLower.includes('box')) {
+        suggestedPrice = Math.round(suggestedPrice * 1.25);
+        confidence = Math.min(98, confidence + 5);
+      } else if (kwLower.includes('old') || kwLower.includes('scratched') || kwLower.includes('rough') || kwLower.includes('damaged')) {
+        suggestedPrice = Math.round(suggestedPrice * 0.70);
+        confidence = Math.min(98, confidence + 3);
+      }
+
+      // High Campus Demand detection
+      const demandKeywords = ['cycle', 'calculator', 'induction', 'mattress', 'cooler', 'fan', 'board', 'ipad', 'headphones', 'notes', 'ps5', 'monitor'];
+      if (demandKeywords.some(dk => kwLower.includes(dk))) {
+        highDemand = true;
+      }
+
+      confidence = Math.min(98, confidence + Math.floor(keyword.length * 0.5));
+    }
+
+    // --- Condition & Usage Duration Modifiers ---
+    const { condition, usageDuration } = req.query;
+
+    const conditionMultipliers = {
+      'new': 1.30,
+      'like-new': 1.10,
+      'good': 1.00,
+      'worn': 0.65
+    };
+    const conditionConfBoosts = { 'new': 12, 'like-new': 8, 'good': 5, 'worn': 3 };
+    if (condition && conditionMultipliers[condition]) {
+      suggestedPrice = Math.round(suggestedPrice * conditionMultipliers[condition]);
+      confidence = Math.min(98, confidence + conditionConfBoosts[condition]);
+    }
+
+    const durationMultipliers = { '<3m': 0.90, '3-6m': 0.78, '6-12m': 0.62, '1y+': 0.45 };
+    const durationConfBoosts = { '<3m': 5, '3-6m': 8, '6-12m': 10, '1y+': 12 };
+    if (usageDuration && durationMultipliers[usageDuration]) {
+      suggestedPrice = Math.round(suggestedPrice * durationMultipliers[usageDuration]);
+      confidence = Math.min(98, confidence + durationConfBoosts[usageDuration]);
+    }
+
+    // Bound outputs
+    suggestedPrice = Math.max(50, suggestedPrice);
+    const quickSalePrice = Math.round(suggestedPrice * 0.78);
+    const bestMarketValue = Math.round(suggestedPrice * 1.15);
+    const hostelResaleValue = Math.round(suggestedPrice * 0.92);
+
+    const min = Math.round(suggestedPrice * 0.7);
+    const max = Math.round(suggestedPrice * 1.3);
+
+    // Depreciation Trend Data (5 points across semesters)
+    const trendData = [
+      { label: 'Now', value: suggestedPrice },
+      { label: 'Sem+1', value: Math.round(suggestedPrice * 0.75) },
+      { label: 'Sem+2', value: Math.round(suggestedPrice * 0.55) },
+      { label: 'Sem+3', value: Math.round(suggestedPrice * 0.38) },
+      { label: 'Sem+4', value: Math.round(suggestedPrice * 0.26) }
+    ];
+
+    // Smart Recommendation Chip
+    let recommendation = '';
+    if (highDemand && suggestedPrice > 5000) {
+      recommendation = '🔥 High campus demand — list at market price for best offers';
+    } else if (usageDuration === '1y+' || condition === 'worn') {
+      recommendation = '📦 Bundle with other items to move faster at this price point';
+    } else if (condition === 'new' || condition === 'like-new') {
+      recommendation = '✨ Near-mint condition — premium pricing will attract serious buyers';
+    } else if (highDemand) {
+      recommendation = '⚡ Popular item category — expect offers within 24 hours of listing';
+    } else if (quickSalePrice < 500) {
+      recommendation = '🏷️ Affordable item — a quick-sale price will get instant takers';
+    } else {
+      recommendation = '📊 Price at suggested value for the best balance of speed and profit';
+    }
 
     res.json({
-      average,
+      average: suggestedPrice,
       min,
       max,
-      message: `Calculated from ${matchedProducts.length} active listings on campus`
+      suggestedPrice,
+      quickSalePrice,
+      bestMarketValue,
+      hostelResaleValue,
+      globalRetailPrice,
+      confidence,
+      highDemand,
+      trendData,
+      recommendation,
+      message: databaseCount > 0
+        ? `AI pricing matrix calculated from ${databaseCount} active listings, brand algorithms & usage depreciation`
+        : 'AI trading recommendation calculated from global campus baseline, brand multipliers & usage depreciation'
     });
   } catch (error) {
     console.error('Price suggestion error:', error);

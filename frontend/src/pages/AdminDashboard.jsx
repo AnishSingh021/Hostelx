@@ -11,7 +11,6 @@ import {
   TrendingUp, 
   PieChart, 
   BarChart3, 
-  Truck, 
   Sparkles,
   ShieldCheck,
   ChevronRight,
@@ -119,14 +118,12 @@ export default function AdminDashboard() {
   const boostedCount = stats?.counts?.boosted || 0;
   const urgentCount = stats?.counts?.urgent || 0;
   const totalBids = stats?.counts?.bids || 0;
-  const deliveryCount = stats?.counts?.delivery || 0;
   const revenue = stats?.counts?.revenue || 0;
 
   // Percentage calculations
   const totalProducts = stats?.counts?.products || totalCategoryItems;
   const boostedPercentage = totalProducts > 0 ? Math.round((boostedCount / totalProducts) * 100) : 0;
   const urgentPercentage = totalProducts > 0 ? Math.round((urgentCount / totalProducts) * 100) : 0;
-  const deliveryPercentage = totalProducts > 0 ? Math.round((deliveryCount / totalProducts) * 100) : 0;
 
   // Donut SVG configuration
   const radius = 50;
@@ -451,7 +448,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Conversion 1: Boosted Rate */}
             <div className="bg-secondary/40 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
@@ -493,28 +490,6 @@ export default function AdminDashboard() {
                 </div>
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${urgentPercentage}%` }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Conversion 3: Campus Delivery */}
-            <div className="bg-secondary/40 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-teal-500/5 rounded-full blur-xl group-hover:scale-125 transition-all"></div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="px-2 py-0.5 text-[9px] font-bold text-teal-400 bg-teal-500/10 rounded border border-teal-500/20">LOGISTICS</span>
-                  <Truck className="w-4 h-4 text-teal-500" />
-                </div>
-                <h4 className="text-sm font-bold text-foreground">Student Delivery</h4>
-                <p className="text-xs text-muted-foreground mt-1">Sellers offering inside-campus delivery.</p>
-              </div>
-              <div className="mt-5 space-y-2">
-                <div className="flex items-end justify-between">
-                  <span className="text-2xl font-black text-teal-500">{deliveryPercentage}%</span>
-                  <span className="text-xs font-semibold text-muted-foreground">{deliveryCount} / {totalProducts} items</span>
-                </div>
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full transition-all duration-700" style={{ width: `${deliveryPercentage}%` }}></div>
                 </div>
               </div>
             </div>

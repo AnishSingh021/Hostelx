@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, X, MapPin, CheckCircle, Sparkles, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera } from 'lucide-react';
+import { UploadCloud, X, MapPin, CheckCircle, Sparkles, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera, TrendingDown } from 'lucide-react';
 import CameraCapture from '../components/CameraCapture';
 
 export default function SellItemPage() {
@@ -28,7 +28,8 @@ export default function SellItemPage() {
     description: '',
     price: '',
     category: 'Electronics',
-    condition: 'used',
+    condition: 'good',
+    usageDuration: '3-6m',
     hostel: user?.hostel || '',
     listingType: 'buy',
     isUrgent: false,
@@ -47,30 +48,42 @@ export default function SellItemPage() {
 
   const categories = ['Electronics', 'Books', 'Cycle', 'Mattress', 'Gaming', 'Kitchen', 'Fashion', 'Notes', 'Accessories', 'Others'];
 
-  // Check if title or category changed to trigger price suggestions
+  // Check if title or category/condition/duration changed to trigger price suggestions
   const handleTitleBlur = () => {
-    triggerPriceSuggestion(formData.title, formData.category);
+    triggerPriceSuggestion(formData.title, formData.category, formData.condition, formData.usageDuration);
   };
 
   useEffect(() => {
-    if (formData.title) {
-      triggerPriceSuggestion(formData.title, formData.category);
+    if (formData.title && formData.title.length >= 3) {
+      triggerPriceSuggestion(formData.title, formData.category, formData.condition, formData.usageDuration);
     }
-  }, [formData.category]);
+  }, [formData.category, formData.condition, formData.usageDuration]);
 
-  const triggerPriceSuggestion = async (titleVal, catVal) => {
+  const triggerPriceSuggestion = async (titleVal, catVal, conditionVal, durationVal) => {
     if (!titleVal || titleVal.length < 3) return;
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/price-suggestion?category=${encodeURIComponent(catVal)}&keyword=${encodeURIComponent(titleVal)}`, {
+      const params = new URLSearchParams({
+        category: catVal,
+        keyword: titleVal,
+        ...(conditionVal && { condition: conditionVal }),
+        ...(durationVal && { usageDuration: durationVal })
+      });
+      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/price-suggestion?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
       if (res.ok) {
         const data = await res.json();
         setPriceSuggestion(data);
-        // Pre-fill price with average if not set to help user
-        if (!formData.price) {
-          setFormData(prev => ({ ...prev, price: data.average }));
+        // Pre-fill price with suggested value if field is empty
+        if (formData.listingType === 'rent') {
+          if (!formData.rentPrice) {
+            setFormData(prev => ({ ...prev, rentPrice: data.suggestedPrice }));
+          }
+        } else {
+          if (!formData.price) {
+            setFormData(prev => ({ ...prev, price: data.suggestedPrice }));
+          }
         }
       }
     } catch (e) {
@@ -115,8 +128,8 @@ export default function SellItemPage() {
     submitData.append('hostel', formData.hostel);
     submitData.append('listingType', formData.listingType);
     submitData.append('isUrgent', formData.isUrgent);
-    submitData.append('canDeliver', formData.canDeliver);
-    submitData.append('deliveryFee', formData.canDeliver ? formData.deliveryFee || 0 : 0);
+    submitData.append('canDeliver', 'false');
+    submitData.append('deliveryFee', '0');
     submitData.append('isAuction', formData.isAuction);
     submitData.append('startingBid', formData.isAuction ? formData.startingBid || 0 : 0);
     submitData.append('isRental', formData.listingType === 'rent');
@@ -393,50 +406,176 @@ export default function SellItemPage() {
           <AnimatePresence>
             {formData.title && priceSuggestion && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3"
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="relative overflow-hidden bg-card/65 backdrop-blur-xl border border-border rounded-3xl p-6 shadow-2xl space-y-5"
               >
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                  <Sparkles className="w-5 h-5 animate-spin" style={{ animationDuration: '4s' }} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-primary flex items-center gap-1.5">
-                    HostelX AI Pricing Advisor
-                    {suggestionLoading && <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-mono animate-pulse">Analyzing Campus Trends...</span>}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {priceSuggestion.message} for <span className="font-semibold text-foreground">"{formData.title}"</span> in <span className="font-semibold text-foreground">{formData.category}</span>:
-                  </p>
-                  <div className="flex gap-4 mt-2.5">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block font-semibold uppercase">Fair Range</span>
-                      <span className="text-sm font-bold text-foreground">₹{priceSuggestion.min} - ₹{priceSuggestion.max}</span>
+                <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -z-10 pointer-events-none" />
+
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                      <Sparkles className="w-5 h-5 animate-pulse" />
                     </div>
-                    <div className="border-l border-border pl-4">
-                      <span className="text-[10px] text-muted-foreground block font-semibold uppercase">Recommended Price</span>
-                      <span className="text-sm font-bold text-emerald-500">₹{priceSuggestion.average}</span>
+                    <div>
+                      <h4 className="text-base font-extrabold tracking-tight text-foreground flex items-center gap-2">
+                        HostelX AI Pricing Advisor
+                        <span className="text-[10px] font-mono font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full">v3.0</span>
+                      </h4>
+                      {priceSuggestion.globalRetailPrice ? (
+                        <p className="text-xs text-muted-foreground">
+                          Original Retail: <span className="line-through decoration-rose-400 text-foreground font-bold">₹{priceSuggestion.globalRetailPrice.toLocaleString('en-IN')}</span>
+                          <span className="text-rose-400 font-bold ml-1.5">{Math.round((1 - priceSuggestion.suggestedPrice / priceSuggestion.globalRetailPrice) * 100)}% below retail</span>
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Context-aware valuation for hostel liquidations</p>
+                      )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (formData.listingType === 'rent') {
-                        setFormData(prev => ({ ...prev, rentPrice: priceSuggestion.average }));
-                      } else {
-                        setFormData(prev => ({ ...prev, price: priceSuggestion.average }));
-                      }
-                    }}
-                    className="text-xs font-bold text-primary hover:underline mt-2 inline-block cursor-pointer"
-                  >
-                    Apply Recommended Price
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {suggestionLoading && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 animate-pulse">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-ping" /> Recalculating...
+                      </span>
+                    )}
+                    {priceSuggestion.highDemand && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse">
+                        <Radio className="w-3.5 h-3.5" /> High Campus Demand
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Body: 4 chips + Confidence + SVG Graph */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                  {/* Left: 4 Strategy Chips */}
+                  <div className="space-y-2.5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Choose Your Trading Strategy</span>
+                    {[
+                      { type: 'quick', title: 'Quick Liquidation', desc: 'Sells in hours — best for clearing rooms fast.', val: priceSuggestion.quickSalePrice, badge: 'Fast Sell', badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/20', hover: 'hover:border-rose-500/40 hover:bg-rose-500/5' },
+                      { type: 'hostel', title: 'Hostel Resale Value', desc: 'Optimal campus peer-to-peer trade price.', val: priceSuggestion.hostelResaleValue, badge: 'Campus Fair', badgeClass: 'bg-teal-500/10 text-teal-400 border-teal-500/20', hover: 'hover:border-teal-500/40 hover:bg-teal-500/5' },
+                      { type: 'suggested', title: 'Recommended Price', desc: 'Best balance of speed and maximum profit.', val: priceSuggestion.suggestedPrice, badge: 'Best Balance', badgeClass: 'bg-primary/10 text-primary border-primary/20', hover: 'hover:border-primary/40 hover:bg-primary/5' },
+                      { type: 'premium', title: 'Premium Market Value', desc: 'For patient sellers — maximise returns.', val: priceSuggestion.bestMarketValue, badge: 'Top Yield', badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', hover: 'hover:border-emerald-500/40 hover:bg-emerald-500/5' },
+                    ].map((chip) => {
+                      const cur = formData.listingType === 'rent' ? formData.rentPrice : formData.price;
+                      const isSelected = Number(cur) === chip.val;
+                      return (
+                        <motion.button
+                          key={chip.type} type="button"
+                          whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}
+                          onClick={() => formData.listingType === 'rent'
+                            ? setFormData(p => ({ ...p, rentPrice: chip.val }))
+                            : setFormData(p => ({ ...p, price: chip.val }))}
+                          className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${isSelected ? 'bg-primary/10 border-primary shadow-[0_0_18px_rgba(59,130,246,0.15)]' : `bg-muted/25 border-border/60 ${chip.hover}`}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border ${chip.badgeClass}`}>{chip.badge}</span>
+                            <div>
+                              <p className="text-xs font-extrabold text-foreground">{chip.title}</p>
+                              <p className="text-[10px] text-muted-foreground">{chip.desc}</p>
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0 ml-2">
+                            <span className="text-sm font-black text-foreground">₹{chip.val?.toLocaleString('en-IN')}</span>
+                            <span className="text-[9px] text-muted-foreground block mt-0.5">{isSelected ? '✓ Selected' : 'Apply'}</span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right: Confidence + Dynamic SVG Trend */}
+                  <div className="flex flex-col space-y-4">
+                    {/* Confidence Meter */}
+                    <div className="bg-muted/20 border border-border/40 rounded-2xl p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Valuation Confidence</span>
+                        <span className={`text-xs font-black px-2 py-0.5 rounded-md font-mono ${priceSuggestion.confidence > 85 ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : priceSuggestion.confidence > 65 ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20' : 'text-rose-400 bg-rose-500/10 border border-rose-500/20'}`}>
+                          {priceSuggestion.confidence || 75}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 bg-muted/60 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${priceSuggestion.confidence || 75}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className={`h-full rounded-full ${priceSuggestion.confidence > 85 ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : priceSuggestion.confidence > 65 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' : 'bg-gradient-to-r from-rose-500 to-orange-400'}`}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">Based on brand, condition, usage duration, and live campus listings.</p>
+                    </div>
+
+                    {/* Dynamic Depreciation Trend Graph */}
+                    <div className="bg-muted/20 border border-border/40 rounded-2xl p-4 flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                          <TrendingDown className="w-3.5 h-3.5 text-rose-400" /> Resale Depreciation
+                        </span>
+                        <span className="text-[9px] font-mono text-muted-foreground">Semester Timeline</span>
+                      </div>
+                      {(() => {
+                        const td = priceSuggestion.trendData || [];
+                        if (td.length < 2) return null;
+                        const maxVal = Math.max(...td.map(d => d.value));
+                        const H = 60, W = 280, pad = 10;
+                        const xStep = (W - pad * 2) / (td.length - 1);
+                        const getY = (v) => H - pad - ((v / maxVal) * (H - pad * 2));
+                        const pts = td.map((d, i) => ({ x: pad + i * xStep, y: getY(d.value), ...d }));
+                        const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+                        const areaD = pathD + ` L ${pts[pts.length-1].x.toFixed(1)} ${H} L ${pts[0].x.toFixed(1)} ${H} Z`;
+                        return (
+                          <div>
+                            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none">
+                              <defs>
+                                <linearGradient id="trendAreaG" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                                </linearGradient>
+                              </defs>
+                              <path d={areaD} fill="url(#trendAreaG)" />
+                              <path d={pathD} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              {pts.map((p, i) => (
+                                <circle key={i} cx={p.x} cy={p.y} r="3.5"
+                                  fill={i === 0 ? '#3b82f6' : i === pts.length-1 ? '#10b981' : '#6366f1'}
+                                  stroke="white" strokeWidth="1.5"
+                                />
+                              ))}
+                            </svg>
+                            <div className="flex justify-between mt-1">
+                              {pts.map((p, i) => (
+                                <div key={i} className="text-center">
+                                  <p className="text-[9px] font-black text-foreground">₹{(p.value/1000).toFixed(1)}k</p>
+                                  <p className="text-[8px] text-muted-foreground">{p.label}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendation chip */}
+                {priceSuggestion.recommendation && (
+                  <div className="pt-3 border-t border-border/40">
+                    <span className="text-xs font-semibold text-foreground bg-primary/5 border border-primary/15 rounded-xl px-3 py-2 block">
+                      {priceSuggestion.recommendation}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Info className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{priceSuggestion.message}</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
           {/* Description */}
           <div>
             <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Description</label>
@@ -470,13 +609,15 @@ export default function SellItemPage() {
             
             <div>
               <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Condition</label>
-              <select 
+              <select
                 value={formData.condition}
                 onChange={(e) => setFormData({...formData, condition: e.target.value})}
                 className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
               >
-                <option value="used">Used</option>
-                <option value="new">Brand New</option>
+                <option value="new">🌟 Brand New (Sealed)</option>
+                <option value="like-new">✨ Like New (Barely Used)</option>
+                <option value="good">👍 Good (Normal Wear)</option>
+                <option value="worn">🔧 Worn (Visible Use)</option>
               </select>
             </div>
 
@@ -490,6 +631,36 @@ export default function SellItemPage() {
               />
             </div>
           </div>
+
+          {/* Usage Duration Picker */}
+          {formData.listingType !== 'lost' && formData.listingType !== 'emergency' && (
+            <div>
+              <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                How Long Have You Used It? <span className="text-primary font-mono text-[10px] ml-1">Affects AI Pricing ↑</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { val: '<3m', label: '< 3 Months', icon: '🆕' },
+                  { val: '3-6m', label: '3–6 Months', icon: '🟢' },
+                  { val: '6-12m', label: '6–12 Months', icon: '🟡' },
+                  { val: '1y+', label: '1+ Year', icon: '🔴' },
+                ].map(opt => (
+                  <button
+                    key={opt.val} type="button"
+                    onClick={() => setFormData(p => ({ ...p, usageDuration: opt.val }))}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border text-center transition-all duration-150 cursor-pointer ${
+                      formData.usageDuration === opt.val
+                        ? 'bg-primary/10 border-primary text-primary shadow-[0_0_12px_rgba(59,130,246,0.2)]'
+                        : 'bg-muted/30 border-border/60 text-muted-foreground hover:border-primary/30'
+                    }`}
+                  >
+                    <span className="text-lg">{opt.icon}</span>
+                    <span className="text-[10px] font-bold leading-tight">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Rent and Auction Details */}
           {formData.listingType === 'rent' && (
@@ -563,41 +734,7 @@ export default function SellItemPage() {
             </div>
           )}
 
-          {/* Student Delivery Option */}
-          <div className="border border-border p-5 rounded-2xl bg-muted/10 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-start gap-2">
-                <Truck className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-bold text-sm">Student Delivery System</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Toggle if you are willing to deliver this item inside the campus</p>
-                </div>
-              </div>
-              <input 
-                type="checkbox"
-                checked={formData.canDeliver}
-                onChange={(e) => setFormData({ ...formData, canDeliver: e.target.checked })}
-                className="w-5 h-5 rounded border-border text-primary focus:ring-primary cursor-pointer"
-              />
-            </div>
 
-            {formData.canDeliver && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="pt-3 border-t border-border"
-              >
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Campus Delivery Service Charge (₹)</label>
-                <input 
-                  type="number"
-                  value={formData.deliveryFee}
-                  onChange={(e) => setFormData({...formData, deliveryFee: e.target.value})}
-                  className="w-full px-4 py-2 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-semibold"
-                  placeholder="e.g. 50 (Keep it low for quick orders)"
-                />
-              </motion.div>
-            )}
-          </div>
 
           {/* Urgent Exit Listing Toggle */}
           <div className="flex items-center justify-between p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">

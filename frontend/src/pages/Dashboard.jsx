@@ -238,6 +238,60 @@ export default function Dashboard() {
 
   const firstName = user.name?.split(' ')[0] || 'there';
 
+  // Dynamic Time-Based Greeting System — Real-time updates every minute
+  const buildGreetingData = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const name = firstName;
+    const minuteSeed = Math.floor(minutes / 10); // changes every 10 mins for variety
+
+    const morning = [
+      { title: `Good Morning, ${name} ☀️`, subtitle: "Morning has potential — what can you flip today? ☕", mood: "Early riser · Ready for campus hustle" },
+      { title: `Rise & Shine, ${name} 🌞`, subtitle: "Dorm life starts here. Quick deals move fast! 🏃", mood: "Morning energy · Marketplace is live" },
+      { title: `Wakey Wakey, ${name} 🥐`, subtitle: "Before lectures: check what's being sold near you! 📦", mood: "Caffeinated · Scanning hostel listings" },
+    ];
+    const afternoon = [
+      { title: `Good Afternoon, ${name} 🌤️`, subtitle: "Midday marketplace check — fresh listings since morning 🔥", mood: "Mid-campus grind · Deals cooling down fast" },
+      { title: `Afternoon slump, ${name}? 😪`, subtitle: "Some hostel deals are a perfect pick-me-up 🛒", mood: "Post-lunch scroll · Finding hidden gems" },
+      { title: `Hey there, ${name} ✌️`, subtitle: "Afternoon is peak trade hours. Check the Auction Terminal 🎯", mood: "Prime trade hours · Campus is buzzing" },
+    ];
+    const evening = [
+      { title: `Good Evening, ${name} 🌆`, subtitle: "Post-class essentials? HostelX has you covered tonight 🌇", mood: "Evening hustle · Dorm life picks up" },
+      { title: `Dorm time, ${name} 🍜`, subtitle: "Ready for hostel chaos? Score some room essentials 🏠", mood: "Dinner hour · Hostel buzz is real" },
+      { title: `Golden hour, ${name} 🌅`, subtitle: "Buy, sell, or rent before the night rush begins! ✨", mood: "Evening trader · Best time to list" },
+    ];
+    const night = [
+      { title: `Still awake, ${name}? 🦉`, subtitle: "Late night marketplace activity is at its peak 🌙", mood: "Night owl · Marketplace never sleeps" },
+      { title: `Night owl, ${name} 🌌`, subtitle: "Midnight scrolling? Some great deals surface after 11 PM 🌠", mood: "Cramming + Trading · Sleep is optional" },
+      { title: `Late night grind, ${name} 🕯️`, subtitle: "Hostel trading knows no bedtime. Let's get to it 💪", mood: "2 AM deal hunter · Eyes wide open" },
+    ];
+
+    let pool;
+    if (hours >= 5 && hours < 12) pool = morning;
+    else if (hours >= 12 && hours < 17) pool = afternoon;
+    else if (hours >= 17 && hours < 22) pool = evening;
+    else pool = night;
+
+    return pool[minuteSeed % pool.length];
+  };
+
+  const [greetingData, setGreetingData] = useState(buildGreetingData);
+  const [liveTime, setLiveTime] = useState(() => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  });
+
+  useEffect(() => {
+    const tick = () => {
+      setGreetingData(buildGreetingData());
+      const now = new Date();
+      setLiveTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }));
+    };
+    const interval = setInterval(tick, 60000);
+    return () => clearInterval(interval);
+  }, [firstName]);
+
   const menuItems = [
     {
       label: 'Buy Items',
@@ -337,25 +391,46 @@ export default function Dashboard() {
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         
-        {/* Welcome greeting */}
+        {/* Welcome greeting with real-time animated transitions */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <p className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">Dormitory Hub</p>
-            <h1 className="text-4xl font-black tracking-tight mt-1">
-              Welcome, <span className="bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">{firstName}!</span> 👋
-            </h1>
+            <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              {greetingData.mood}
+            </p>
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={greetingData.title}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="text-3xl sm:text-4xl font-black tracking-tight mt-1 text-foreground"
+              >
+                {greetingData.title}
+              </motion.h1>
+            </AnimatePresence>
+            <p className="text-xs text-muted-foreground mt-1 max-w-lg font-medium leading-relaxed">
+              {greetingData.subtitle}
+            </p>
           </div>
 
-          {/* Quick Stats Pill */}
-          <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-2xl shadow-sm self-start sm:self-auto">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <p className="text-xs font-bold text-muted-foreground">
-              GPS Enabled: <span className="text-foreground">{user.hostel}</span>
-            </p>
+          {/* Quick Stats Pill with live time */}
+          <div className="flex flex-col items-end gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-2xl shadow-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <p className="text-xs font-bold text-muted-foreground">
+                GPS Enabled: <span className="text-foreground">{user.hostel}</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground bg-muted/40 border border-border/60 px-3 py-1 rounded-xl">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse"></span>
+              {liveTime}
+            </div>
           </div>
         </motion.div>
 
@@ -468,7 +543,7 @@ export default function Dashboard() {
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-105 transition">
                 <Gavel className="w-5.5 h-5.5" />
               </div>
-              <Link to="/marketplace?tab=auctions" className="text-xs text-primary font-bold hover:underline">View</Link>
+              <Link to="/auctions" className="text-xs text-primary font-bold hover:underline">View</Link>
             </div>
             <div className="mt-4">
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Bids & Auctions Activity</p>
@@ -478,7 +553,10 @@ export default function Dashboard() {
           </div>
 
           {/* Location radius check card */}
-          <div className="bg-card/50 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-teal-500/20 transition-all duration-300">
+          <div 
+            onClick={() => handleNavigateWithLocation('/nearby')}
+            className="bg-card/50 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-teal-500/20 cursor-pointer hover:bg-teal-500/[0.02] transition-all duration-300"
+          >
             <div className="flex justify-between items-start">
               <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-105 transition">
                 <MapPin className="w-5.5 h-5.5" />
@@ -543,10 +621,10 @@ export default function Dashboard() {
             <span className="text-[10px] text-muted-foreground font-semibold px-2 py-1 bg-secondary rounded-lg border border-border">MODERN FEATURES</span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
             {/* Shortcut 1: Room Essentials (Roommate Marketplace) */}
             <div 
-              onClick={() => handleNavigateWithLocation('/marketplace?category=Room%20Essentials')}
+              onClick={() => handleNavigateWithLocation('/roommate-essentials')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-110 transition">
@@ -560,7 +638,7 @@ export default function Dashboard() {
 
             {/* Shortcut 2: Lost & Found Section */}
             <div 
-              onClick={() => handleNavigateWithLocation('/marketplace?tab=lost-found')}
+              onClick={() => handleNavigateWithLocation('/lost-found')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl group-hover:scale-110 transition">
@@ -574,7 +652,7 @@ export default function Dashboard() {
 
             {/* Shortcut 3: Semester Exit Sale */}
             <div 
-              onClick={() => handleNavigateWithLocation('/marketplace?tag=exit-sale')}
+              onClick={() => handleNavigateWithLocation('/exit-sale')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-red-500/10 text-red-500 rounded-xl group-hover:scale-110 transition">
@@ -588,7 +666,7 @@ export default function Dashboard() {
 
             {/* Shortcut 4: Temporary Item Rentals */}
             <div 
-              onClick={() => handleNavigateWithLocation('/marketplace?tab=rentals')}
+              onClick={() => handleNavigateWithLocation('/rentals')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-110 transition">
@@ -602,7 +680,7 @@ export default function Dashboard() {
 
             {/* Shortcut 5: Auction / Bidding System */}
             <div 
-              onClick={() => handleNavigateWithLocation('/marketplace?tab=auctions')}
+              onClick={() => handleNavigateWithLocation('/auctions')}
               className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition">
@@ -613,37 +691,27 @@ export default function Dashboard() {
                 <p className="text-[9px] text-muted-foreground mt-0.5">Gaming, cycles bidding</p>
               </div>
             </div>
+
+            {/* Shortcut 6: Campus Fit Rental */}
+            <div 
+              onClick={() => navigate('/fashion')}
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[8px] font-black uppercase tracking-wider rounded-bl-lg">
+                New
+              </div>
+              <div className="p-3 bg-violet-500/10 text-violet-500 rounded-xl group-hover:scale-110 transition">
+                <Sparkles className="w-5 h-5 fill-violet-500/20" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground">Rent Your Vibe</h4>
+                <p className="text-[9px] text-muted-foreground mt-0.5">Rent clothes & sneakers</p>
+              </div>
+            </div>
           </div>
+
         </div>
 
-        {/* Student Delivery Network Logistics Center */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.99 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          onClick={() => handleNavigateWithLocation('/marketplace?delivery=true')}
-          className="relative overflow-hidden bg-card border border-border p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center gap-5 cursor-pointer hover:border-primary/30 transition-all duration-300 group"
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -z-10 group-hover:scale-125 transition-all"></div>
-          
-          <div className="p-4 bg-primary/10 text-primary rounded-2xl group-hover:scale-110 transition flex-shrink-0">
-            <Truck className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-1.5 text-center sm:text-left min-w-0 flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-              <h4 className="font-extrabold text-lg text-foreground">Student Campus Delivery Network</h4>
-              <span className="px-2.5 py-0.5 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-full uppercase self-center sm:self-auto">EARN MONEY</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Students nearby can earn pocket money by delivering items inside campus! Look for products with active delivery fees, or check <span className="font-bold text-primary">"Can Deliver"</span> when uploading your listings.
-            </p>
-          </div>
-
-          <button className="px-4 py-2 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl border border-border group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition flex-shrink-0 cursor-pointer active:scale-95">
-            Explore Delivery Jobs
-          </button>
-        </motion.div>
 
         {/* Standard Core Marketplace Actions Grid */}
         <div className="space-y-4">

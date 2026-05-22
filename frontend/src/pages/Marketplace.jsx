@@ -541,15 +541,8 @@ export default function Marketplace() {
                           </div>
 
                           {/* Smart proximity location bar */}
-                          <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-4">
+                          <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-4 gap-2">
                             {renderProximityTag(product)}
-                            
-                            {/* Delivery check */}
-                            {product.canDeliver && (
-                              <span className="text-[9px] bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded" title={`Can deliver inside campus for ₹${product.deliveryFee}`}>
-                                Delivery 📦
-                              </span>
-                            )}
                           </div>
                         </div>
 
