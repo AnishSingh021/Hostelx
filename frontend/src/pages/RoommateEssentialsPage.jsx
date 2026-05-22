@@ -44,6 +44,10 @@ export default function RoommateEssentialsPage() {
   const [splitItem, setSplitItem] = useState({ title: 'Induction Cooker', price: 1800 });
   const [roommatesCount, setRoommatesCount] = useState(3);
   const [splitName, setSplitName] = useState('');
+  const [splitRequests, setSplitRequests] = useState(() => {
+    const saved = localStorage.getItem('hostelx_split_requests');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
@@ -93,47 +97,78 @@ export default function RoommateEssentialsPage() {
     return categoryMatches && hostelMatches;
   });
 
-  // Bundle deals mock definition
-  const BUNDLE_DEALS = [
-    {
-      id: 'study-pack',
-      title: 'High-Scores Study Pack 📚',
-      desc: 'Get your desk set up for midterms with key utilities.',
-      items: ['Study Lamp', 'Extension Board', 'Table Fan'],
-      originalPrice: 1950,
-      bundlePrice: 1399,
-      badge: 'Bestseller',
-      accentColor: 'from-teal-500 to-emerald-500'
-    },
-    {
-      id: 'dorm-cozy',
-      title: 'Ultimate Dorm Sleep Pack 🛏️',
-      desc: 'Unpack and sleep straight away. Clean sheets and mattress.',
-      items: ['Mattress', 'Comfort Pillow', 'Bedsheet'],
-      originalPrice: 2800,
-      bundlePrice: 1899,
-      badge: 'High Value',
-      accentColor: 'from-indigo-500 to-violet-500'
-    },
-    {
-      id: 'kitchen-maggi',
-      title: 'Midnight Maggi Muncher Bundle 🍜',
-      desc: 'Cook and survive late nights without canteen orders.',
-      items: ['Induction Stove', 'Induction Cookware', 'Water Jug'],
-      originalPrice: 2400,
-      bundlePrice: 1699,
-      badge: 'Hot Seller',
-      accentColor: 'from-amber-500 to-rose-500'
-    }
-  ];
+  // Dynamic bundle deals computed from actual database products
+  const dynamicBundles = products
+    .filter(p => 
+      p.title.toLowerCase().includes('bundle') || 
+      p.title.toLowerCase().includes('pack') || 
+      p.description.toLowerCase().includes('bundle') || 
+      p.description.toLowerCase().includes('pack')
+    )
+    .map(p => {
+      const items = p.description.includes(',') 
+        ? p.description.split(',').map(s => s.trim()) 
+        : [p.title];
+      return {
+        id: p._id,
+        title: p.title,
+        desc: p.description,
+        items: items.slice(0, 3),
+        originalPrice: Math.round(p.price * 1.25),
+        bundlePrice: p.price,
+        badge: p.category || 'Dorm Bundle',
+        accentColor: p.price > 1500 ? 'from-indigo-500 to-violet-500' : 'from-teal-500 to-emerald-500',
+        productRef: p
+      };
+    });
 
   const handleBuyBundle = (bundle) => {
     setSelectedBundle(bundle);
   };
 
   const handleConfirmBundlePurchase = () => {
+    const bundleId = selectedBundle.id;
     setSelectedBundle(null);
-    triggerToast(`🎉 Bundle "${selectedBundle.title}" ordered successfully! Delivery is being grouped.`);
+    triggerToast(`🎉 Bundle reservation claim success! Redirecting to bundle inspector...`);
+    setTimeout(() => {
+      navigate(`/product/${bundleId}`);
+    }, 1500);
+  };
+
+  const handleCreateSplit = () => {
+    if (!splitName) return;
+    const newSplit = {
+      id: 'split-' + Date.now(),
+      title: splitItem.title,
+      creator: splitName,
+      price: splitItem.price,
+      roommatesCount: roommatesCount,
+      joined: 1, // creator joined by default
+      block: user?.hostel || 'A-Hall Block',
+      createdAt: new Date().toISOString()
+    };
+    const updated = [newSplit, ...splitRequests];
+    setSplitRequests(updated);
+    localStorage.setItem('hostelx_split_requests', JSON.stringify(updated));
+    triggerToast(`📢 Split purchase for "${splitItem.title}" created in ${user?.hostel || 'your block'}!`);
+    setSplitName('');
+  };
+
+  const handleJoinSplit = (splitId) => {
+    const updated = splitRequests.map(sr => {
+      if (sr.id === splitId) {
+        const nextJoined = sr.joined + 1;
+        if (nextJoined >= sr.roommatesCount) {
+          triggerToast(`🎉 Split complete! All ${sr.roommatesCount} stakes filled. You can now checkout!`);
+        } else {
+          triggerToast(`🎉 Joined shared purchase stake! Total split: ₹${Math.round(sr.price / sr.roommatesCount)} per person.`);
+        }
+        return { ...sr, joined: Math.min(nextJoined, sr.roommatesCount) };
+      }
+      return sr;
+    });
+    setSplitRequests(updated);
+    localStorage.setItem('hostelx_split_requests', JSON.stringify(updated));
   };
 
   const splitValue = Math.round(splitItem.price / roommatesCount);
@@ -226,50 +261,60 @@ export default function RoommateEssentialsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {BUNDLE_DEALS.map((bundle) => (
-              <div 
-                key={bundle.id}
-                className="bg-card border border-border rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl hover:border-teal-500/20 transition-all duration-300 group"
-              >
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${bundle.accentColor} opacity-5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500`} />
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="px-2.5 py-0.5 text-[9px] font-black uppercase bg-teal-500/10 text-teal-500 rounded-full border border-teal-500/20">
-                      {bundle.badge}
-                    </span>
-                    <div className="flex items-center text-xs gap-1.5 font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-lg border border-rose-500/15">
-                      <TrendingDown className="w-3.5 h-3.5" />
-                      Save {Math.round((1 - bundle.bundlePrice / bundle.originalPrice) * 100)}%
+            {dynamicBundles.length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-card/30 border border-border/80 rounded-[2.5rem] p-6 max-w-md mx-auto flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl mb-3">📦</div>
+                <h4 className="font-extrabold text-sm text-foreground">No active wing bundles yet</h4>
+                <p className="text-[11px] text-muted-foreground mt-1 max-w-xs leading-normal font-semibold">
+                  No active wing bundles listed in your campus zone yet. Combine listing items on the Sell page to offer package discounts!
+                </p>
+              </div>
+            ) : (
+              dynamicBundles.map((bundle) => (
+                <div 
+                  key={bundle.id}
+                  className="bg-card border border-border rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl hover:border-teal-500/20 transition-all duration-300 group"
+                >
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${bundle.accentColor} opacity-5 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500`} />
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="px-2.5 py-0.5 text-[9px] font-black uppercase bg-teal-500/10 text-teal-500 rounded-full border border-teal-500/20">
+                        {bundle.badge}
+                      </span>
+                      <div className="flex items-center text-xs gap-1.5 font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-lg border border-rose-500/15">
+                        <TrendingDown className="w-3.5 h-3.5" />
+                        Save {Math.round((1 - bundle.bundlePrice / bundle.originalPrice) * 100)}%
+                      </div>
+                    </div>
+                    <h4 className="font-black text-base text-foreground mb-2 leading-tight">{bundle.title}</h4>
+                    <p className="text-[11px] text-muted-foreground leading-normal mb-4 font-semibold">{bundle.desc}</p>
+                    
+                    {/* Items List */}
+                    <div className="space-y-1.5 mb-6">
+                      {bundle.items.map((it, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                          <Check className="w-4 h-4 text-emerald-500" />
+                          <span>{it}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <h4 className="font-black text-base text-foreground mb-2 leading-tight">{bundle.title}</h4>
-                  <p className="text-[11px] text-muted-foreground leading-normal mb-4 font-semibold">{bundle.desc}</p>
-                  
-                  {/* Items List */}
-                  <div className="space-y-1.5 mb-6">
-                    {bundle.items.map((it, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
-                        <Check className="w-4 h-4 text-emerald-500" />
-                        <span>{it}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="pt-4 border-t border-border flex items-center justify-between">
-                  <div>
-                    <span className="text-[9px] text-muted-foreground line-through block font-bold">₹{bundle.originalPrice}</span>
-                    <span className="text-xl font-black text-foreground">₹{bundle.bundlePrice}</span>
+                  <div className="pt-4 border-t border-border flex items-center justify-between">
+                    <div>
+                      <span className="text-[9px] text-muted-foreground line-through block font-bold">₹{bundle.originalPrice}</span>
+                      <span className="text-xl font-black text-foreground">₹{bundle.bundlePrice}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleBuyBundle(bundle)}
+                      className="px-4.5 py-2.5 bg-foreground text-background text-xs font-black rounded-xl hover:opacity-90 active:scale-95 transition cursor-pointer"
+                    >
+                      Buy Pack
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => handleBuyBundle(bundle)}
-                    className="px-4.5 py-2.5 bg-foreground text-background text-xs font-black rounded-xl hover:opacity-90 active:scale-95 transition cursor-pointer"
-                  >
-                    Buy Pack
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -346,10 +391,7 @@ export default function RoommateEssentialsPage() {
                 <span className="text-xl font-black text-teal-500">₹{splitValue}</span>
               </div>
               <button 
-                onClick={() => {
-                  triggerToast(`📢 Split buying request for "${splitItem.title}" published! Shared payment codes dispatched.`);
-                  setSplitName('');
-                }}
+                onClick={handleCreateSplit}
                 disabled={!splitName}
                 className="px-4.5 py-2.5 bg-teal-500 text-white text-xs font-black rounded-xl hover:bg-teal-600 active:scale-95 disabled:opacity-50 transition cursor-pointer"
               >
@@ -369,44 +411,42 @@ export default function RoommateEssentialsPage() {
                 Roommate split requests let students purchase high-value appliances by sharing stakes. Ownership stakes can be resold back when leaving college!
               </p>
 
-              <div className="space-y-3.5 pt-2">
-                <div className="bg-muted/30 border border-border p-3.5 rounded-2xl flex justify-between items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    <div>
-                      <h5 className="text-xs font-black text-foreground">Wing 402 split: Induction stove</h5>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Created by Sneha P. · B-Hall Block</p>
-                    </div>
+              <div className="space-y-3.5 pt-2 max-h-[220px] overflow-y-auto pr-1">
+                {splitRequests.length === 0 ? (
+                  <div className="text-center py-6 bg-muted/20 border border-dashed border-border rounded-2xl flex flex-col items-center">
+                    <p className="text-[11px] text-muted-foreground font-semibold">No active split purchase coordinates listed in your block.</p>
+                    <p className="text-[9px] text-muted-foreground/85 mt-0.5">Use the splitter to pool stakes with roommates!</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-black text-foreground">3 / 4 Joined</span>
-                    <button 
-                      onClick={() => triggerToast("🎉 Joined Sneha's shared purchase stake! Total split recalculating.")}
-                      className="block text-[10px] font-bold text-teal-500 hover:underline mt-0.5 cursor-pointer"
-                    >
-                      Join Split (₹450)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-muted/30 border border-border p-3.5 rounded-2xl flex justify-between items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                    <div>
-                      <h5 className="text-xs font-black text-foreground">Room 211 split: Tower Air Cooler</h5>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Created by Dev Patel · Vyasa Block</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-black text-foreground">2 / 3 Joined</span>
-                    <button 
-                      onClick={() => triggerToast("🎉 Joined Dev's shared purchase stake! Total split recalculating.")}
-                      className="block text-[10px] font-bold text-teal-500 hover:underline mt-0.5 cursor-pointer"
-                    >
-                      Join Split (₹1000)
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  splitRequests.map(sr => {
+                    const splitVal = Math.round(sr.price / sr.roommatesCount);
+                    const isCompleted = sr.joined >= sr.roommatesCount;
+                    return (
+                      <div key={sr.id} className="bg-muted/30 border border-border p-3.5 rounded-2xl flex justify-between items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
+                          <div>
+                            <h5 className="text-xs font-black text-foreground">{sr.creator}: {sr.title}</h5>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Created in {sr.block}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-foreground">{sr.joined} / {sr.roommatesCount} Stake{sr.joined > 1 ? 's' : ''}</span>
+                          {isCompleted ? (
+                            <span className="block text-[10px] font-bold text-emerald-500 mt-0.5">Stakes Complete! ✅</span>
+                          ) : (
+                            <button 
+                              onClick={() => handleJoinSplit(sr.id)}
+                              className="block text-[10px] font-bold text-teal-500 hover:underline mt-0.5 cursor-pointer"
+                            >
+                              Join Split (₹{splitVal})
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 

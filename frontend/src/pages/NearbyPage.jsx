@@ -12,25 +12,50 @@ import {
   Navigation,
   ArrowUpDown,
   Clock,
-  Heart
+  Heart,
+  AlertCircle,
+  HelpCircle,
+  TrendingUp,
+  Award,
+  Building
 } from 'lucide-react';
 
-// Hardcoded campus hostel coordinates (mocked relative to a BITS campus center)
-const HOSTEL_LOCATIONS = {
-  "Tagore Bhavan": { lat: 28.3651, lng: 75.5875, color: "#ec4899", desc: "North Block" },
-  "Gargi Hall": { lat: 28.3630, lng: 75.5855, color: "#3b82f6", desc: "West Girls Block" },
-  "Sarojini House": { lat: 28.3622, lng: 75.5862, color: "#8b5cf6", desc: "Central Girls Block" },
-  "Nehru Hall": { lat: 28.3662, lng: 75.5888, color: "#10b981", desc: "Northeast Boys Block" },
-  "Budh Bhavan": { lat: 28.3615, lng: 75.5895, color: "#f59e0b", desc: "Southeast Boys Block" },
-  "Meera Hall": { lat: 28.3635, lng: 75.5840, color: "#ec4899", desc: "Northwest Girls Block" },
-  "Krishna Bhavan": { lat: 28.3658, lng: 75.5868, color: "#06b6d4", desc: "Central Boys Block" },
-  "Vyasa Hostel": { lat: 28.3670, lng: 75.5898, color: "#f43f5e", desc: "Far North Boys Block" },
-  "Ramanujan Hostel": { lat: 28.3645, lng: 75.5890, color: "#14b8a6", desc: "East Boys Block" }
-};
-
-// Standard campus coordinates default fallback (e.g. BITS Central Library / Clock Tower)
+// Default campus center coordinates (e.g. BITS Pilani or similar setup)
 const DEFAULT_CAMPUS_LAT = 28.3639;
 const DEFAULT_CAMPUS_LNG = 75.5870;
+
+// Haversine distance calculator (returns meters)
+function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth's radius in meters
+  const phi1 = lat1 * Math.PI / 180;
+  const phi2 = lat2 * Math.PI / 180;
+  const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+  const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // distance in meters
+}
+
+// Generate deterministic lat/lng offsets based on hostel name if product has no coordinates
+function getDeterministicCoords(hostelName, collegeName, baseLat, baseLng) {
+  if (!hostelName) return { lat: baseLat, lng: baseLng };
+  let hash = 0;
+  const str = hostelName + (collegeName || '');
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // Safe bounded offset (within ~500m of the base)
+  const latOffset = ((hash & 0xFF) / 255 - 0.5) * 0.005;
+  const lngOffset = (((hash >> 8) & 0xFF) / 255 - 0.5) * 0.005;
+  return {
+    lat: baseLat + latOffset,
+    lng: baseLng + lngOffset
+  };
+}
 
 export default function NearbyPage() {
   const { user } = useAuth();
@@ -38,25 +63,24 @@ export default function NearbyPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedHostel, setSelectedHostel] = useState('All');
-  const [sortBy, setSortBy] = useState('nearest'); // 'nearest', 'newest', 'cheapest'
-  const [maxDistance, setMaxDistance] = useState(600); // meters
+  const [selectedCollege, setSelectedCollege] = useState('All');
+  const [sortBy, setSortBy] = useState('nearest'); // 'nearest', 'same-hostel', 'same-university', 'newest'
+  const [maxDistance, setMaxDistance] = useState(1000); // in meters
   
-  // Coordinate simulator coordinates state
+  // Real Geolocation state
   const [userCoords, setUserCoords] = useState({
-    lat: parseFloat(localStorage.getItem('userLat')) || DEFAULT_CAMPUS_LAT,
-    lng: parseFloat(localStorage.getItem('userLng')) || DEFAULT_CAMPUS_LNG
+    lat: DEFAULT_CAMPUS_LAT,
+    lng: DEFAULT_CAMPUS_LNG
   });
-  const [activeGPS, setActiveGPS] = useState(!!localStorage.getItem('userLat'));
-  const [hoveredHostelOnMap, setHoveredHostelOnMap] = useState(null);
+  const [gpsStatus, setGpsStatus] = useState('prompt'); // 'prompt', 'watching', 'denied', 'unsupported'
+  const [gpsError, setGpsError] = useState(null);
 
-  // Sync products list
+  // Sync products list from backend
   const fetchProducts = async () => {
     try {
       const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
       if (response.ok) {
         const data = await response.json();
-        // Remove auctions from here if they shouldn't show, but usually standard products show up. 
-        // We will include active listings and map them.
         setProducts(data);
       }
     } catch (error) {
@@ -70,441 +94,330 @@ export default function NearbyPage() {
     fetchProducts();
   }, []);
 
-  // Update coordinate storage when manually changed or simulated
-  const simulateLocation = (hostelName) => {
-    if (HOSTEL_LOCATIONS[hostelName]) {
-      const { lat, lng } = HOSTEL_LOCATIONS[hostelName];
-      localStorage.setItem('userLat', lat.toString());
-      localStorage.setItem('userLng', lng.toString());
-      setUserCoords({ lat, lng });
-      setActiveGPS(true);
-    } else {
-      localStorage.setItem('userLat', DEFAULT_CAMPUS_LAT.toString());
-      localStorage.setItem('userLng', DEFAULT_CAMPUS_LNG.toString());
-      setUserCoords({ lat: DEFAULT_CAMPUS_LAT, lng: DEFAULT_CAMPUS_LNG });
-      setActiveGPS(true);
+  // Request GPS and track location
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setGpsStatus('unsupported');
+      return;
     }
+
+    setGpsStatus('prompt');
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setUserCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setGpsStatus('watching');
+        setGpsError(null);
+      },
+      (error) => {
+        console.warn("GPS watch error:", error);
+        setGpsError(error.message);
+        setGpsStatus('denied');
+        // If denied, fallback coordinates from user's hostel or default
+        if (user?.hostel) {
+          const fallback = getDeterministicCoords(user.hostel, user.college, DEFAULT_CAMPUS_LAT, DEFAULT_CAMPUS_LNG);
+          setUserCoords(fallback);
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [user]);
+
+  // Request manual permission
+  const requestGPSPermission = () => {
+    if (!navigator.geolocation) return;
+    setGpsStatus('prompt');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setGpsStatus('watching');
+        setGpsError(null);
+      },
+      (error) => {
+        setGpsError(error.message);
+        setGpsStatus('denied');
+      }
+    );
   };
 
-  const clearLocationSimulation = () => {
-    localStorage.removeItem('userLat');
-    localStorage.removeItem('userLng');
-    setUserCoords({ lat: DEFAULT_CAMPUS_LAT, lng: DEFAULT_CAMPUS_LNG });
-    setActiveGPS(false);
-  };
-
-  // Helper Euclidean Distance Calculator (Meters)
-  const calculateDistance = (productCoords, userC) => {
-    if (!productCoords || productCoords.length !== 2) {
-      // Fallback: assign a pseudo-random coordinate based on the hostel to make it visually real
-      return 150; 
-    }
-    const [pLng, pLat] = productCoords;
-    // Standard rough conversion: 1 degree latitude ~ 111,000 meters
-    const dist = Math.sqrt(Math.pow(pLat - userC.lat, 2) + Math.pow(pLng - userC.lng, 2)) * 111000;
-    return Math.round(dist);
-  };
-
-  // Safe Hostel Assignment
+  // Safe Hostel & College Extraction helper
   const getProductHostel = (item) => {
-    return item.hostel || item.seller?.hostel || "Tagore Bhavan";
+    return item.hostel || item.seller?.hostel || "Main Dorm";
   };
 
-  // Get item counts per hostel for Map Visualization
-  const getHostelItemCount = (hostelName) => {
-    return products.filter(p => getProductHostel(p).toLowerCase() === hostelName.toLowerCase()).length;
+  const getProductCollege = (item) => {
+    return item.seller?.college || "Global University";
   };
 
-  // Get distance descriptions dynamically
-  const getDistanceBadge = (dist, itemHostel) => {
-    const isSameHostel = user?.hostel && itemHostel?.toLowerCase() === user.hostel.toLowerCase();
-    
-    if (isSameHostel) {
-      return (
-        <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-emerald-500/20 flex items-center gap-1 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-          Same Hostel 🏠
-        </span>
-      );
-    }
-    if (dist < 100) {
-      return (
-        <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-cyan-500/20 flex items-center gap-0.5">
-          <MapPin className="w-3 h-3 text-cyan-400" />
-          &lt; 1 min away (Immediate) 🚶‍♂️
-        </span>
-      );
-    } else if (dist < 300) {
-      return (
-        <span className="bg-blue-500/10 text-blue-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-blue-500/20 flex items-center gap-0.5">
-          <MapPin className="w-3 h-3 text-blue-400" />
-          3 mins away (Same Zone) 🚶‍♂️
-        </span>
-      );
-    } else if (dist < 500) {
-      return (
-        <span className="bg-amber-500/10 text-amber-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-amber-500/20 flex items-center gap-0.5">
-          <MapPin className="w-3 h-3 text-amber-400" />
-          5 mins away (Outer Block) 🚶‍♂️
-        </span>
-      );
-    } else {
-      return (
-        <span className="bg-zinc-800 text-zinc-400 text-[10px] font-black px-2 py-0.5 rounded-lg border border-zinc-700/50 flex items-center gap-0.5">
-          <MapPin className="w-3 h-3 text-zinc-500" />
-          {Math.round(dist)}m away 🚶‍♂️
-        </span>
-      );
-    }
-  };
+  // Discover hostels dynamically from loaded listings & current user
+  const dynamicHostels = [...new Set([
+    ...(user?.hostel ? [user.hostel] : []),
+    ...products.map(getProductHostel).filter(Boolean)
+  ])];
 
-  // Filter & Sort core logic
+  // Discover colleges dynamically
+  const dynamicColleges = [...new Set([
+    ...(user?.college ? [user.college] : []),
+    ...products.map(getProductCollege).filter(Boolean)
+  ])];
+
+  // Process and sort products based on distance and metadata
   const processedProducts = products
     .map(item => {
-      // Calculate distance relative to current active userCoords
-      let coords = item.location?.coordinates;
-      if (!coords || coords.length !== 2) {
-        // If product coordinates are missing, fetch its hostel's default coordinate
+      let lat = DEFAULT_CAMPUS_LAT;
+      let lng = DEFAULT_CAMPUS_LNG;
+      const coords = item.location?.coordinates;
+
+      if (coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0)) {
+        lng = coords[0];
+        lat = coords[1];
+      } else {
+        // Fallback to deterministic coordinates for beautiful representation
         const itemHostel = getProductHostel(item);
-        const match = Object.keys(HOSTEL_LOCATIONS).find(k => k.toLowerCase() === itemHostel.toLowerCase());
-        if (match) {
-          coords = [HOSTEL_LOCATIONS[match].lng, HOSTEL_LOCATIONS[match].lat];
-        } else {
-          coords = [DEFAULT_CAMPUS_LNG, DEFAULT_CAMPUS_LAT];
-        }
+        const itemCollege = getProductCollege(item);
+        const fallback = getDeterministicCoords(itemHostel, itemCollege, DEFAULT_CAMPUS_LAT, DEFAULT_CAMPUS_LNG);
+        lat = fallback.lat;
+        lng = fallback.lng;
       }
-      const distance = calculateDistance(coords, userCoords);
-      return { ...item, calculatedDistance: distance, mappedCoords: coords };
+
+      const distance = calculateHaversineDistance(userCoords.lat, userCoords.lng, lat, lng);
+      return { 
+        ...item, 
+        calculatedDistance: distance,
+        lat,
+        lng
+      };
     })
     .filter(item => {
-      // Search matching
+      // Search matches title / description
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             item.description.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
 
-      // Hostel selection
+      // Filter by dynamic hostel
       if (selectedHostel !== 'All') {
         const itemHostel = getProductHostel(item);
         if (itemHostel.toLowerCase() !== selectedHostel.toLowerCase()) return false;
       }
 
-      // Distance limit
+      // Filter by dynamic college
+      if (selectedCollege !== 'All') {
+        const itemCollege = getProductCollege(item);
+        if (itemCollege.toLowerCase() !== selectedCollege.toLowerCase()) return false;
+      }
+
+      // Filter by walking radius
       return item.calculatedDistance <= maxDistance;
     })
     .sort((a, b) => {
       if (sortBy === 'nearest') {
         return a.calculatedDistance - b.calculatedDistance;
       }
+      if (sortBy === 'same-hostel') {
+        const aSame = user?.hostel && getProductHostel(a).toLowerCase() === user.hostel.toLowerCase() ? 1 : 0;
+        const bSame = user?.hostel && getProductHostel(b).toLowerCase() === user.hostel.toLowerCase() ? 1 : 0;
+        if (aSame !== bSame) return bSame - aSame;
+        return a.calculatedDistance - b.calculatedDistance;
+      }
+      if (sortBy === 'same-university') {
+        const aSame = user?.college && getProductCollege(a).toLowerCase() === user.college.toLowerCase() ? 1 : 0;
+        const bSame = user?.college && getProductCollege(b).toLowerCase() === user.college.toLowerCase() ? 1 : 0;
+        if (aSame !== bSame) return bSame - aSame;
+        return a.calculatedDistance - b.calculatedDistance;
+      }
       if (sortBy === 'newest') {
         return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      if (sortBy === 'cheapest') {
-        const aPrice = a.isAuction ? (a.bids?.length > 0 ? Math.max(...a.bids.map(b => b.amount)) : a.startingBid) : a.price;
-        const bPrice = b.isAuction ? (b.bids?.length > 0 ? Math.max(...b.bids.map(b => b.amount)) : b.startingBid) : b.price;
-        return aPrice - bPrice;
       }
       return 0;
     });
 
-  // Calculate coordinates mapping into SVG Canvas view box (e.g. 500x500)
-  // Bounding box of coordinates:
-  const latMin = 28.3610;
-  const latMax = 28.3675;
-  const lngMin = 75.5835;
-  const lngMax = 75.5905;
-
-  const getCanvasCoords = (lat, lng) => {
-    // Map lat to Y (inverted since Y=0 is top in SVG)
-    const y = 400 - ((lat - latMin) / (latMax - latMin)) * 300;
-    // Map lng to X
-    const x = 50 + ((lng - lngMin) / (lngMax - lngMin)) * 400;
-    return { x, y };
+  // Calculate formatted walk time estimate
+  const formatWalkTime = (meters) => {
+    if (meters < 50) return "Less than 1 min walk";
+    // Avg walking speed ~ 80 meters per minute
+    const mins = Math.max(1, Math.round(meters / 80));
+    return `${mins} min walk`;
   };
 
-  const userSvgPos = getCanvasCoords(userCoords.lat, userCoords.lng);
-
   return (
-    <div className="min-h-screen bg-[#07090e] text-zinc-100 flex flex-col relative pb-10">
-      {/* Background Radial Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
-
-      {/* Header bar */}
-      <header className="max-w-7xl w-full mx-auto px-4 py-6 flex items-center justify-between border-b border-zinc-900">
+    <div className="min-h-screen bg-background text-foreground flex flex-col relative pb-10">
+      
+      {/* Header bar consistent with Dashboard */}
+      <header className="max-w-7xl w-full mx-auto px-6 py-5 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center gap-4">
           <Link 
             to="/dashboard" 
-            className="p-2.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-2xl transition cursor-pointer text-zinc-400 hover:text-white"
+            className="p-2 bg-muted hover:bg-secondary border border-border rounded-xl transition cursor-pointer text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
-              <Compass className="w-5.5 h-5.5 text-blue-400 animate-spin-slow" />
-              Smart Nearby Radar
+            <h1 className="text-xl font-black tracking-tight flex items-center gap-2 text-foreground">
+              <Compass className="w-5.5 h-5.5 text-primary animate-spin-slow" />
+              Smart Nearby Listings
             </h1>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
-              Instantly find and sort campus deals by walking distance
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+              Live GPS Geolocation Discovery Feed
             </p>
           </div>
         </div>
 
-        {/* Global Live Location Sync Badge */}
+        {/* GPS Live Tracking Badge */}
         <div className="flex items-center gap-2">
-          {activeGPS ? (
-            <span className="flex items-center gap-2 text-xs font-black bg-emerald-500/10 text-emerald-400 px-3.5 py-1.5 rounded-2xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              GPS MATCH: {user?.hostel || 'Simulated'}
+          {gpsStatus === 'watching' ? (
+            <span className="flex items-center gap-2 text-xs font-black bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 px-3.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 shadow-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              GPS ACTIVE: {userCoords.lat.toFixed(4)}, {userCoords.lng.toFixed(4)}
             </span>
+          ) : gpsStatus === 'denied' ? (
+            <button
+              onClick={requestGPSPermission}
+              className="flex items-center gap-1.5 text-xs font-black bg-amber-100 text-amber-700 px-3.5 py-1.5 rounded-xl border border-amber-200 hover:bg-amber-200 transition cursor-pointer"
+            >
+              <AlertCircle className="w-4 h-4 text-amber-600 animate-pulse" />
+              GPS DENIED: Enable Location
+            </button>
           ) : (
-            <span className="flex items-center gap-2 text-xs font-black bg-zinc-900 text-zinc-500 px-3.5 py-1.5 rounded-2xl border border-zinc-800">
-              GPS OFFLINE (DEFAULT)
+            <span className="flex items-center gap-2 text-xs font-black bg-muted text-muted-foreground px-3.5 py-1.5 rounded-xl border border-border">
+              GPS STATUS: PENDING
             </span>
           )}
         </div>
       </header>
 
       {/* Main Grid content */}
-      <main className="max-w-7xl w-full mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 flex-1">
+      <main className="max-w-7xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8 flex-1">
         
-        {/* Left Side: Campus Interactive Vector Map HUD */}
-        <div className="w-full lg:w-96 flex-shrink-0 space-y-6">
+        {/* Left Side: GPS controls & Dynamic filters */}
+        <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
           
-          <div className="bg-[#0b0e16] border border-zinc-900 rounded-[2rem] p-6 shadow-2xl space-y-6 relative overflow-hidden">
-            {/* Glowing top line */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-purple-500"></div>
-
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-xs sm:text-sm text-zinc-200">Campus Vector Radar</h3>
-                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider">Hover node to inspect stock</span>
-              </div>
-              
-              {activeGPS && (
-                <button
-                  onClick={clearLocationSimulation}
-                  className="text-[9px] font-black text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-lg hover:bg-rose-500/20 transition cursor-pointer"
-                >
-                  Reset GPS
-                </button>
-              )}
-            </div>
-
-            {/* SVG Visual Vector Canvas Map */}
-            <div className="relative aspect-square w-full rounded-2xl border border-zinc-900 bg-[#04060b] overflow-hidden select-none">
-              {/* Polar circular coordinates grids for radar look */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[85%] h-[85%] rounded-full border border-zinc-900/50 border-dashed" />
-                <div className="w-[60%] h-[60%] rounded-full border border-zinc-900/40 border-dashed" />
-                <div className="w-[35%] h-[35%] rounded-full border border-zinc-900/30 border-dashed" />
-                
-                {/* Diagonal radar crosshairs */}
-                <div className="absolute w-[95%] h-[1px] bg-zinc-900/20" />
-                <div className="absolute h-[95%] w-[1px] bg-zinc-900/20" />
-              </div>
-
-              {/* Glowing radar sweeping line */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-500/2 to-transparent origin-center animate-spin-slow pointer-events-none" style={{ animationDuration: '8s' }} />
-
-              {/* Main SVG Graphic */}
-              <svg className="w-full h-full relative" viewBox="0 0 500 400">
-                {/* Connection pathways */}
-                <path 
-                  d="M 100 150 L 220 220 M 220 220 L 320 250 M 320 250 L 400 120 M 220 220 L 250 80 M 250 80 L 100 150" 
-                  stroke="#1e293b" 
-                  strokeWidth="1.5" 
-                  strokeDasharray="4 4" 
-                  fill="none" 
-                />
-
-                {/* Hostels pins nodes */}
-                {Object.entries(HOSTEL_LOCATIONS).map(([name, loc]) => {
-                  const { x, y } = getCanvasCoords(loc.lat, loc.lng);
-                  const itemCount = getHostelItemCount(name);
-                  const isHovered = hoveredHostelOnMap === name;
-                  const isActiveFilter = selectedHostel.toLowerCase() === name.toLowerCase();
-
-                  return (
-                    <g 
-                      key={name}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedHostel(isActiveFilter ? 'All' : name)}
-                      onMouseEnter={() => setHoveredHostelOnMap(name)}
-                      onMouseLeave={() => setHoveredHostelOnMap(null)}
-                    >
-                      {/* Pulse glows for active or stocked hostels */}
-                      {(isHovered || isActiveFilter || itemCount > 0) && (
-                        <circle 
-                          cx={x} 
-                          cy={y} 
-                          r={isActiveFilter ? 20 : 14} 
-                          fill="none" 
-                          stroke={loc.color} 
-                          strokeWidth="1.5" 
-                          className="animate-ping opacity-25" 
-                        />
-                      )}
-
-                      {/* Main node point */}
-                      <circle 
-                        cx={x} 
-                        cy={y} 
-                        r={isActiveFilter ? 8 : 5.5} 
-                        fill={isActiveFilter ? loc.color : (itemCount > 0 ? loc.color : "#3f3f46")} 
-                        className="transition-all duration-300"
-                      />
-
-                      {/* Text label with stock count */}
-                      <text
-                        x={x}
-                        y={y - 12}
-                        textAnchor="middle"
-                        fill={isActiveFilter || isHovered ? "#ffffff" : "#71717a"}
-                        fontSize="8.5"
-                        fontWeight="black"
-                        className="pointer-events-none select-none tracking-tight"
-                      >
-                        {name.split(" ")[0]} {itemCount > 0 && `(${itemCount})`}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* User Current Position Simulator Marker */}
-                <g>
-                  {/* Outer pulse */}
-                  <circle 
-                    cx={userSvgPos.x} 
-                    cy={userSvgPos.y} 
-                    r="18" 
-                    fill="none" 
-                    stroke="#10b981" 
-                    strokeWidth="1.5" 
-                    className="animate-pulse opacity-40" 
-                  />
-                  {/* Direction Arrow */}
-                  <polygon 
-                    points={`${userSvgPos.x},${userSvgPos.y - 6} ${userSvgPos.x - 5},${userSvgPos.y + 5} ${userSvgPos.x},${userSvgPos.y + 2} ${userSvgPos.x + 5},${userSvgPos.y + 5}`}
-                    fill="#10b981"
-                    stroke="#07090e"
-                    strokeWidth="1"
-                  />
-                </g>
-              </svg>
-
-              {/* Float popover details when hovering hostel nodes */}
-              {hoveredHostelOnMap && (
-                <div className="absolute bottom-4 left-4 right-4 bg-zinc-950/95 border border-zinc-900 rounded-xl p-3 backdrop-blur-md flex items-center justify-between">
-                  <div>
-                    <h4 className="text-[11px] font-black text-white">{hoveredHostelOnMap}</h4>
-                    <p className="text-[9px] text-zinc-500 font-bold uppercase">{HOSTEL_LOCATIONS[hoveredHostelOnMap].desc}</p>
-                  </div>
-                  <span className="text-[10px] font-black bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg">
-                    {getHostelItemCount(hoveredHostelOnMap)} units listed
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* GPS Geolocation Simulator Panel */}
-            <div className="space-y-3 bg-zinc-950/60 border border-zinc-900 p-4.5 rounded-2xl">
-              <div className="flex items-center gap-1.5 text-[9px] font-black text-zinc-500 uppercase tracking-wider">
-                <Navigation className="w-3.5 h-3.5 text-zinc-600 animate-pulse" />
-                <span>Simulate GPS Position</span>
-              </div>
-              <p className="text-[10px] text-zinc-600 font-semibold leading-relaxed">
-                Click any local hostel to teleport your device coordinate simulator and recalculate walking steps.
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6 relative overflow-hidden">
+            <div>
+              <h3 className="font-extrabold text-sm text-foreground flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Live GPS Radar
+              </h3>
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-wider mt-1">
+                Real-world distance tracking
               </p>
+            </div>
 
-              <div className="grid grid-cols-2 gap-1.5">
-                {Object.keys(HOSTEL_LOCATIONS).map((name) => (
-                  <button
-                    key={name}
-                    onClick={() => simulateLocation(name)}
-                    className={`text-[9px] font-bold text-left px-2.5 py-2 rounded-lg border transition truncate cursor-pointer ${
-                      user?.hostel?.toLowerCase() === name.toLowerCase() || 
-                      (activeGPS && Math.abs(userCoords.lat - HOSTEL_LOCATIONS[name].lat) < 0.0001)
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                        : 'bg-zinc-950 border-zinc-900 text-zinc-400 hover:border-zinc-800'
-                    }`}
-                  >
-                    🏠 {name.split(" ")[0]}
-                  </button>
-                ))}
+            {/* GPS HUD Info */}
+            <div className="p-4 bg-muted/50 border border-border rounded-xl space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-muted-foreground">Coordinates:</span>
+                <span className="font-mono text-foreground font-semibold">{userCoords.lat.toFixed(5)}°N, {userCoords.lng.toFixed(5)}°E</span>
               </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-muted-foreground">Your Hostel:</span>
+                <span className="font-semibold text-primary">{user?.hostel || 'Not Configured'}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-muted-foreground">University:</span>
+                <span className="font-semibold text-foreground truncate max-w-36">{user?.college || 'Not Configured'}</span>
+              </div>
+            </div>
+
+            {/* Radius Slider */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs font-bold">
+                <span className="text-muted-foreground">Search Radius:</span>
+                <span className="text-primary font-black">{maxDistance >= 1000 ? `${(maxDistance/1000).toFixed(1)} km` : `${maxDistance} meters`}</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="5000"
+                step="50"
+                value={maxDistance}
+                onChange={(e) => setMaxDistance(Number(e.target.value))}
+                className="w-full accent-primary h-1 bg-muted rounded-lg cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground font-bold">
+                <span>50m (Immediate Block)</span>
+                <span>5km (Full Campus)</span>
+              </div>
+            </div>
+
+            {/* Filter by Hostel */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Filter by Hostel:</label>
+              <select
+                value={selectedHostel}
+                onChange={(e) => setSelectedHostel(e.target.value)}
+                className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="All">All Hostels ({dynamicHostels.length})</option>
+                {dynamicHostels.map(h => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter by University */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Filter by University:</label>
+              <select
+                value={selectedCollege}
+                onChange={(e) => setSelectedCollege(e.target.value)}
+                className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="All">All Universities ({dynamicColleges.length})</option>
+                {dynamicColleges.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
 
           </div>
 
         </div>
 
-        {/* Right Side: Proximity listings directory */}
+        {/* Right Side: Proximity Listings Feed */}
         <div className="flex-1 space-y-6 min-w-0">
           
-          {/* Action Row Filters */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0b0e16] border border-zinc-900 p-5 rounded-[2rem] shadow-xl">
+          {/* Action Row Search & Sort */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border p-5 rounded-2xl shadow-sm">
             
-            {/* Left side filters */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Hostel Select Dropdown */}
-              <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-900 rounded-xl px-3 py-1.5">
-                <span className="text-[9px] text-zinc-500 font-black uppercase">Hostel:</span>
-                <select
-                  value={selectedHostel}
-                  onChange={(e) => setSelectedHostel(e.target.value)}
-                  className="bg-transparent text-xs font-black text-zinc-300 outline-none cursor-pointer"
-                >
-                  <option value="All" className="bg-[#07090e]">All Hostels</option>
-                  {Object.keys(HOSTEL_LOCATIONS).map(h => (
-                    <option key={h} value={h} className="bg-[#07090e]">{h}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Distance Slider Slider */}
-              <div className="flex items-center gap-2.5 bg-zinc-950 border border-zinc-900 rounded-xl px-3.5 py-1.5 min-w-44">
-                <span className="text-[9px] text-zinc-500 font-black uppercase flex-shrink-0">Radius:</span>
-                <input
-                  type="range"
-                  min="50"
-                  max="1000"
-                  step="50"
-                  value={maxDistance}
-                  onChange={(e) => setMaxDistance(Number(e.target.value))}
-                  className="w-full accent-blue-500 h-1 rounded-lg bg-zinc-800 cursor-pointer"
-                />
-                <span className="text-xs font-black text-blue-400 flex-shrink-0">{maxDistance}m</span>
-              </div>
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search nearby campus items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-xl focus:ring-1 focus:ring-primary focus:border-primary outline-none text-xs font-semibold text-foreground placeholder:text-muted-foreground"
+              />
             </div>
 
-            {/* Right side search and sort options */}
-            <div className="flex items-center gap-3">
-              {/* Search bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
-                <input
-                  type="text"
-                  placeholder="Search distance..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 bg-zinc-950 border border-zinc-900 rounded-xl focus:ring-1 focus:ring-blue-500 outline-none text-xs font-semibold text-zinc-300 w-44"
-                />
-              </div>
-
-              {/* Sorting buttons */}
-              <div className="flex items-center bg-zinc-950 border border-zinc-900 rounded-xl p-0.5">
+            {/* Sorting Toggles */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] text-muted-foreground font-black uppercase flex items-center gap-1">
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                Sort:
+              </span>
+              <div className="flex bg-muted p-0.5 rounded-xl border border-border">
                 {[
                   { id: 'nearest', label: 'Nearest' },
-                  { id: 'newest', label: 'Newest' },
-                  { id: 'cheapest', label: 'Cheapest' }
+                  { id: 'same-hostel', label: 'Hostel' },
+                  { id: 'same-university', label: 'University' },
+                  { id: 'newest', label: 'Newest' }
                 ].map(opt => (
                   <button
                     key={opt.id}
                     onClick={() => setSortBy(opt.id)}
                     className={`text-[10px] font-black uppercase px-3 py-1.5 rounded-lg transition cursor-pointer ${
                       sortBy === opt.id
-                        ? 'bg-blue-500 text-white font-black shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {opt.label}
@@ -517,112 +430,150 @@ export default function NearbyPage() {
 
           {/* Directory Listings container */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-28 gap-4">
-              <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-              <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Loading campus products layout...</span>
+            <div className="flex flex-col items-center justify-center py-28 gap-4 bg-card border border-border rounded-2xl">
+              <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+              <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Syncing nearby coordinates...</span>
             </div>
           ) : processedProducts.length === 0 ? (
-            <div className="text-center py-20 bg-zinc-900/10 border border-zinc-900 rounded-[2rem] p-8 max-w-md mx-auto flex flex-col items-center">
-              <Compass className="w-12 h-12 text-zinc-700 mb-4 animate-bounce" />
-              <h4 className="font-extrabold text-sm text-zinc-300">No goods within distance</h4>
-              <p className="text-xs text-zinc-500 mt-2 max-w-xs leading-relaxed">
-                Try widening your GPS radius selector, toggling off the hostel filter, or searching different terms.
+            <div className="text-center py-20 bg-card border border-border rounded-2xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+              <div className="p-4 bg-muted text-muted-foreground rounded-2xl mb-4">
+                <MapPin className="w-8 h-8" />
+              </div>
+              <h4 className="font-extrabold text-base text-foreground">No nearby listings found</h4>
+              <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed">
+                Expand your campus distance or adjust filters to discover more items around you.
               </p>
+              <button
+                onClick={() => {
+                  setMaxDistance(3000);
+                  setSelectedHostel('All');
+                  setSelectedCollege('All');
+                }}
+                className="mt-5 px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+              >
+                Expand Radius to 3km
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {processedProducts.map((item) => {
-                const itemHostel = getProductHostel(item);
-                const itemPrice = item.isAuction 
-                  ? (item.bids?.length > 0 ? Math.max(...item.bids.map(b => b.amount)) : item.startingBid)
-                  : item.price;
-                const isSellerOnline = Math.random() > 0.4; // simulated online state
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <AnimatePresence>
+                {processedProducts.map((item) => {
+                  const itemHostel = getProductHostel(item);
+                  const itemCollege = getProductCollege(item);
+                  const isSameHostel = user?.hostel && itemHostel.toLowerCase() === user.hostel.toLowerCase();
+                  const isSameCollege = user?.college && itemCollege.toLowerCase() === user.college.toLowerCase();
+                  
+                  const displayPrice = item.isAuction 
+                    ? (item.bids?.length > 0 ? Math.max(...item.bids.map(b => b.amount)) : item.startingBid)
+                    : (item.isRental ? item.rentPrice : item.price);
 
-                return (
-                  <motion.div
-                    key={item._id}
-                    layout
-                    whileHover={{ y: -4 }}
-                    className="bg-zinc-900/30 border border-zinc-900/80 p-5 rounded-[2rem] hover:border-zinc-800 transition duration-300 flex flex-col justify-between gap-4 relative overflow-hidden group"
-                  >
-                    {/* Pulsing radar dot inside card */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                      {isSellerOnline && (
-                        <span className="flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-emerald-500/20">
-                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
-                          Seller Online
-                        </span>
-                      )}
-                      
-                      {item.isAuction && (
-                        <span className="bg-pink-500/10 text-pink-400 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-pink-500/20">
-                          Auction
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Main Image and metadata */}
-                    <div className="flex gap-4">
-                      <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-zinc-900 bg-zinc-950 flex-shrink-0 group-hover:scale-102 transition">
-                        <img
-                          src={item.images?.[0] || 'https://via.placeholder.com/150'}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
+                  return (
+                    <motion.div
+                      key={item._id}
+                      layout
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      whileHover={{ y: -3 }}
+                      className="bg-card border border-border p-5 rounded-2xl hover:border-primary/40 hover:shadow-md transition duration-300 flex flex-col justify-between gap-4 relative overflow-hidden group shadow-sm"
+                    >
+                      {/* Top Badges */}
+                      <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                        {isSameHostel && (
+                          <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-emerald-200">
+                            Same Hostel
+                          </span>
+                        )}
+                        {item.isAuction && (
+                          <span className="bg-pink-100 text-pink-800 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-pink-200">
+                            Live Auction
+                          </span>
+                        )}
+                        {item.isRental && (
+                          <span className="bg-blue-100 text-blue-800 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-blue-200">
+                            Rent
+                          </span>
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <h3 className="font-extrabold text-xs sm:text-sm text-zinc-200 truncate group-hover:text-blue-400 transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-[10px] text-zinc-500 line-clamp-2 leading-relaxed">
-                          {item.description || 'No description provided.'}
-                        </p>
+
+                      {/* Info structure */}
+                      <div className="flex gap-4">
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-border bg-muted flex-shrink-0">
+                          <img
+                            src={item.images?.[0] || 'https://images.unsplash.com/photo-1580216223006-25f0adfa18e1?q=80&w=300'}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                            onError={(e) => {
+                              e.target.src = 'https://images.unsplash.com/photo-1580216223006-25f0adfa18e1?q=80&w=300';
+                            }}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <h3 className="font-extrabold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h3>
+                          <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                            {item.description || 'No description provided.'}
+                          </p>
+                          
+                          <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-bold mt-1.5 flex-wrap">
+                            <span className="flex items-center gap-0.5 bg-muted px-1.5 py-0.5 rounded-md text-[9px]">
+                              🏠 {itemHostel}
+                            </span>
+                            <span className="flex items-center gap-0.5 bg-muted px-1.5 py-0.5 rounded-md text-[9px] truncate max-w-32">
+                              🎓 {itemCollege}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Geolocation info row */}
+                      <div className="flex items-center justify-between pt-3 border-t border-border/60">
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-muted-foreground uppercase font-black tracking-wider">Estimated Distance</span>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <span className="font-extrabold text-xs text-foreground">
+                              {item.calculatedDistance >= 1000 
+                                ? `${(item.calculatedDistance/1000).toFixed(2)} km` 
+                                : `${Math.round(item.calculatedDistance)}m away`}
+                            </span>
+                            <span className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-lg flex items-center gap-0.5">
+                              🚶‍♂️ {formatWalkTime(item.calculatedDistance)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-[8px] text-muted-foreground uppercase font-black tracking-wider block">
+                            {item.isAuction ? 'Starting Bid' : (item.isRental ? 'Rent' : 'Price')}
+                          </span>
+                          <span className="text-base font-black text-primary">
+                            ₹{displayPrice}{item.isRental && `/${item.rentalDuration}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Navigation buttons */}
+                      <div className="flex gap-2">
+                        <Link
+                          to={`/product/${item._id}`}
+                          className="flex-1 py-2 bg-muted hover:bg-secondary border border-border text-foreground text-[10px] font-black uppercase tracking-wider rounded-xl text-center transition cursor-pointer"
+                        >
+                          View Details
+                        </Link>
                         
-                        <div className="flex items-center gap-1 text-[9px] text-zinc-500 font-bold uppercase mt-1">
-                          📍 {itemHostel} · Room {item.seller?.room || 'Dorm'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Proximity / Distance info row */}
-                    <div className="flex items-center justify-between pt-3 border-t border-zinc-900/60">
-                      <div className="flex flex-col">
-                        <span className="text-[8px] text-zinc-500 uppercase font-black">Calculated Radius</span>
-                        <div className="mt-1 flex items-center gap-1.5">
-                          {getDistanceBadge(item.calculatedDistance, itemHostel)}
-                        </div>
+                        <Link
+                          to={`/product/${item._id}`}
+                          className="px-3 py-2 bg-primary hover:bg-primary/95 text-white rounded-xl flex items-center justify-center transition cursor-pointer shadow-md shadow-primary/15"
+                        >
+                          <Compass className="w-4 h-4" />
+                        </Link>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-[8px] text-zinc-500 uppercase font-black block">
-                          {item.isAuction ? 'High Bid' : 'Price'}
-                        </span>
-                        <span className="text-sm font-black text-zinc-100">
-                          ₹{itemPrice}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Call to actions */}
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/product/${item._id}`}
-                        className="flex-1 py-2.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 text-[10px] font-black uppercase tracking-wider rounded-xl text-center transition cursor-pointer"
-                      >
-                        Inspect Listing
-                      </Link>
-                      
-                      <Link
-                        to={`/product/${item._id}`}
-                        className="px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl flex items-center justify-center transition cursor-pointer shadow-md shadow-blue-500/10"
-                      >
-                        <Compass className="w-4 h-4" />
-                      </Link>
-                    </div>
-
-                  </motion.div>
-                );
-              })}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           )}
 

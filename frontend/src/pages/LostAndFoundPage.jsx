@@ -25,79 +25,43 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Standard Mock Datasets for Campus Lost & Found
-const INITIAL_ITEMS = [
-  {
-    id: 'lf-1',
-    title: 'Space Grey iPad Pro (11-inch)',
-    type: 'lost',
-    description: 'Left on a study desk on the 2nd floor near the window. Has a dark green magnetic folio case and an Apple Pencil attached.',
-    location: 'Central Library, 2nd Floor',
-    datetime: 'May 22, 2026 at 4:30 PM',
-    reward: 1500,
-    tags: ['iPad', 'Apple', 'Electronics', 'Library'],
-    reporter: 'Siddharth Sen',
-    contact: '+91 98765 43210',
-    room: 'Room 304, Satpura Block',
-    image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'lf-2',
-    title: 'Red Sony WH-1000XM4 Headphones',
-    type: 'lost',
-    description: 'Lost my Sony noise-cancelling headphones. They are in a black zippered hard case. Last seen on the benches near the main basketball court.',
-    location: 'Badminton & Basketball Courts',
-    datetime: 'May 22, 2026 at 6:15 PM',
-    reward: 800,
-    tags: ['Sony', 'Headphones', 'Electronics', 'Red'],
-    reporter: 'Rohan Sharma',
-    contact: '+91 99887 76655',
-    room: 'Room 112, Nilgiri Block',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'lf-3',
-    title: 'Casio Scientific Calculator (fx-991ES Plus)',
-    type: 'found',
-    description: 'Found a Casio calculator lying on the second row desk after the Midterm exam. Standard silver-black design, has the initials "A.K." scratched on the back.',
-    location: 'Lecture Hall Block, room LH-302',
-    datetime: 'May 22, 2026 at 11:45 AM',
-    reward: 0,
-    tags: ['Casio', 'Calculator', 'Exam', 'LH-302'],
-    reporter: 'Neha Patil',
-    contact: '+91 91234 56789',
-    room: 'Room 421, Shivalik Block',
-    image: 'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=500&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'lf-4',
-    title: 'Room Key #405 with Red Nike Lanyard',
-    type: 'found',
-    description: 'Found a single brass key attached to a red Nike lanyard in the grass near the canteen seating area. Handed over to the block caretaker office, or message me.',
-    location: 'Main Canteen Courtyard',
-    datetime: 'May 21, 2026 at 8:30 PM',
-    reward: 0,
-    tags: ['Key', 'Lanyard', 'Nike', 'Red'],
-    reporter: 'Aman Verma',
-    contact: '+91 88776 65544',
-    room: 'Room 203, Satpura Block',
-    image: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'lf-5',
-    title: 'Blue Dell Laptop Charger (65W)',
-    type: 'recovered',
-    description: 'Dell USB-C 65W charging adapter found in the computer lab. Safely returned to its owner after verification.',
-    location: 'Computer Center Lab 2',
-    datetime: 'May 20, 2026 at 3:00 PM',
-    reward: 0,
-    tags: ['Charger', 'Dell', 'USBC', 'Recovered'],
-    reporter: 'Sameer Kumar',
-    contact: '',
-    room: 'Room 105, Aravali Block',
-    image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=500&auto=format&fit=crop&q=60'
+// Safely parse serialized metadata from description
+const parseItemDetails = (p) => {
+  let desc = p.description;
+  let location = p.hostel || 'Campus Block';
+  let datetime = p.createdAt ? new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+  let contact = '';
+  let room = p.seller?.room ? `Room ${p.seller.room}, ${p.seller.hostel || p.hostel}` : p.hostel;
+  let reporterName = p.seller?.name || 'Anonymous Student';
+
+  try {
+    const parsed = JSON.parse(p.description);
+    if (parsed && typeof parsed === 'object') {
+      desc = parsed.desc || p.description;
+      location = parsed.location || location;
+      datetime = parsed.datetime || datetime;
+      contact = parsed.contact || contact;
+      room = parsed.room || room;
+    }
+  } catch (e) {
+    // Raw description fallback
   }
-];
+
+  return {
+    id: p._id,
+    title: p.title,
+    type: p.listingType,
+    description: desc,
+    location,
+    datetime,
+    reward: p.price,
+    tags: p.tags && p.tags.length > 0 ? p.tags : ['General'],
+    reporter: reporterName,
+    contact,
+    room,
+    image: p.images?.[0] || 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=500&auto=format&fit=crop&q=60'
+  };
+};
 
 // Helper to auto-tag based on keywords in title
 const generateTagsFromTitle = (title) => {
@@ -164,10 +128,12 @@ export default function LostAndFoundPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('lost'); // lost, found, recovered
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   
   // Reporting Modal State
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -196,6 +162,29 @@ export default function LostAndFoundPage() {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
+      if (response.ok) {
+        const data = await response.json();
+        // filter lost/found/recovered products
+        const filtered = data
+          .filter(p => p.listingType === 'lost' || p.listingType === 'found' || p.listingType === 'recovered')
+          .map(p => parseItemDetails(p));
+        setItems(filtered);
+      }
+    } catch (e) {
+      console.error('Failed to fetch items:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   // Watch title and update tags live
   useEffect(() => {
     if (reportForm.title) {
@@ -220,78 +209,140 @@ export default function LostAndFoundPage() {
     triggerToast(`📸 Uploaded simulated photo of: ${name}`);
   };
 
-  const handleReportSubmit = (e) => {
+  const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!reportForm.title || !reportForm.description || !reportForm.location) {
       triggerToast('⚠️ Please fill in all required fields.');
       return;
     }
 
-    const newReport = {
-      id: `lf-${Date.now()}`,
-      title: reportForm.title,
-      type: reportForm.type,
-      description: reportForm.description,
-      location: reportForm.location,
-      datetime: reportForm.datetime || new Date().toLocaleString(),
-      reward: reportForm.hasReward ? Number(reportForm.reward) : 0,
-      tags: liveTags.length > 0 ? liveTags : ['General'],
-      reporter: user?.name || 'Anonymous Student',
-      contact: reportForm.contact || '+91 99999 88888',
-      room: reportForm.room || 'Dormitory block',
-      image: reportForm.image || 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=500&auto=format&fit=crop&q=60'
-    };
+    setSubmitting(true);
+    try {
+      const packedDescription = JSON.stringify({
+        desc: reportForm.description,
+        location: reportForm.location,
+        datetime: reportForm.datetime || new Date().toLocaleString(),
+        contact: reportForm.contact || '',
+        room: reportForm.room || ''
+      });
 
-    setItems(prev => [newReport, ...prev]);
-    setIsReportModalOpen(false);
-    
-    // Check for AI Match!
-    // E.g. if reported lost Sony headphones, and found Sony is already in list
-    const lowerTitle = newReport.title.toLowerCase();
-    const potentialMatch = items.find(existing => {
-      // Find matching tags or keyword titles of OPPOSITE type
-      if (existing.type !== newReport.type && existing.type !== 'recovered') {
-        const matchesType = true;
-        const matchesKeyword = existing.tags.some(tag => newReport.tags.includes(tag)) ||
-                               existing.title.toLowerCase().includes(lowerTitle) ||
-                               lowerTitle.includes(existing.title.toLowerCase());
-        return matchesKeyword;
+      const payload = {
+        title: reportForm.title,
+        description: packedDescription,
+        price: reportForm.hasReward ? Number(reportForm.reward) : 0,
+        category: 'Others',
+        condition: 'used',
+        hostel: user?.hostel || 'Other',
+        listingType: reportForm.type,
+        tags: JSON.stringify(liveTags.length > 0 ? liveTags : ['General']),
+        isUrgent: reportForm.type === 'lost' ? true : false,
+        canDeliver: false,
+        deliveryFee: 0,
+        isAuction: false,
+        startingBid: 0,
+        isRental: false,
+        latitude: user?.latitude || 0,
+        longitude: user?.longitude || 0
+      };
+
+      const formData = new FormData();
+      Object.keys(payload).forEach(key => {
+        formData.append(key, payload[key]);
+      });
+
+      if (reportForm.image) {
+        try {
+          const imgResponse = await fetch(reportForm.image);
+          const blob = await imgResponse.blob();
+          formData.append('images', blob, 'screenshot.jpg');
+        } catch (imgError) {
+          console.error('Failed to attach simulated photo as file:', imgError);
+        }
       }
-      return false;
-    });
 
-    if (potentialMatch) {
-      setTimeout(() => {
-        triggerToast(`🧠 AI Smart Match Detected! "${potentialMatch.title}" matches your report!`);
-      }, 1000);
-    } else {
-      triggerToast(`📢 Alert posted successfully to ${newReport.type === 'lost' ? 'Lost' : 'Found'} bulletin board!`);
+      const res = await fetch('https://hostelx-backend-a228.onrender.com/api/products', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const newProduct = await res.json();
+        
+        // Reset Form
+        setReportForm({
+          title: '',
+          type: 'lost',
+          description: '',
+          location: '',
+          datetime: '',
+          reward: 0,
+          hasReward: false,
+          contact: '',
+          room: user?.room ? `Room ${user.room}, ${user.hostel}` : '',
+          image: ''
+        });
+        setSimulatedPhoto('');
+        setIsReportModalOpen(false);
+
+        // Check for AI Match!
+        const lowerTitle = newProduct.title.toLowerCase();
+        const potentialMatch = items.find(existing => {
+          if (existing.type !== newProduct.listingType && existing.type !== 'recovered') {
+            const matchesKeyword = existing.tags.some(tag => newProduct.tags?.includes(tag)) ||
+                                   existing.title.toLowerCase().includes(lowerTitle) ||
+                                   lowerTitle.includes(existing.title.toLowerCase());
+            return matchesKeyword;
+          }
+          return false;
+        });
+
+        if (potentialMatch) {
+          setTimeout(() => {
+            triggerToast(`🧠 AI Smart Match Detected! "${potentialMatch.title}" matches your report!`);
+          }, 1000);
+        } else {
+          triggerToast(`📢 Alert posted successfully to ${newProduct.listingType === 'lost' ? 'Lost' : 'Found'} bulletin board!`);
+        }
+
+        fetchItems();
+      } else {
+        const errorData = await res.json();
+        triggerToast(`❌ Error: ${errorData.message || 'Failed to file report'}`);
+      }
+    } catch (err) {
+      console.error('Failed to create report:', err);
+      triggerToast('❌ Network error submitting report.');
+    } finally {
+      setSubmitting(false);
     }
-
-    // Reset Form
-    setReportForm({
-      title: '',
-      type: 'lost',
-      description: '',
-      location: '',
-      datetime: '',
-      reward: 0,
-      hasReward: false,
-      contact: '',
-      room: user?.room ? `Room ${user.room}, ${user.hostel}` : '',
-      image: ''
-    });
-    setSimulatedPhoto('');
   };
 
-  const handleMarkAsRecovered = (itemId) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === itemId) {
-        return { ...item, type: 'recovered' };
+  const handleMarkAsRecovered = async (itemId) => {
+    try {
+      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          listingType: 'recovered'
+        })
+      });
+
+      if (res.ok) {
+        triggerToast('🎉 Item marked as safely Recovered! Moved to archive.');
+        fetchItems();
+      } else {
+        triggerToast('❌ Failed to update report status.');
       }
-      return item;
-    }));
-    triggerToast('🎉 Item marked as safely Recovered! Moved to archive.');
+    } catch (e) {
+      console.error('Recovered update error:', e);
+      triggerToast('❌ Network error updating status.');
+    }
   };
 
   // Filter items matching active tab and search query
@@ -308,7 +359,6 @@ export default function LostAndFoundPage() {
   // Calculate potential smart matches to display in notification panel
   const getSmartMatchesCount = () => {
     let count = 0;
-    // Look for tags overlapping between lost and found items
     const lostItems = items.filter(i => i.type === 'lost');
     const foundItems = items.filter(i => i.type === 'found');
     
@@ -327,6 +377,7 @@ export default function LostAndFoundPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-16">
+
       {/* Red Ambient glow to highlight Alert styling */}
       <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-rose-500/5 rounded-full blur-[100px] -z-10" />
       <div className="absolute top-1/3 left-1/4 w-[350px] h-[350px] bg-red-500/5 rounded-full blur-[100px] -z-10" />

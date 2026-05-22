@@ -178,7 +178,7 @@ const getProducts = async (req, res) => {
     }
 
     let products = await Product.find(query)
-      .populate('seller', 'name profileImage hostel')
+      .populate('seller', 'name profileImage hostel college')
       .populate('bids.bidder', 'name profileImage')
       .lean();
 
@@ -228,7 +228,7 @@ const getProductById = async (req, res) => {
       { $inc: { views: 1 } },
       { new: true }
     )
-    .populate('seller', 'name email profileImage hostel room ratings reviews.reviewer')
+    .populate('seller', 'name email profileImage hostel college room ratings reviews.reviewer')
     .populate('bids.bidder', 'name profileImage');
     
     if (product) {
@@ -609,7 +609,7 @@ const placeBid = async (req, res) => {
 
     const updatedProduct = await product.save();
     const fullyUpdated = await Product.findById(updatedProduct._id)
-      .populate('seller', 'name profileImage hostel ratings')
+      .populate('seller', 'name profileImage hostel college ratings')
       .populate('bids.bidder', 'name profileImage');
 
     res.json(fullyUpdated);
