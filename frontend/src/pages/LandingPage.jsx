@@ -273,7 +273,7 @@ export default function LandingPage() {
                   }}
                   className="text-sm sm:text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-md md:max-w-lg leading-relaxed font-semibold"
                 >
-                  Buy, sell, rent and trade within your hostel community.
+                  A trusted marketplace built for Chandigarh University hostellers. Buy, sell, rent, and trade within your hostel community.
                 </motion.p>
 
                 {/* Magnetic Hover CTA Wrapper */}
@@ -314,7 +314,7 @@ export default function LandingPage() {
                 >
                   <div className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Verified Hostel Access</span>
+                    <span>Trusted by CU Hostellers</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5 text-indigo-500" />
@@ -322,7 +322,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Heart className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Built for Hostellers</span>
+                    <span>Made for CU Hostel Community</span>
                   </div>
                 </motion.div>
               </motion.div>

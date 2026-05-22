@@ -20,7 +20,7 @@ import {
   Building
 } from 'lucide-react';
 
-// Default campus center coordinates (e.g. BITS Pilani or similar setup)
+// Default campus center coordinates (e.g. Chandigarh University baseline setup)
 const DEFAULT_CAMPUS_LAT = 28.3639;
 const DEFAULT_CAMPUS_LNG = 75.5870;
 

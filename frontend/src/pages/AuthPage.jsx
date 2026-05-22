@@ -80,6 +80,8 @@ export default function AuthPage() {
   const [isLoginTab, setIsLoginTab] = useState(true); // Toggle between Login and Signup forms
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isCustomCollege, setIsCustomCollege] = useState(false);
+  const [isCustomHostel, setIsCustomHostel] = useState(false);
   
   // Form states
   const [formData, setFormData] = useState({
@@ -87,8 +89,8 @@ export default function AuthPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    college: '',
-    hostel: '',
+    college: 'Chandigarh University',
+    hostel: 'Zakir Hussain Block',
     room: ''
   });
   
@@ -102,6 +104,14 @@ export default function AuthPage() {
     if (user) {
       if (!user.college || !user.hostel) {
         setStep(2);
+        setFormData(prev => ({
+          ...prev,
+          name: user.name || prev.name,
+          email: user.email || prev.email,
+          college: user.college || 'Chandigarh University',
+          hostel: user.hostel || 'Zakir Hussain Block',
+          room: user.room || prev.room
+        }));
       } else {
         navigate('/dashboard');
       }
@@ -348,25 +358,25 @@ export default function AuthPage() {
             className="space-y-4"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-blue-200">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Campus Hub
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Chandigarh University
             </div>
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
               Buy, Sell & Connect <br />
               <span className="bg-gradient-to-r from-blue-200 to-teal-100 bg-clip-text text-transparent">
-                On Your Campus
+                In Your Hostel
               </span>
             </h1>
             <p className="text-lg text-blue-100/90 leading-relaxed font-light">
-              HostelX is the premier secure hyper-local marketplace optimized entirely for college and hostel dorm students.
+              HostelX is the premier hyper-local marketplace optimized for Chandigarh University hostellers to trade mattresses, study lamps, room gadgets, and exit sale bundles.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 gap-4">
             {[
-              { icon: ShoppingBag, label: "Campus Trade", desc: "Buy & sell textbooks, gadgets, and bikes safely." },
-              { icon: MessageSquare, label: "Direct Chat", desc: "Negotiate live in real-time with other students." },
-              { icon: ShieldCheck, label: "Verified Users", desc: "Exclusive college login matching your exact peers." },
-              { icon: TrendingUp, label: "Instant Bidding", desc: "Make offers or list emergency items dynamically." }
+              { icon: ShoppingBag, label: "Hostel Trade", desc: "Buy & sell mattresses, study lamps, and fans safely inside wings." },
+              { icon: MessageSquare, label: "Direct Chat", desc: "Negotiate live in real-time with other CU hostellers." },
+              { icon: ShieldCheck, label: "Hostel Access", desc: "Secure hyper-local trades verified for Chandigarh University." },
+              { icon: TrendingUp, label: "Instant Bidding", desc: "List emergency clearance items dynamically before exit dates." }
             ].map((feat, idx) => (
               <motion.div
                 key={idx}
@@ -408,8 +418,8 @@ export default function AuthPage() {
             </h2>
             <p className="text-sm text-slate-500 font-normal">
               {step === 1 
-                ? (isLoginTab ? 'Log in with your college account to browse campus deals.' : 'Create an account to start buying and selling locally.') 
-                : 'Enter your location details so students nearby can contact you.'}
+                ? (isLoginTab ? 'Log in with your CU account to browse hostel deals.' : 'Create an account to start trading inside Chandigarh University hostels.') 
+                : 'Select your CU hostel block to view trade listings inside your wing.'}
             </p>
           </div>
 
@@ -655,15 +665,49 @@ export default function AuthPage() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">College or University</label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={formData.college}
-                        onChange={(e) => setFormData({ ...formData, college: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
-                        placeholder="e.g. Stanford University"
-                      />
+                      <MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400 z-10" />
+                      {!isCustomCollege ? (
+                        <select
+                          required
+                          value={formData.college}
+                          onChange={(e) => {
+                            if (e.target.value === 'Other') {
+                              setIsCustomCollege(true);
+                              setFormData({ ...formData, college: '' });
+                            } else {
+                              setFormData({ ...formData, college: e.target.value });
+                            }
+                          }}
+                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="Chandigarh University">Chandigarh University (CU)</option>
+                          <option value="Other">Other University...</option>
+                        </select>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            required
+                            value={formData.college}
+                            onChange={(e) => setFormData({ ...formData, college: e.target.value })}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                            placeholder="e.g. Stanford University"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsCustomCollege(false);
+                              setFormData({ ...formData, college: 'Chandigarh University' });
+                            }}
+                            className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1 shrink-0"
+                          >
+                            Select CU
+                          </button>
+                        </div>
+                      )}
+                      {!isCustomCollege && (
+                        <div className="absolute right-3 top-3.5 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-slate-500 border-l-transparent border-r-transparent w-0 h-0 animate-bounce" />
+                      )}
                     </div>
                   </div>
 
@@ -671,15 +715,60 @@ export default function AuthPage() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Hostel / Dormitory Block</label>
                     <div className="relative">
-                      <Building className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={formData.hostel}
-                        onChange={(e) => setFormData({ ...formData, hostel: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
-                        placeholder="e.g. Cedro Hall / Block D"
-                      />
+                      <Building className="absolute left-3 top-3 w-5 h-5 text-slate-400 z-10" />
+                      {formData.college === 'Chandigarh University' && !isCustomHostel ? (
+                        <select
+                          required
+                          value={formData.hostel}
+                          onChange={(e) => {
+                            if (e.target.value === 'Other') {
+                              setIsCustomHostel(true);
+                              setFormData({ ...formData, hostel: '' });
+                            } else {
+                              setFormData({ ...formData, hostel: e.target.value });
+                            }
+                          }}
+                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="Zakir Hussain Block">Zakir Hussain Block</option>
+                          <option value="Lal Bahadur Shastri Block">Lal Bahadur Shastri Block</option>
+                          <option value="Mehr Chand Mahajan Block">Mehr Chand Mahajan Block</option>
+                          <option value="Shanti Swarup Bhatnagar Block">Shanti Swarup Bhatnagar Block</option>
+                          <option value="Homi Bhabha Block">Homi Bhabha Block</option>
+                          <option value="Kalpana Chawla Block">Kalpana Chawla Block</option>
+                          <option value="Sarojini Naidu Block">Sarojini Naidu Block</option>
+                          <option value="Kasturba Gandhi Block">Kasturba Gandhi Block</option>
+                          <option value="Sukhdev Block">Sukhdev Block</option>
+                          <option value="Bhagat Singh Block">Bhagat Singh Block</option>
+                          <option value="Other">Other Block (Type custom...)</option>
+                        </select>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            required
+                            value={formData.hostel}
+                            onChange={(e) => setFormData({ ...formData, hostel: e.target.value })}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                            placeholder="e.g. Zakir Hussain Block"
+                          />
+                          {formData.college === 'Chandigarh University' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsCustomHostel(false);
+                                setFormData({ ...formData, hostel: 'Zakir Hussain Block' });
+                              }}
+                              className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1 shrink-0"
+                            >
+                              Select CU Block
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {formData.college === 'Chandigarh University' && !isCustomHostel && (
+                        <div className="absolute right-3 top-3.5 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-slate-500 border-l-transparent border-r-transparent w-0 h-0" />
+                      )}
                     </div>
                   </div>
 

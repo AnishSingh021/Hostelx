@@ -883,7 +883,7 @@ export default function Dashboard() {
                       value={settingsForm.college}
                       onChange={(e) => setSettingsForm({ ...settingsForm, college: e.target.value })}
                       className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-sm font-medium"
-                      placeholder="e.g. Stanford University"
+                      placeholder="e.g. Chandigarh University"
                     />
                   </div>
 
@@ -897,7 +897,7 @@ export default function Dashboard() {
                       value={settingsForm.hostel}
                       onChange={(e) => setSettingsForm({ ...settingsForm, hostel: e.target.value })}
                       className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-sm font-medium"
-                      placeholder="e.g. Trinity Hall"
+                      placeholder="e.g. Zakir Hussain Block"
                     />
                   </div>
 
