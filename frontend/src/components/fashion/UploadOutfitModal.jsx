@@ -9,7 +9,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
   const [size, setSize] = useState('M');
-  const [occasion, setOccasion] = useState('Party Wear');
+  const [occasion, setOccasion] = useState('Fest');
   const [gender, setGender] = useState('Unisex');
   const [rentPrice, setRentPrice] = useState(199);
   const [securityDeposit, setSecurityDeposit] = useState(500);
@@ -26,7 +26,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
 
   // Sizing and occasion lists
   const sizes = ['S', 'M', 'L', 'XL', 'Free Size', 'UK 8', 'UK 9', 'UK 10'];
-  const occasions = ['Party Wear', 'Date Night', 'Streetwear', 'Traditional', 'Sneakers', 'Accessories'];
+  const occasions = ['Fest', "Fresher's", 'Cultural Night', 'Formal', 'Casual', 'Party'];
   const genders = ['Men', 'Women', 'Unisex'];
 
   // Earnings estimation (rented 4 times a month)

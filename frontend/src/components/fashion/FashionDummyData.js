@@ -2,14 +2,15 @@
 // Hand-picked premium, responsive fashion photography from Unsplash
 
 export const FEATURED_CATEGORIES = [
-  { id: 'Party Wear', name: 'Party Wear', emoji: '🎉', desc: 'Clubbing & party fits' },
-  { id: 'Date Night', name: 'Date Night', emoji: '✨', desc: 'Impressive & sharp' },
-  { id: 'Streetwear', name: 'Streetwear', emoji: '⚡', desc: 'Comfy hoodies & jackets' },
-  { id: 'Traditional', name: 'Traditional', emoji: '🕌', desc: 'Ethnic fests & rituals' },
-  { id: 'Sneakers', name: 'Sneakers', emoji: '👟', desc: 'Limited edition kicks' },
-  { id: 'Accessories', name: 'Accessories', emoji: '🕶️', desc: 'Bags, watches & shades' }
+  { id: 'Fest', name: 'Fest', emoji: '🎪', desc: 'Cultural and technical fests' },
+  { id: "Fresher's", name: "Fresher's", emoji: '🎉', desc: 'Welcome parties' },
+  { id: 'Cultural Night', name: 'Cultural Night', emoji: '💃', desc: 'DJ nights & traditional dance' },
+  { id: 'Formal', name: 'Formal', emoji: '👔', desc: 'Interviews & presentations' },
+  { id: 'Casual', name: 'Casual', emoji: '👕', desc: 'Daily chill wear' },
+  { id: 'Party', name: 'Party', emoji: '🔥', desc: 'Late night parties' }
 ];
 
 export const VERIFIED_SELLERS = [];
 
 export const DUMMY_OUTFITS = [];
+
