@@ -55,6 +55,14 @@ export default function FashionRentalPage() {
   const [sortOrder, setSortOrder] = useState('popular');
   const [toastMessage, setToastMessage] = useState('');
 
+  // Scroll to top on active category change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [activeCategory]);
+
   // Save outfits state when modified
   const updateOutfitsState = (updatedList) => {
     setOutfits(updatedList);
@@ -72,7 +80,7 @@ export default function FashionRentalPage() {
     const updated = [newFit, ...outfits];
     updateOutfitsState(updated);
     setIsUploadOpen(false);
-    triggerToast(`✨ "${newFit.title}" has been published to campus fashion feeds!`);
+    triggerToast(`✨ "${newFit.title}" has been published to hostel fashion feeds!`);
   };
 
   // Checkout Success handler
@@ -135,7 +143,7 @@ export default function FashionRentalPage() {
                 FIT HUB
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground font-semibold">Campus peer-to-peer wardrobe sharing network</p>
+            <p className="text-[10px] text-muted-foreground font-semibold">Hostel peer-to-peer wardrobe sharing network</p>
           </div>
         </div>
 
@@ -159,105 +167,28 @@ export default function FashionRentalPage() {
       {/* Slogan Hero Banner & Trust Ticker */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-10">
         
-        {/* Startup Premium Landing Slogan Hero Card */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-indigo-950/40 via-card to-primary/5 border border-border shadow-xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 group"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-10 group-hover:scale-125 transition-all duration-700" />
-          
-          <div className="space-y-4 md:flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-bold">
-              <Sparkle className="w-4 h-4 animate-spin" style={{ animationDuration: '8s' }} />
-              <span>Introducing BITS Wardrobe Exchange</span>
+        {/* Safety and Trust Reminders replacing the promotional hero banner */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-start gap-4 p-5 bg-card border border-border rounded-2xl backdrop-blur-sm shadow-sm">
+            <div className="p-3 bg-primary/10 text-primary rounded-xl shrink-0">
+              <ShieldCheck className="w-6 h-6 stroke-[2]" />
             </div>
-            
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-none">
-              Drip without buying.<br />
-              <span className="bg-gradient-to-r from-primary via-indigo-400 to-rose-400 bg-clip-text text-transparent">
-                Wear luxury. Pay daily.
-              </span>
-            </h1>
-            
-            <p className="text-sm text-muted-foreground max-w-md mx-auto md:mx-0 leading-relaxed font-medium">
-              Why spend thousands on a formal suit, a fest outfit, or limited-edition sneakers that you will only wear once? Rent outfits from campus mates or monetize your closet today.
-            </p>
-
-            <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
-              <button
-                onClick={() => {
-                  const el = document.getElementById('browse-console');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="px-6 py-3 bg-foreground text-background text-xs font-extrabold rounded-2xl hover:opacity-90 active:scale-95 transition cursor-pointer shadow-md"
-              >
-                Browse Outfits
-              </button>
-              <button
-                onClick={() => setIsUploadOpen(true)}
-                className="px-6 py-3 bg-secondary text-secondary-foreground border border-border hover:bg-muted text-xs font-extrabold rounded-2xl active:scale-95 transition cursor-pointer"
-              >
-                List Your Closet
-              </button>
-            </div>
-          </div>
-
-          {/* Visual Showcase Card Overlay */}
-          <div className="relative w-48 md:w-64 aspect-[4/5] rounded-2xl bg-card/60 border border-border backdrop-blur-md shadow-2xl p-6 flex flex-col justify-between items-center text-center flex-shrink-0 group-hover:border-primary/40 transition-all duration-500 overflow-hidden">
-            <div className="absolute -top-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl animate-pulse"></div>
-            
-            <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl shadow-inner mt-4">
-              ✨
-            </div>
-            
-            <div className="z-10 space-y-2 mb-4">
-              <span className="px-2.5 py-0.5 text-[10px] font-bold text-primary bg-primary/10 rounded-full border border-primary/20">CAMPUS MOVEMENT</span>
-              <h4 className="text-base sm:text-lg font-black tracking-tight leading-tight">List Your Drip.</h4>
-              <p className="text-xs text-muted-foreground font-semibold px-2">Join the BITS Wardrobe Exchange and monetize your style.</p>
-            </div>
-            
-            <div className="w-full bg-secondary/80 border border-border py-2 rounded-xl text-[10px] font-black text-primary uppercase tracking-wider">
-              🤝 peer-to-peer settlement
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Safety trust credentials panel */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-start gap-3.5 p-4.5 bg-card/45 border border-border/80 rounded-2xl backdrop-blur-sm">
-            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-foreground uppercase tracking-wider">Verified Campus Handover</h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                Meet safely at hostel common rooms. Scan QR code to verify fit condition before accepting.
+            <div className="space-y-1 text-left">
+              <h4 className="text-xs font-black text-foreground uppercase tracking-wider font-bold">Inspect Outfit Condition</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                Always inspect outfit condition before accepting handover.
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3.5 p-4.5 bg-card/45 border border-border/80 rounded-2xl backdrop-blur-sm">
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
-              <RotateCcw className="w-5 h-5" />
+          <div className="flex items-start gap-4 p-5 bg-card border border-border rounded-2xl backdrop-blur-sm shadow-sm">
+            <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl shrink-0">
+              <MapPin className="w-6 h-6 stroke-[2]" />
             </div>
-            <div>
-              <h4 className="text-xs font-black text-foreground uppercase tracking-wider">Direct Peer Settlement</h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                All transactions and security deposits are settled directly between students at handover. HostelX does not hold escrow.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3.5 p-4.5 bg-card/45 border border-border/80 rounded-2xl backdrop-blur-sm">
-            <div className="p-2.5 bg-pink-500/10 text-pink-500 rounded-xl">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-foreground uppercase tracking-wider">Hygiene & Sanitization Guarantee</h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                All garments are dry-cleaned, sanitarily packaged, and hand-washed before listing. Smell amazing!
+            <div className="space-y-1 text-left">
+              <h4 className="text-xs font-black text-foreground uppercase tracking-wider font-bold">Meet Safely</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                Meet in common hostel areas while exchanging rented items.
               </p>
             </div>
           </div>
@@ -268,10 +199,10 @@ export default function FashionRentalPage() {
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
             <div className="max-w-2xl space-y-3">
               <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-                The Campus Closet is Empty!
+                The Hostel Closet is Empty!
               </h2>
               <p className="text-sm text-muted-foreground font-medium max-w-md mx-auto leading-relaxed">
-                Be the pioneer who kicks off BITS's wardrobe revolution. Share your premium style, set your price, and earn on campus!
+                Be the pioneer who kicks off our hostel's wardrobe revolution. Share your premium style, set your price, and earn inside your hostel!
               </p>
             </div>
             
@@ -334,7 +265,7 @@ export default function FashionRentalPage() {
                 <div>
                   <h3 className="font-extrabold text-lg tracking-tight flex items-center gap-1.5">
                     <TrendingUp className="w-5 h-5 text-primary" />
-                    Trending on Campus
+                    Trending in Hostels
                   </h3>
                   <p className="text-[10px] text-muted-foreground">Fits rented most frequently this week</p>
                 </div>
@@ -362,9 +293,9 @@ export default function FashionRentalPage() {
                 <div>
                   <h3 className="font-extrabold text-lg tracking-tight flex items-center gap-1.5">
                     <Star className="w-4.5 h-4.5 text-amber-500 fill-amber-500" />
-                    Verified Campus Closets
+                    Verified Hostel Closets
                   </h3>
-                  <p className="text-[10px] text-muted-foreground">Closets of top fashion rated students on campus</p>
+                  <p className="text-[10px] text-muted-foreground">Closets of top fashion rated students in hostels</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -422,7 +353,7 @@ export default function FashionRentalPage() {
               
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-extrabold text-xl tracking-tight">Browse Campus Wardrobes</h3>
+                  <h3 className="font-extrabold text-xl tracking-tight">Browse Hostel Wardrobes</h3>
                   <p className="text-xs text-muted-foreground">Select occassions, sizes, or search for brands</p>
                 </div>
                 

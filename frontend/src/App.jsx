@@ -1,4 +1,5 @@
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 import LandingPage from './pages/LandingPage';
@@ -20,6 +21,19 @@ import LostAndFoundPage from './pages/LostAndFoundPage';
 import SemesterExitSalePage from './pages/SemesterExitSalePage';
 import TemporaryRentalsPage from './pages/TemporaryRentalsPage';
 
+// Scroll to top on every route navigation
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [pathname]);
+
+  return null;
+}
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -52,6 +66,7 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-background text-foreground font-sans">
         <Routes>
           <Route

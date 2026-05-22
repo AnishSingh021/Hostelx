@@ -60,6 +60,14 @@ export default function AuctionsPage() {
     return () => clearInterval(pollInterval);
   }, []);
 
+  // Scroll to top on active tab change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [activeTab]);
+
   // Poll active selected auction detail specifically for live bid logs
   useEffect(() => {
     if (!selectedAuction) return;
@@ -309,9 +317,9 @@ export default function AuctionsPage() {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20 bg-white border border-slate-200/80 rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
               <Gavel className="w-12 h-12 text-slate-300 mb-4" />
-              <h4 className="font-extrabold text-sm text-slate-800">No auctions matched</h4>
+              <h4 className="font-extrabold text-sm text-slate-800">No live auction activity yet.</h4>
               <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed">
-                Campus auctions will appear here once students start bidding. Be the first to start a live bidding race!
+                Be the first to list an item for auction and start a live bidding race!
               </p>
             </div>
           ) : (

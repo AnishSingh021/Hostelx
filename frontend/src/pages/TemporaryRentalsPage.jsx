@@ -64,19 +64,28 @@ export default function TemporaryRentalsPage() {
     fetchRentalsData();
   }, [user]);
 
-  // Alert updates
+  // Scroll to top on tab change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [activeTab]);
+
+  // Safety Reminders
   const RENTAL_ALERTS = [
     {
       id: 'a-1',
       type: 'warning',
-      text: '⚠️ Exam preparation season starting! Ensure lab coats and Casio scientific calculators are reserved in advance.'
+      text: 'Verify gadget condition and functionality in-person before renting.'
     },
     {
       id: 'a-2',
       type: 'promo',
-      text: '🎮 Weekend wing tournaments incoming! Pre-book gaming monitors and speakers early to avoid peak demand.'
+      text: 'Return rented items on time and in working condition to maintain your trust score.'
     }
   ];
+
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
@@ -290,14 +299,14 @@ export default function TemporaryRentalsPage() {
           {RENTAL_ALERTS.map((alert) => (
             <div 
               key={alert.id}
-              className={`p-3.5 border rounded-2xl text-[11px] font-bold flex items-center gap-2.5 shadow-sm ${
+              className={`p-3.5 border rounded-2xl text-[11px] font-bold flex items-start gap-3 shadow-sm ${
                 alert.type === 'warning' 
                   ? 'bg-amber-50 border-amber-200 text-amber-700' 
                   : 'bg-pink-50 border-pink-200 text-pink-700'
               }`}
             >
-              <AlertCircle className="w-4.5 h-4.5 flex-shrink-0" />
-              <span>{alert.text}</span>
+              <AlertCircle className="w-4.5 h-4.5 flex-shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{alert.text}</span>
             </div>
           ))}
         </div>
@@ -311,12 +320,13 @@ export default function TemporaryRentalsPage() {
             </span>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-800">Rent Gadgets & Equipment</h1>
             <p className="text-xs text-slate-600 max-w-lg leading-relaxed font-medium">
-              Don't shell out thousands for a scientific calculator you only need for one semester exam, or a gaming console for just a weekend wing gathering. Rent securely from fellow campus mates on a daily or weekly basis.
+              Don't shell out thousands for a scientific calculator you only need for one semester exam, or a gaming console for just a weekend wing gathering. Rent securely from fellow hostel mates on a daily or weekly basis.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 p-4.5 rounded-2xl flex items-center gap-3.5 max-w-xs self-start md:self-auto shadow-sm">
-            <div className="p-3 bg-pink-50 text-pink-600 border border-pink-100 rounded-xl flex-shrink-0">
+
+          <div className="bg-white border border-slate-200 p-4.5 rounded-2xl flex items-start gap-3.5 max-w-xs self-start md:self-auto shadow-sm">
+            <div className="p-3 bg-pink-50 text-pink-600 border border-pink-100 rounded-xl flex-shrink-0 mt-0.5">
               <ShieldCheck className="w-5.5 h-5.5" />
             </div>
             <div>
