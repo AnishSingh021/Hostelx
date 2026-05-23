@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema({
   room: {
     type: String,
   },
+  wing: {
+    type: String,
+  },
+  floor: {
+    type: String,
+  },
   savedItems: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product'

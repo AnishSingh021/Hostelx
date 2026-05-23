@@ -16,8 +16,16 @@ import {
   ShoppingBag, 
   MessageSquare, 
   ShieldCheck,
-  TrendingUp
+  TrendingUp,
+  Search,
+  X,
+  ChevronDown,
+  Check,
+  Compass,
+  Layers,
+  Home
 } from 'lucide-react';
+import { CAMPUS_DATA } from '../data/hostels';
 import { auth, googleProvider } from '../firebase';
 import { 
   signInWithPopup, 
@@ -82,6 +90,10 @@ export default function AuthPage() {
   const [isCustomCollege, setIsCustomCollege] = useState(false);
   const [isCustomHostel, setIsCustomHostel] = useState(false);
   
+  // Custom searchable hostel selector states
+  const [showHostelSelector, setShowHostelSelector] = useState(false);
+  const [hostelSearchQuery, setHostelSearchQuery] = useState('');
+  
   // Form states
   const [formData, setFormData] = useState({
     name: '',
@@ -89,8 +101,10 @@ export default function AuthPage() {
     password: '',
     confirmPassword: '',
     college: 'Chandigarh University',
-    hostel: 'Zakir Hussain Block',
-    room: ''
+    hostel: 'Zakir B',
+    room: '',
+    wing: '',
+    floor: ''
   });
   
   const [validationErrors, setValidationErrors] = useState({});
@@ -108,8 +122,10 @@ export default function AuthPage() {
           name: user.name || prev.name,
           email: user.email || prev.email,
           college: user.college || 'Chandigarh University',
-          hostel: user.hostel || 'Zakir Hussain Block',
-          room: user.room || prev.room
+          hostel: user.hostel || 'Zakir B',
+          room: user.room || prev.room,
+          wing: user.wing || prev.wing || '',
+          floor: user.floor || prev.floor || ''
         }));
       } else {
         navigate('/dashboard');
@@ -287,7 +303,9 @@ export default function AuthPage() {
         body: JSON.stringify({
           college: formData.college,
           hostel: formData.hostel,
-          room: formData.room
+          room: formData.room,
+          wing: formData.wing,
+          floor: formData.floor
         })
       });
       
@@ -625,11 +643,12 @@ export default function AuthPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="space-y-6"
+                className="space-y-6 relative"
               >
                 {/* Back Link to Authentication */}
                 <div className="flex items-center">
                   <button
+                    type="button"
                     onClick={() => {
                       // Wipe session so they don't get stuck in state mismatch
                       localStorage.removeItem('hostelx_user');
@@ -644,10 +663,10 @@ export default function AuthPage() {
 
                 {/* Setup description */}
                 <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex gap-3 text-xs text-blue-700 leading-relaxed">
-                  <MapPin className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5 animate-bounce" />
                   <div>
-                    <span className="font-bold block mb-0.5">Let's find deals on campus!</span>
-                    To show items nearest you, HostelX requires you to specify your local college building. This maintains campus trust.
+                    <span className="font-bold block mb-0.5 text-blue-800">Let's find deals in your hostel!</span>
+                    Your hostel helps HostelX show trusted nearby deals and hostel-specific listings from students around you.
                   </div>
                 </div>
 
@@ -672,12 +691,15 @@ export default function AuthPage() {
                           onChange={(e) => {
                             if (e.target.value === 'Other') {
                               setIsCustomCollege(true);
-                              setFormData({ ...formData, college: '' });
+                              setFormData({ ...formData, college: '', hostel: 'Other Hostel' });
+                              setIsCustomHostel(true);
                             } else {
-                              setFormData({ ...formData, college: e.target.value });
+                              setIsCustomCollege(false);
+                              setFormData({ ...formData, college: e.target.value, hostel: 'Zakir B' });
+                              setIsCustomHostel(false);
                             }
                           }}
-                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
                         >
                           <option value="Chandigarh University">Chandigarh University (CU)</option>
                           <option value="Other">Other University...</option>
@@ -689,14 +711,15 @@ export default function AuthPage() {
                             required
                             value={formData.college}
                             onChange={(e) => setFormData({ ...formData, college: e.target.value })}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
                             placeholder="e.g. Stanford University"
                           />
                           <button
                             type="button"
                             onClick={() => {
                               setIsCustomCollege(false);
-                              setFormData({ ...formData, college: 'Chandigarh University' });
+                              setFormData({ ...formData, college: 'Chandigarh University', hostel: 'Zakir B' });
+                              setIsCustomHostel(false);
                             }}
                             className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1 shrink-0"
                           >
@@ -705,42 +728,25 @@ export default function AuthPage() {
                         </div>
                       )}
                       {!isCustomCollege && (
-                        <div className="absolute right-3 top-3.5 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-slate-500 border-l-transparent border-r-transparent w-0 h-0 animate-bounce" />
+                        <div className="absolute right-3 top-3.5 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-slate-500 border-l-transparent border-r-transparent w-0 h-0" />
                       )}
                     </div>
                   </div>
 
-                  {/* HOSTEL DORM NAME */}
+                  {/* HOSTEL DROPDOWN */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Hostel / Dormitory Block</label>
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Hostel</label>
                     <div className="relative">
                       <Building className="absolute left-3 top-3 w-5 h-5 text-slate-400 z-10" />
                       {formData.college === 'Chandigarh University' && !isCustomHostel ? (
-                        <select
-                          required
-                          value={formData.hostel}
-                          onChange={(e) => {
-                            if (e.target.value === 'Other') {
-                              setIsCustomHostel(true);
-                              setFormData({ ...formData, hostel: '' });
-                            } else {
-                              setFormData({ ...formData, hostel: e.target.value });
-                            }
-                          }}
-                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                        <button
+                          type="button"
+                          onClick={() => setShowHostelSelector(true)}
+                          className="w-full flex items-center justify-between pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-left text-slate-800"
                         >
-                          <option value="Zakir Hussain Block">Zakir Hussain Block</option>
-                          <option value="Lal Bahadur Shastri Block">Lal Bahadur Shastri Block</option>
-                          <option value="Mehr Chand Mahajan Block">Mehr Chand Mahajan Block</option>
-                          <option value="Shanti Swarup Bhatnagar Block">Shanti Swarup Bhatnagar Block</option>
-                          <option value="Homi Bhabha Block">Homi Bhabha Block</option>
-                          <option value="Kalpana Chawla Block">Kalpana Chawla Block</option>
-                          <option value="Sarojini Naidu Block">Sarojini Naidu Block</option>
-                          <option value="Kasturba Gandhi Block">Kasturba Gandhi Block</option>
-                          <option value="Sukhdev Block">Sukhdev Block</option>
-                          <option value="Bhagat Singh Block">Bhagat Singh Block</option>
-                          <option value="Other">Other Block (Type custom...)</option>
-                        </select>
+                          <span>{formData.hostel || "Choose your hostel..."}</span>
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        </button>
                       ) : (
                         <div className="flex gap-2">
                           <input
@@ -748,41 +754,71 @@ export default function AuthPage() {
                             required
                             value={formData.hostel}
                             onChange={(e) => setFormData({ ...formData, hostel: e.target.value })}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
-                            placeholder="e.g. Zakir Hussain Block"
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                            placeholder="e.g. Zakir B"
                           />
                           {formData.college === 'Chandigarh University' && (
                             <button
                               type="button"
                               onClick={() => {
                                 setIsCustomHostel(false);
-                                setFormData({ ...formData, hostel: 'Zakir Hussain Block' });
+                                setFormData({ ...formData, hostel: 'Zakir B' });
                               }}
                               className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1 shrink-0"
                             >
-                              Select CU Block
+                              Choose List
                             </button>
                           )}
                         </div>
                       )}
-                      {formData.college === 'Chandigarh University' && !isCustomHostel && (
-                        <div className="absolute right-3 top-3.5 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-slate-500 border-l-transparent border-r-transparent w-0 h-0" />
-                      )}
                     </div>
                   </div>
 
-                  {/* ROOM NUMBER */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Room Number (Optional)</label>
-                    <div className="relative">
-                      <DoorOpen className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                      <input
-                        type="text"
-                        value={formData.room}
-                        onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
-                        placeholder="e.g. 308"
-                      />
+                  {/* OPTIONAL ADVANCED FIELDS (Wing, Floor, Room Number) */}
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    {/* WING (OPTIONAL) */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-wider">Wing (Opt)</label>
+                      <div className="relative">
+                        <Compass className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          value={formData.wing}
+                          onChange={(e) => setFormData({ ...formData, wing: e.target.value })}
+                          className="w-full pl-8 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-[10px]"
+                          placeholder="A Wing"
+                        />
+                      </div>
+                    </div>
+
+                    {/* FLOOR (OPTIONAL) */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-wider">Floor (Opt)</label>
+                      <div className="relative">
+                        <Layers className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          value={formData.floor}
+                          onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+                          className="w-full pl-8 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-[10px]"
+                          placeholder="3rd Floor"
+                        />
+                      </div>
+                    </div>
+
+                    {/* ROOM NUMBER (OPTIONAL) */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-wider">Room (Opt)</label>
+                      <div className="relative">
+                        <DoorOpen className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          value={formData.room}
+                          onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                          className="w-full pl-8 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-[10px]"
+                          placeholder="308"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -802,6 +838,174 @@ export default function AuthPage() {
                     )}
                   </button>
                 </form>
+
+                {/* Modern Grouped/Searchable Hostel Selector Overlay (Modal on Desktop, Bottom Sheet on Mobile) */}
+                <AnimatePresence>
+                  {showHostelSelector && (
+                    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+                      {/* Backdrop overlay */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowHostelSelector(false)}
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+                      />
+
+                      {/* Modal / Bottom Sheet Card */}
+                      <motion.div
+                        initial={
+                          window.innerWidth < 768 
+                            ? { y: "100%", opacity: 1 } 
+                            : { scale: 0.95, opacity: 0 }
+                        }
+                        animate={
+                          window.innerWidth < 768 
+                            ? { y: 0, opacity: 1 } 
+                            : { scale: 1, opacity: 1 }
+                        }
+                        exit={
+                          window.innerWidth < 768 
+                            ? { y: "100%", opacity: 1 } 
+                            : { scale: 0.95, opacity: 0 }
+                        }
+                        transition={{ type: "spring", damping: 30, stiffness: 350 }}
+                        className="relative w-full md:max-w-md bg-white rounded-t-3xl md:rounded-2xl shadow-2xl flex flex-col max-h-[80vh] md:max-h-[70vh] z-10 overflow-hidden"
+                      >
+                        {/* Header Drag Handle for Mobile */}
+                        <div className="flex md:hidden justify-center py-3 bg-white border-b border-slate-100 flex-shrink-0">
+                          <div className="w-12 h-1 bg-slate-200 rounded-full" />
+                        </div>
+
+                        {/* Selector Header */}
+                        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
+                          <div>
+                            <h3 className="font-extrabold text-slate-800 text-sm">Select Your Hostel</h3>
+                            <p className="text-[10px] text-slate-500">Chandigarh University Campus</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowHostelSelector(false)}
+                            className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="p-3 bg-slate-50 border-b border-slate-100 flex-shrink-0">
+                          <div className="relative flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs focus-within:ring-2 focus-within:ring-blue-500">
+                            <Search className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={hostelSearchQuery}
+                              onChange={(e) => setHostelSearchQuery(e.target.value)}
+                              placeholder="Search hostels (e.g. Zakir B, NC1)..."
+                              className="w-full text-xs font-semibold outline-none bg-transparent text-slate-800 placeholder-slate-400"
+                            />
+                            {hostelSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setHostelSearchQuery('')}
+                                className="p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Hostels List Container */}
+                        <div className="p-3 overflow-y-auto space-y-3.5 flex-grow no-scrollbar bg-slate-50 max-h-[45vh]">
+                          {(() => {
+                            const cuData = CAMPUS_DATA['Chandigarh University'];
+                            let hasAnyMatch = false;
+
+                            const filteredCategories = cuData.categories.map(cat => {
+                              const filteredHostels = cat.hostels.filter(h => 
+                                h.toLowerCase().includes(hostelSearchQuery.toLowerCase())
+                              );
+                              if (filteredHostels.length > 0) hasAnyMatch = true;
+                              return { ...cat, hostels: filteredHostels };
+                            }).filter(cat => cat.hostels.length > 0);
+
+                            if (!hasAnyMatch) {
+                              return (
+                                <div className="text-center py-6">
+                                  <p className="text-xs font-bold text-slate-500">No hostels matched your search.</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsCustomHostel(true);
+                                      setFormData({ ...formData, hostel: '' });
+                                      setShowHostelSelector(false);
+                                    }}
+                                    className="text-xs text-blue-600 font-extrabold hover:underline mt-2"
+                                  >
+                                    Type Custom Hostel Name
+                                  </button>
+                                </div>
+                              );
+                            }
+
+                            return filteredCategories.map(cat => (
+                              <div key={cat.id} className="space-y-1.5">
+                                <div className="flex items-center gap-1.5 px-1">
+                                  <span className="text-xs">{cat.icon}</span>
+                                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{cat.label}</span>
+                                </div>
+                                <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-xs">
+                                  {cat.hostels.map((h) => {
+                                    const isSelected = formData.hostel === h;
+                                    return (
+                                      <button
+                                        key={h}
+                                        type="button"
+                                        onClick={() => {
+                                          if (h === 'Other Hostel') {
+                                            setIsCustomHostel(true);
+                                            setFormData({ ...formData, hostel: '' });
+                                          } else {
+                                            setIsCustomHostel(false);
+                                            setFormData({ ...formData, hostel: h });
+                                          }
+                                          setShowHostelSelector(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs font-bold transition-colors border-b border-slate-50 last:border-0 ${
+                                          isSelected 
+                                            ? 'bg-blue-50 text-blue-600' 
+                                            : 'text-slate-700 hover:bg-slate-50/50 active:bg-slate-50'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-slate-400 flex-shrink-0">
+                                            {cat.id === 'boys' ? (
+                                              <Building className="w-3.5 h-3.5 text-blue-400" />
+                                            ) : cat.id === 'girls' ? (
+                                              <Home className="w-3.5 h-3.5 text-pink-400" />
+                                            ) : (
+                                              <Compass className="w-3.5 h-3.5 text-indigo-400" />
+                                            )}
+                                          </span>
+                                          <span>{h}</span>
+                                        </div>
+                                        {isSelected && (
+                                          <span className="w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Check className="w-2.5 h-2.5" />
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      </motion.div>
+                    </div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 

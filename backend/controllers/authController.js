@@ -42,6 +42,8 @@ const googleLogin = async (req, res) => {
         college: user.college,
         hostel: user.hostel,
         room: user.room,
+        wing: user.wing,
+        floor: user.floor,
         role: user.role,
         token: generateToken(user._id),
       });
@@ -71,7 +73,7 @@ const googleLogin = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const { name, college, hostel, room } = req.body;
+  const { name, college, hostel, room, wing, floor } = req.body;
   const userId = req.user.id; // From authMiddleware
 
   try {
@@ -82,6 +84,8 @@ const updateProfile = async (req, res) => {
       user.college = college || user.college;
       user.hostel = hostel || user.hostel;
       user.room = room !== undefined ? room : user.room;
+      user.wing = wing !== undefined ? wing : user.wing;
+      user.floor = floor !== undefined ? floor : user.floor;
 
       if (req.file) {
         const result = await uploadToCloudinary(req.file.buffer);
@@ -98,6 +102,8 @@ const updateProfile = async (req, res) => {
         college: updatedUser.college,
         hostel: updatedUser.hostel,
         room: updatedUser.room,
+        wing: updatedUser.wing,
+        floor: updatedUser.floor,
         role: updatedUser.role,
         token: generateToken(updatedUser._id),
       });

@@ -108,7 +108,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
       reviewsCount: 0,
       availability: true,
       college: user?.college || 'Chandigarh University',
-      hostel: user?.hostel || 'Zakir Hussain Block',
+      hostel: user?.hostel || 'Zakir B',
       views: 1
     };
 

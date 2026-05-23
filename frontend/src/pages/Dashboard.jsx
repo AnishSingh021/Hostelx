@@ -53,7 +53,9 @@ export default function Dashboard() {
     name: '',
     college: '',
     hostel: '',
-    room: ''
+    room: '',
+    wing: '',
+    floor: ''
   });
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState('');
@@ -67,7 +69,9 @@ export default function Dashboard() {
       name: user?.name || '',
       college: user?.college || '',
       hostel: user?.hostel || '',
-      room: user?.room || ''
+      room: user?.room || '',
+      wing: user?.wing || '',
+      floor: user?.floor || ''
     });
     setProfilePreview(user?.profileImage || '');
     setProfileImageFile(null);
@@ -109,6 +113,8 @@ export default function Dashboard() {
       formData.append('college', settingsForm.college.trim());
       formData.append('hostel', settingsForm.hostel.trim());
       formData.append('room', settingsForm.room.trim());
+      formData.append('wing', settingsForm.wing?.trim() || '');
+      formData.append('floor', settingsForm.floor?.trim() || '');
       if (profileImageFile) {
         formData.append('profileImage', profileImageFile);
       }
@@ -132,6 +138,8 @@ export default function Dashboard() {
         college: data.college,
         hostel: data.hostel,
         room: data.room,
+        wing: data.wing,
+        floor: data.floor,
         profileImage: data.profileImage
       });
 
@@ -866,7 +874,7 @@ export default function Dashboard() {
 
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                      Hostel Name
+                      Hostel
                     </label>
                     <input
                       type="text"
@@ -874,21 +882,49 @@ export default function Dashboard() {
                       value={settingsForm.hostel}
                       onChange={(e) => setSettingsForm({ ...settingsForm, hostel: e.target.value })}
                       className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-sm font-medium"
-                      placeholder="e.g. Zakir Hussain Block"
+                      placeholder="e.g. Zakir B"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                      Room Number <span className="text-muted-foreground/60 italic">(Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={settingsForm.room}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, room: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-sm font-medium"
-                      placeholder="e.g. 302B"
-                    />
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                        Wing (Opt)
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsForm.wing}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, wing: e.target.value })}
+                        className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-xs font-medium"
+                        placeholder="e.g. A Wing"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                        Floor (Opt)
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsForm.floor}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, floor: e.target.value })}
+                        className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-xs font-medium"
+                        placeholder="e.g. 3rd Floor"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                        Room (Opt)
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsForm.room}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, room: e.target.value })}
+                        className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-xs font-medium"
+                        placeholder="e.g. 308"
+                      />
+                    </div>
                   </div>
                 </div>
 
