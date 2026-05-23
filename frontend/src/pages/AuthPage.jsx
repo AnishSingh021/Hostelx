@@ -80,6 +80,8 @@ const HostelXLogo = ({ className = "w-12 h-12" }) => (
     <circle cx="50" cy="57" r="5" fill="url(#logoGradient)" className="animate-pulse" />
   </svg>
 );
+// Premium offline vector SVG avatar fallback
+const FallbackAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none'><circle cx='50' cy='50' r='50' fill='%23e2e8f0'/><circle cx='50' cy='38' r='18' fill='%2394a3b8'/><path d='M20 80 C 20 62, 35 55, 50 55 C 65 55, 80 62, 80 80' stroke='%2394a3b8' stroke-width='6' stroke-linecap='round'/></svg>";
 
 export default function AuthPage() {
   const { user, login, updateProfile } = useAuth();
@@ -174,7 +176,7 @@ export default function AuthPage() {
       body: JSON.stringify({
         name: displayNameValue || firebaseUser.displayName || 'HostelX Student',
         email: firebaseUser.email,
-        profileImage: firebaseUser.photoURL || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+        profileImage: firebaseUser.photoURL || FallbackAvatar
       })
     });
     
@@ -424,19 +426,24 @@ export default function AuthPage() {
         
         <div className="w-full max-w-md flex flex-col items-stretch space-y-8">
           
-          {/* Header Mobile Brand Info */}
-          <div className="text-center flex flex-col items-center space-y-3">
-            <div className="flex md:hidden items-center justify-center p-3 rounded-2xl bg-blue-50 border border-blue-100 shadow-sm mb-1">
-              <HostelXLogo className="w-12 h-12" />
-            </div>
+          {/* Centered Brand Header Logo (Both Mobile & Desktop) */}
+          <div className="text-center flex flex-col items-center space-y-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex items-center justify-center p-1 rounded-2xl bg-transparent"
+            >
+              <HostelXLogo className="w-16 h-16 sm:w-20 sm:h-20" />
+            </motion.div>
             
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight animate-fade-in">
               {step === 1 ? (isLoginTab ? 'Welcome Back' : 'Join HostelX') : 'Complete Setup'}
             </h2>
-            <p className="text-sm text-slate-500 font-normal">
+            <p className="text-sm text-slate-500 font-normal leading-relaxed max-w-xs">
               {step === 1 
                 ? (isLoginTab ? 'Log in with your CU account to browse hostel deals.' : 'Create an account to start trading inside Chandigarh University hostels.') 
-                : 'Select your CU hostel block to view trade listings inside your wing.'}
+                : 'Choose your hostel to discover nearby listings from students around you.'}
             </p>
           </div>
 

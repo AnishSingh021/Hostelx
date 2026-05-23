@@ -55,15 +55,15 @@ export default function SavedItemsPage() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-24 flex flex-col items-center">
-            <Heart className="w-16 h-16 text-muted-foreground/30 mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No saved items yet</h2>
-            <p className="text-muted-foreground mb-6">
-              Tap the ❤️ on any product to save it here for later.
+          <div className="text-center py-24 flex flex-col items-center max-w-sm mx-auto">
+            <Heart className="w-16 h-16 text-muted-foreground/30 mb-4 animate-pulse" />
+            <h2 className="text-xl font-black mb-2 text-foreground">No saved items yet</h2>
+            <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+              Browse listings and add them to your wishlist by clicking the ❤️ icon. Discover incredible student deals!
             </p>
             <Link
               to="/marketplace"
-              className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold hover:opacity-90 active:scale-[0.99] transition shadow-md hover:shadow-lg"
             >
               Browse Marketplace
             </Link>

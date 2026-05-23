@@ -509,11 +509,11 @@ export default function LostAndFoundPage() {
 
         {/* Display Items List */}
         {filteredItems.length === 0 ? (
-          <div className="text-center py-16 bg-card/30 border border-border rounded-[2.5rem] p-8 max-w-md mx-auto flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4">📢</div>
-            <h4 className="font-extrabold text-base text-foreground">No reports matching tab</h4>
-            <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-normal font-semibold">
-              Currently no active {activeTab} bulletins matching your criteria. Be the first to file a detailed report!
+          <div className="text-center py-16 bg-card border border-border rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4 animate-bounce">📢</div>
+            <h4 className="font-extrabold text-base text-foreground">No reports found on the bulletin</h4>
+            <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center font-semibold">
+              Be the first to file a report! Report your lost or found items to instantly alert students across all hostels.
             </p>
             <button 
               onClick={() => setIsReportModalOpen(true)}

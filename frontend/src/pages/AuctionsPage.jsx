@@ -18,6 +18,8 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 
+const FallbackProductImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100' fill='none'><rect width='100' height='100' rx='16' fill='%23f1f5f9'/><path d='M35 45 L50 32 L65 45 M37 70 L63 70 M40 47 L60 67 M60 47 L40 67' stroke='%23cbd5e1' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><circle cx='50' cy='56' r='4' fill='%23cbd5e1'/></svg>";
+
 export default function AuctionsPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
@@ -315,11 +317,17 @@ export default function AuctionsPage() {
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20 bg-white border border-slate-200/80 rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
-              <Gavel className="w-12 h-12 text-slate-300 mb-4" />
-              <h4 className="font-extrabold text-sm text-slate-800">No live auction activity yet.</h4>
-              <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed">
-                Be the first to list an item for auction and start a live bidding race!
+              <Gavel className="w-12 h-12 text-slate-300 mb-4 animate-pulse" />
+              <h4 className="font-extrabold text-sm text-slate-800">No live auctions running yet</h4>
+              <p className="text-xs text-slate-500 mt-2 max-w-xs leading-relaxed text-center">
+                Be the first to list an item for auction and start a live bidding race! Sell study gear, gadgets, or exit bundles fast.
               </p>
+              <Link
+                to="/sell-item"
+                className="mt-5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl hover:opacity-90 active:scale-[0.99] transition shadow-md shadow-blue-500/20"
+              >
+                Start your first auction
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -342,7 +350,7 @@ export default function AuctionsPage() {
                     {/* Top image & status */}
                     <div className="flex gap-4">
                       <img
-                        src={item.images?.[0] || 'https://via.placeholder.com/150'}
+                        src={item.images?.[0] || FallbackProductImage}
                         alt={item.title}
                         className="w-18 h-18 rounded-2xl object-cover border border-slate-100 flex-shrink-0 group-hover:scale-102 transition"
                       />
@@ -432,7 +440,7 @@ export default function AuctionsPage() {
                 {/* Main Product Showcase */}
                 <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
                   <img 
-                    src={selectedAuction.images?.[0] || 'https://via.placeholder.com/150'} 
+                    src={selectedAuction.images?.[0] || FallbackProductImage} 
                     alt="" 
                     className="w-full h-full object-cover" 
                   />

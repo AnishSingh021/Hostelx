@@ -436,11 +436,11 @@ export default function NearbyPage() {
           ) : processedProducts.length === 0 ? (
             <div className="text-center py-20 bg-card border border-border rounded-2xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
               <div className="p-4 bg-muted text-muted-foreground rounded-2xl mb-4">
-                <MapPin className="w-8 h-8" />
+                <MapPin className="w-8 h-8 text-primary animate-bounce" />
               </div>
-              <h4 className="font-extrabold text-base text-foreground">No nearby listings found</h4>
-              <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed">
-                Expand your campus distance or adjust filters to discover more items around you.
+              <h4 className="font-extrabold text-base text-foreground">No nearby hostel listings found</h4>
+              <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center">
+                Expand your search radius or hostel filters to discover more campus deals around you!
               </p>
               <button
                 onClick={() => {

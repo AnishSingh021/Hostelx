@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BACKEND_URL } from '../config';
 
 const ENDPOINT = BACKEND_URL;
+const FallbackAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none'><circle cx='50' cy='50' r='50' fill='%23e2e8f0'/><circle cx='50' cy='38' r='18' fill='%2394a3b8'/><path d='M20 80 C 20 62, 35 55, 50 55 C 65 55, 80 62, 80 80' stroke='%2394a3b8' stroke-width='6' stroke-linecap='round'/></svg>";
 const EMOJI_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🔥'];
 let socket;
 
@@ -262,7 +263,7 @@ export default function ChatPage() {
                   >
                     <div className="relative flex-shrink-0">
                       <img
-                        src={other?.profileImage || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
+                        src={other?.profileImage || FallbackAvatar}
                         alt={other?.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />
@@ -346,7 +347,7 @@ export default function ChatPage() {
                           <div className="w-8 mr-2 flex-shrink-0 self-end">
                             {showAvatar && (
                               <img
-                                src={other?.profileImage || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
+                                src={other?.profileImage || FallbackAvatar}
                                 className="w-7 h-7 rounded-full object-cover"
                                 alt=""
                               />

@@ -35,6 +35,9 @@ import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { BACKEND_URL } from '../config';
 
+const FallbackAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none'><circle cx='50' cy='50' r='50' fill='%23e2e8f0'/><circle cx='50' cy='38' r='18' fill='%2394a3b8'/><path d='M20 80 C 20 62, 35 55, 50 55 C 65 55, 80 62, 80 80' stroke='%2394a3b8' stroke-width='6' stroke-linecap='round'/></svg>";
+const FallbackProductImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100' fill='none'><rect width='100' height='100' rx='16' fill='%23f1f5f9'/><path d='M35 45 L50 32 L65 45 M37 70 L63 70 M40 47 L60 67 M60 47 L40 67' stroke='%23cbd5e1' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><circle cx='50' cy='56' r='4' fill='%23cbd5e1'/></svg>";
+
 export default function Dashboard() {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -599,7 +602,7 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={item.images?.[0] || 'https://via.placeholder.com/150'}
+                      src={item.images?.[0] || FallbackProductImage}
                       alt={item.title}
                       className="w-12 h-12 rounded-xl object-cover border border-border flex-shrink-0"
                     />
@@ -818,7 +821,7 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center mb-4">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                     <img
-                      src={profilePreview || '/placeholder.png'}
+                      src={profilePreview || FallbackAvatar}
                       alt="Preview"
                       className="w-24 h-24 rounded-full object-cover ring-4 ring-primary/20 group-hover:ring-primary/40 transition-all duration-300"
                     />
@@ -1018,7 +1021,7 @@ export default function Dashboard() {
                 {/* Profile Card Section */}
                 <div className="p-4 bg-muted/40 border border-border/80 rounded-2xl mb-6 flex items-center gap-3">
                   <img
-                    src={user.profileImage || '/placeholder.png'}
+                    src={user.profileImage || FallbackAvatar}
                     alt={user.name}
                     className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
                   />

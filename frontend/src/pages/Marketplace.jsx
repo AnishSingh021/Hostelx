@@ -365,12 +365,18 @@ export default function Marketplace() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-20 flex flex-col items-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4">🔍</div>
-            <p className="text-lg font-bold">No active listings found</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              We couldn't find items matching your criteria on campus. Try enabling "AI Search" or broadening your terms!
+          <div className="text-center py-20 bg-card border border-border rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4 animate-bounce">📦</div>
+            <h4 className="font-extrabold text-base text-foreground">No listings available yet</h4>
+            <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center">
+              Be the first to upload your first item and start trading inside Chandigarh University hostels!
             </p>
+            <Link
+              to="/sell-item"
+              className="mt-5 px-6 py-2.5 bg-primary text-primary-foreground text-xs font-black rounded-xl hover:opacity-90 active:scale-[0.99] transition shadow-md"
+            >
+              Upload your first item
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
