@@ -71,12 +71,43 @@ const createProduct = async (req, res) => {
       processedTags = Array.isArray(tags) ? tags : JSON.parse(tags);
     }
 
+    let finalListingType = listingType || 'buy';
+    let finalIsAuction = isAuction === 'true' || isAuction === true;
+    let finalIsRental = isRental === 'true' || isRental === true;
+    let finalIsUrgent = isUrgent === 'true' || isUrgent === true;
+    let finalPrice = Number(price) || 0;
+    let finalStartingBid = Number(startingBid) || 0;
+    let finalRentPrice = Number(rentPrice) || 0;
+
+    // Strict listing category validation on backend creation
+    if (finalListingType === 'lost' || finalListingType === 'found') {
+      finalIsUrgent = false;
+      finalIsAuction = false;
+      finalStartingBid = 0;
+      finalIsRental = false;
+      finalRentPrice = 0;
+    } else if (finalListingType === 'rent') {
+      finalIsRental = true;
+      finalIsAuction = false;
+      finalStartingBid = 0;
+      finalPrice = finalRentPrice;
+    } else if (finalIsAuction) {
+      finalListingType = 'buy';
+      finalIsRental = false;
+      finalRentPrice = 0;
+      finalPrice = finalStartingBid;
+    } else {
+      finalIsRental = false;
+      finalRentPrice = 0;
+      finalIsAuction = false;
+    }
+
     const product = await Product.create({
       title,
       description,
-      price: Number(price) || 0,
-      category,
-      condition,
+      price: finalPrice,
+      category: finalListingType === 'lost' || finalListingType === 'found' ? 'Others' : category,
+      condition: finalListingType === 'lost' || finalListingType === 'found' ? 'used' : condition,
       hostel,
       images: imageUrls,
       seller: req.user._id,
@@ -84,16 +115,16 @@ const createProduct = async (req, res) => {
         type: 'Point',
         coordinates: [Number(longitude) || 0, Number(latitude) || 0]
       },
-      listingType: listingType || 'buy',
-      isUrgent: isUrgent === 'true' || isUrgent === true,
+      listingType: finalListingType,
+      isUrgent: finalIsUrgent,
       canDeliver: canDeliver === 'true' || canDeliver === true,
       deliveryFee: Number(deliveryFee) || 0,
-      originalPrice: Number(price) || 0,
-      isAuction: isAuction === 'true' || isAuction === true,
-      startingBid: Number(startingBid) || 0,
-      isRental: isRental === 'true' || isRental === true,
-      rentType: rentType || 'offer',
-      rentPrice: Number(rentPrice) || 0,
+      originalPrice: finalPrice,
+      isAuction: finalIsAuction,
+      startingBid: finalStartingBid,
+      isRental: finalIsRental,
+      rentType: finalListingType === 'rent' ? rentType || 'offer' : 'offer',
+      rentPrice: finalRentPrice,
       rentalDuration: rentalDuration || 'day',
       meetupCode,
       tags: processedTags
@@ -157,7 +188,20 @@ const getProducts = async (req, res) => {
 
     // Filter by Listing Type
     if (listingType && listingType !== 'All') {
-      query.listingType = listingType;
+      if (listingType === 'lost_found') {
+        query.listingType = { $in: ['lost', 'found', 'recovered'] };
+      } else if (listingType === 'auction') {
+        query.isAuction = true;
+      } else if (listingType === 'buy') {
+        query.listingType = 'buy';
+        query.isAuction = false;
+      } else {
+        query.listingType = listingType;
+      }
+    } else {
+      // Default: exclude lost/found and auctions from standard results (Marketplace main views)
+      query.listingType = { $in: ['buy', 'rent', 'emergency'] };
+      query.isAuction = false;
     }
 
     // Filter by Rental Type (Offer vs Seek)
@@ -275,6 +319,17 @@ const updateProduct = async (req, res) => {
     product.category = category || product.category;
     product.condition = condition || product.condition;
     product.status = status || product.status;
+    
+    // Validate listing constraints on update
+    if (product.listingType === 'lost' || product.listingType === 'found') {
+      product.isUrgent = false;
+      product.isAuction = false;
+      product.isRental = false;
+    } else if (product.listingType === 'rent') {
+      product.isRental = true;
+      product.isAuction = false;
+    }
+
     product.isUrgent = isUrgent !== undefined ? (isUrgent === 'true' || isUrgent === true) : product.isUrgent;
     product.canDeliver = canDeliver !== undefined ? (canDeliver === 'true' || canDeliver === true) : product.canDeliver;
     product.deliveryFee = deliveryFee !== undefined ? Number(deliveryFee) : product.deliveryFee;

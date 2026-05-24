@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, MessageCircle, ChevronLeft, Heart, Eye, TrendingDown, Truck, Clock, Hammer, ShieldCheck, Star, Send, ArrowRight, ShieldAlert, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { safeParseDescription, parseItemDetails } from '../lib/utils';
 
 const FallbackAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none'><circle cx='50' cy='50' r='50' fill='%23e2e8f0'/><circle cx='50' cy='38' r='18' fill='%2394a3b8'/><path d='M20 80 C 20 62, 35 55, 50 55 C 65 55, 80 62, 80 80' stroke='%2394a3b8' stroke-width='6' stroke-linecap='round'/></svg>";
 
@@ -267,7 +268,7 @@ export default function ProductDetailsPage() {
       <div className="max-w-5xl mx-auto p-4 md:p-8">
         
         {/* Wishlist Price Drop Alert */}
-        {product.originalPrice && product.originalPrice > product.price && (
+        {product.originalPrice && product.originalPrice > product.price && product.listingType !== 'lost' && product.listingType !== 'found' && (
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -297,7 +298,7 @@ export default function ProductDetailsPage() {
                 className="w-full h-full object-cover"
               />
 
-              {product.isUrgent && (
+              {product.isUrgent && product.listingType !== 'lost' && product.listingType !== 'found' && (
                 <span className="absolute top-4 left-4 bg-rose-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider animate-pulse shadow-md z-[1]">
                   Urgent Sale ⚡
                 </span>
@@ -327,32 +328,42 @@ export default function ProductDetailsPage() {
             {/* Headers, pricing */}
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-xl uppercase tracking-wider">
-                  {product.category}
-                </span>
-                <span className="text-xs font-bold px-3 py-1.5 bg-muted text-muted-foreground rounded-xl capitalize">
-                  Condition: {product.condition}
-                </span>
-                {product.status === 'sold' && (
-                  <span className="text-xs font-bold px-3 py-1.5 bg-rose-500 text-white rounded-xl uppercase tracking-wide">
-                    Sold / Completed
+                {product.listingType === 'lost' || product.listingType === 'found' ? (
+                  <span className={`text-xs font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider ${product.listingType === 'lost' ? 'bg-rose-500 text-white' : 'bg-amber-500 text-black'}`}>
+                    {product.listingType === 'lost' ? '🎒 LOST REPORT' : '🔍 FOUND REPORT'}
                   </span>
-                )}
-                {product.isAuction && (
-                  <span className="text-xs font-bold px-3 py-1.5 bg-amber-500 text-white rounded-xl uppercase tracking-wide flex items-center gap-1">
-                    <Hammer className="w-3.5 h-3.5" /> Bidding Live
-                  </span>
+                ) : (
+                  <>
+                    <span className="text-xs font-bold px-3 py-1.5 bg-primary/10 text-primary rounded-xl uppercase tracking-wider">
+                      {product.category}
+                    </span>
+                    <span className="text-xs font-bold px-3 py-1.5 bg-muted text-muted-foreground rounded-xl capitalize">
+                      Condition: {product.condition}
+                    </span>
+                    {product.status === 'sold' && (
+                      <span className="text-xs font-bold px-3 py-1.5 bg-rose-500 text-white rounded-xl uppercase tracking-wide">
+                        Sold / Completed
+                      </span>
+                    )}
+                    {product.isAuction && (
+                      <span className="text-xs font-bold px-3 py-1.5 bg-amber-500 text-white rounded-xl uppercase tracking-wide flex items-center gap-1">
+                        <Hammer className="w-3.5 h-3.5" /> Bidding Live
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 
               <div>
                 <h1 className="text-3xl font-black tracking-tight leading-tight">{product.title}</h1>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-3xl font-black text-primary">₹{product.price}</span>
-                  {product.listingType === 'rent' && (
-                    <span className="text-sm font-bold text-muted-foreground">/ {product.rentalDuration}</span>
-                  )}
-                </div>
+                {product.listingType !== 'lost' && product.listingType !== 'found' && (
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-3xl font-black text-primary">₹{product.price}</span>
+                    {product.listingType === 'rent' && (
+                      <span className="text-sm font-bold text-muted-foreground">/ {product.rentalDuration}</span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 text-xs font-semibold text-muted-foreground">
@@ -385,12 +396,41 @@ export default function ProductDetailsPage() {
             )}
 
             {/* Description */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-              <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-2">Item Description</h3>
-              <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-sm font-medium">
-                {product.description}
-              </p>
-            </div>
+            {(() => {
+              const details = parseItemDetails(product);
+              return (
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-2">Item Description</h3>
+                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-sm font-medium">
+                      {details.desc}
+                    </p>
+                  </div>
+                  
+                  {(product.listingType === 'lost' || product.listingType === 'found') && (
+                    <div className="bg-muted/20 border border-border rounded-2xl p-5 space-y-4">
+                      <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Report Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                           <span className="text-muted-foreground block text-[10px] font-bold uppercase">Last Seen Location</span>
+                           <span className="text-foreground text-sm font-black flex items-center gap-1 mt-1">
+                             <MapPin className="w-4 h-4 text-rose-500" />
+                             {details.location}
+                           </span>
+                        </div>
+                        <div>
+                           <span className="text-muted-foreground block text-[10px] font-bold uppercase">Report Timestamp</span>
+                           <span className="text-foreground text-sm font-black flex items-center gap-1 mt-1">
+                             <Clock className="w-4 h-4 text-primary" />
+                             {details.datetime}
+                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Auction Bidding Console */}
             {product.isAuction && (
@@ -464,11 +504,12 @@ export default function ProductDetailsPage() {
             )}
 
             {/* Secure Meetup & Exchange Code Handover Verification */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                Secure Exchange Handover
-              </h3>
+            {product.listingType !== 'lost' && product.listingType !== 'found' && (
+              <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+                <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  Secure Exchange Handover
+                </h3>
 
               {product.status === 'sold' && product.meetupConfirmed ? (
                 <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex items-start gap-2.5 text-emerald-600 dark:text-emerald-400">
@@ -532,10 +573,13 @@ export default function ProductDetailsPage() {
                 </>
               )}
             </div>
+          )}
 
             {/* Seller profile card & Review logger */}
             <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Seller Coordinates</h3>
+              <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
+                {product.listingType === 'lost' || product.listingType === 'found' ? 'Reporter Coordinates' : 'Seller Coordinates'}
+              </h3>
               
               <div className="flex items-center gap-4 mb-2">
                 <img
@@ -549,11 +593,15 @@ export default function ProductDetailsPage() {
                     <span className="text-xs font-bold text-primary flex items-center gap-0.5">
                       <MapPin className="w-3.5 h-3.5" /> {product.seller.hostel} {product.seller.room && `(Room ${product.seller.room})`}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">·</span>
-                    <span className="text-xs font-bold text-amber-500 flex items-center gap-0.5">
-                      <Star className="w-3.5 h-3.5 fill-amber-500" />
-                      {product.seller.ratings || 0} trust ({product.seller.reviews?.length || 0} ratings)
-                    </span>
+                    {product.listingType !== 'lost' && product.listingType !== 'found' && (
+                      <>
+                        <span className="text-[10px] text-muted-foreground">·</span>
+                        <span className="text-xs font-bold text-amber-500 flex items-center gap-0.5">
+                          <Star className="w-3.5 h-3.5 fill-amber-500" />
+                          {product.seller.ratings || 0} trust ({product.seller.reviews?.length || 0} ratings)
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -565,7 +613,9 @@ export default function ProductDetailsPage() {
                   className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition cursor-pointer"
                 >
                   <MessageCircle className="w-5 h-5" /> 
-                  {product.listingType === 'rent' && product.rentType === 'seek' ? 'Offer my Item / Start Chat' : 'Chat with Seller'}
+                  {product.listingType === 'lost' ? '📞 Contact Owner / Report Claim' : 
+                   product.listingType === 'found' ? '📞 Claim Found Item' :
+                   product.listingType === 'rent' && product.rentType === 'seek' ? 'Offer my Item / Start Chat' : 'Chat with Seller'}
                 </button>
               ) : (
                 <Link
@@ -577,7 +627,7 @@ export default function ProductDetailsPage() {
               )}
 
               {/* Leave a Seller Review Form */}
-              {!isSeller && (
+              {!isSeller && product.listingType !== 'lost' && product.listingType !== 'found' && (
                 <div className="border-t border-border pt-4 mt-2 space-y-3.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Rate Seller Trustworthiness</span>
                   

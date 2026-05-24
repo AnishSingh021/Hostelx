@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { safeParseDescription } from '../lib/utils';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -195,9 +196,12 @@ export default function NearbyPage() {
       };
     })
     .filter(item => {
+      // Strictly exclude lost, found and recovered items from nearby radar
+      if (item.listingType === 'lost' || item.listingType === 'found' || item.listingType === 'recovered') return false;
+
       // Search matches title / description
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            item.description.toLowerCase().includes(searchQuery.toLowerCase());
+                            safeParseDescription(item.description).toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
 
       // Filter by dynamic hostel
@@ -512,7 +516,7 @@ export default function NearbyPage() {
                             {item.title}
                           </h3>
                           <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
-                            {item.description || 'No description provided.'}
+                            {safeParseDescription(item.description) || 'No description provided.'}
                           </p>
                           
                           <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-bold mt-1.5 flex-wrap">

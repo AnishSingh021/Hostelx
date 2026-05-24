@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { safeParseDescription } from '../lib/utils';
 import { 
   Gavel, 
   ChevronLeft, 
@@ -37,7 +38,7 @@ export default function AuctionsPage() {
   // Main products fetch
   const fetchAuctions = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
+      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=auction');
       if (response.ok) {
         const data = await response.json();
         // Filter only products marked as auctions
@@ -205,7 +206,7 @@ export default function AuctionsPage() {
   // Filter listings based on active tab & query
   const filteredProducts = products.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+                          safeParseDescription(item.description).toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
 

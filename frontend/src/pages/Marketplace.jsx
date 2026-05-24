@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronLeft, X, HelpCircle, AlertOctagon, RefreshCw, ShoppingCart, Calendar, HelpCircle as FoundIcon, Hammer, ArrowUpDown, Tag, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { safeParseDescription } from '../lib/utils';
 
 const CATEGORY_SUGGESTIONS = [
   'Search "cheap chair under 1k" 🤖',
@@ -66,7 +67,6 @@ export default function Marketplace() {
     { type: 'All', label: 'All Listings', icon: <ShoppingCart className="w-4 h-4" /> },
     { type: 'buy', label: 'Items for Sale', icon: <Tag className="w-4 h-4" /> },
     { type: 'rent', label: 'Rentals', icon: <Calendar className="w-4 h-4" /> },
-    { type: 'lost', label: 'Lost & Found', icon: <AlertOctagon className="w-4 h-4" /> },
     { type: 'emergency', label: 'Campus Emergencies', icon: <RadioIcon className="w-4 h-4 animate-pulse text-rose-500" /> }
   ];
 
@@ -106,30 +106,7 @@ export default function Marketplace() {
       const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products?${queryParams}`);
       let data = await response.json();
 
-      // For Lost & Found type tab, let's also fetch 'found' and merge them
-      if (type === 'lost') {
-        const foundParams = new URLSearchParams();
-        if (kw) foundParams.append('keyword', kw);
-        if (cat && cat !== 'All') foundParams.append('category', cat);
-        foundParams.append('listingType', 'found');
-        if (user?.hostel) foundParams.append('userHostel', user.hostel);
-        if (lat && lng) {
-          foundParams.append('userLat', lat);
-          foundParams.append('userLng', lng);
-        }
-        const resFound = await fetch(`https://hostelx-backend-a228.onrender.com/api/products?${foundParams}`);
-        if (resFound.ok) {
-          const foundData = await resFound.json();
-          data = [...data, ...foundData];
-          // Sort merged by boosted -> date
-          data.sort((a,b) => {
-            const aBoost = a.isBoosted ? 1 : 0;
-            const bBoost = b.isBoosted ? 1 : 0;
-            if (aBoost !== bBoost) return bBoost - aBoost;
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          });
-        }
-      }
+      // Redundant Lost & Found merge block removed to enforce strict separation
 
       // Filter local nearby if toggled
       if (nearbyOnly && lat && lng) {
@@ -381,7 +358,9 @@ export default function Marketplace() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <AnimatePresence>
-              {products.map((product, i) => {
+              {products
+                .filter(p => p.listingType !== 'lost' && p.listingType !== 'found' && p.listingType !== 'recovered' && !p.isAuction)
+                .map((product, i) => {
                 const isUrgent = product.isUrgent;
                 const isBoosted = product.isBoosted;
                 const isRental = product.listingType === 'rent';
@@ -496,7 +475,7 @@ export default function Marketplace() {
                             
                             {/* Short desc snippet */}
                             <p className="text-xs text-muted-foreground/80 line-clamp-2 mt-1.5 font-medium">
-                              {product.description}
+                              {safeParseDescription(product.description)}
                             </p>
                           </div>
 

@@ -33,7 +33,8 @@ export default function EditItemPage() {
     price: '',
     category: '',
     condition: '',
-    status: ''
+    status: '',
+    listingType: ''
   });
 
   const categories = ['Electronics', 'Books', 'Cycle', 'Mattress', 'Gaming', 'Kitchen', 'Fashion', 'Notes', 'Accessories', 'Others'];
@@ -57,7 +58,8 @@ export default function EditItemPage() {
             price: data.price,
             category: data.category,
             condition: data.condition,
-            status: data.status
+            status: data.status,
+            listingType: data.listingType
           });
           setExistingImages(data.images || []);
         }
@@ -220,7 +222,7 @@ export default function EditItemPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Price (₹)</label>
-              <input type="number" required value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+              <input type="number" required={formData.listingType !== 'lost' && formData.listingType !== 'found'} disabled={formData.listingType === 'lost' || formData.listingType === 'found'} value={(formData.listingType === 'lost' || formData.listingType === 'found') ? '0' : formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50" />
             </div>
           </div>
 
@@ -232,13 +234,13 @@ export default function EditItemPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">Category</label>
-              <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none">
+              <select value={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'Others' : formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} disabled={formData.listingType === 'lost' || formData.listingType === 'found'} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Condition</label>
-              <select value={formData.condition} onChange={(e) => setFormData({...formData, condition: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none">
+              <select value={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'used' : formData.condition} onChange={(e) => setFormData({...formData, condition: e.target.value})} disabled={formData.listingType === 'lost' || formData.listingType === 'found'} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50">
                 <option value="new">New</option>
                 <option value="used">Used</option>
               </select>

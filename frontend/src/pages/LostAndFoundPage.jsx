@@ -165,7 +165,7 @@ export default function LostAndFoundPage() {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
+      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=lost_found');
       if (response.ok) {
         const data = await response.json();
         // filter lost/found/recovered products
@@ -543,12 +543,7 @@ export default function LostAndFoundPage() {
                   layout
                   className={`bg-card border ${borderAccent} rounded-3xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row gap-5 relative`}
                 >
-                  {/* Reward indicator */}
-                  {item.reward > 0 && (
-                    <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1 border border-rose-400/20">
-                      💰 Reward: ₹{item.reward}
-                    </div>
-                  )}
+                  {/* Price/Reward indicator removed for strict separation as requested */}
 
                   {/* Thumbnail */}
                   <div className="w-full sm:w-36 h-36 rounded-2xl overflow-hidden bg-muted/40 border border-border flex-shrink-0">

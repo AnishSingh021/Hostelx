@@ -112,29 +112,66 @@ export default function SellItemPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const isNeedRequest = formData.listingType === 'emergency' || (formData.listingType === 'rent' && formData.rentType === 'seek') || formData.listingType === 'lost';
+    const isNeedRequest = formData.listingType === 'emergency' || (formData.listingType === 'rent' && formData.rentType === 'seek') || formData.listingType === 'lost' || formData.listingType === 'found';
     if (!isNeedRequest && images.length === 0) {
       alert('Please upload at least one image.');
       return;
     }
 
+    // Submit validations based on strict modes
+    if (formData.listingType === 'buy' && !formData.isAuction) {
+      if (!formData.price || Number(formData.price) <= 0) {
+        alert('Please enter a valid selling price.');
+        return;
+      }
+    }
+    if (formData.listingType === 'rent') {
+      if (!formData.rentPrice || Number(formData.rentPrice) <= 0) {
+        alert('Please enter a valid rent rate.');
+        return;
+      }
+    }
+    if (formData.listingType === 'buy' && formData.isAuction) {
+      if (!formData.startingBid || Number(formData.startingBid) <= 0) {
+        alert('Please enter a valid starting bid.');
+        return;
+      }
+    }
+
     setLoading(true);
     const submitData = new FormData();
     submitData.append('title', formData.title);
-    submitData.append('description', formData.description);
-    submitData.append('price', formData.listingType === 'rent' ? formData.rentPrice : formData.price);
-    submitData.append('category', formData.category);
-    submitData.append('condition', formData.condition);
+
+    let finalDesc = formData.description;
+    if (formData.listingType === 'lost' || formData.listingType === 'found') {
+      finalDesc = JSON.stringify({
+        desc: formData.description,
+        location: formData.hostel,
+        datetime: new Date().toLocaleString(),
+        contact: user?.email || '',
+        room: user?.room ? `Room ${user.room}, ${user.hostel}` : formData.hostel
+      });
+    }
+    submitData.append('description', finalDesc);
+
+    // Reward for lost/found is optionally set in price, otherwise price is 0
+    const finalPrice = (formData.listingType === 'lost' || formData.listingType === 'found')
+      ? '0'
+      : (formData.listingType === 'rent' ? formData.rentPrice : formData.price);
+
+    submitData.append('price', finalPrice);
+    submitData.append('category', (formData.listingType === 'lost' || formData.listingType === 'found') ? 'Others' : formData.category);
+    submitData.append('condition', (formData.listingType === 'lost' || formData.listingType === 'found') ? 'used' : formData.condition);
     submitData.append('hostel', formData.hostel);
     submitData.append('listingType', formData.listingType);
-    submitData.append('isUrgent', formData.isUrgent);
+    submitData.append('isUrgent', (formData.listingType === 'lost' || formData.listingType === 'found') ? 'false' : String(formData.isUrgent));
     submitData.append('canDeliver', 'false');
     submitData.append('deliveryFee', '0');
-    submitData.append('isAuction', formData.isAuction);
-    submitData.append('startingBid', formData.isAuction ? formData.startingBid || 0 : 0);
-    submitData.append('isRental', formData.listingType === 'rent');
+    submitData.append('isAuction', String(formData.isAuction));
+    submitData.append('startingBid', formData.isAuction ? String(formData.startingBid || 0) : '0');
+    submitData.append('isRental', String(formData.listingType === 'rent'));
     submitData.append('rentType', formData.listingType === 'rent' ? formData.rentType : 'offer');
-    submitData.append('rentPrice', formData.listingType === 'rent' ? formData.rentPrice || 0 : 0);
+    submitData.append('rentPrice', formData.listingType === 'rent' ? String(formData.rentPrice || 0) : '0');
     submitData.append('rentalDuration', formData.rentalDuration);
     
     // Append current user coordinates for real nearest search
@@ -229,30 +266,38 @@ export default function SellItemPage() {
             <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Listing Category Mode</label>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
               {[
-                { type: 'buy', label: 'Sell Item', icon: <Tag className="w-4 h-4" /> },
-                { type: 'rent', label: 'Rent Item', icon: <Hourglass className="w-4 h-4" /> },
-                { type: 'lost', label: 'Lost Item', icon: <AlertTriangle className="w-4 h-4" /> },
-                { type: 'found', label: 'Found Item', icon: <CheckCircle className="w-4 h-4" /> },
-                { type: 'emergency', label: 'Emergency', icon: <Radio className="w-4 h-4 text-rose-500 animate-pulse" /> },
-              ].map(opt => (
-                <button
-                  key={opt.type}
-                  type="button"
-                  onClick={() => setFormData({ 
-                    ...formData, 
-                    listingType: opt.type, 
-                    isAuction: opt.type !== 'buy' ? false : formData.isAuction 
-                  })}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border font-bold text-xs transition-all duration-200 cursor-pointer ${
-                    formData.listingType === opt.type 
-                      ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25' 
-                      : 'bg-muted/55 border-border hover:bg-muted hover:border-muted-foreground/35'
-                  }`}
-                >
-                  {opt.icon}
-                  {opt.label}
-                </button>
-              ))}
+                { mode: 'SALE', label: 'SALE (Sell)', icon: <Tag className="w-4 h-4" />, setup: { listingType: 'buy', isAuction: false } },
+                { mode: 'RENTAL', label: 'RENTAL (Rent)', icon: <Hourglass className="w-4 h-4" />, setup: { listingType: 'rent', isAuction: false } },
+                { mode: 'LOST', label: 'LOST (Report)', icon: <AlertTriangle className="w-4 h-4" />, setup: { listingType: 'lost', isAuction: false, price: '0', condition: 'used' } },
+                { mode: 'FOUND', label: 'FOUND (Report)', icon: <CheckCircle className="w-4 h-4" />, setup: { listingType: 'found', isAuction: false, price: '0', condition: 'used' } },
+                { mode: 'AUCTION', label: 'AUCTION (Bid)', icon: <Gavel className="w-4 h-4" />, setup: { listingType: 'buy', isAuction: true } },
+              ].map(opt => {
+                const currentMode = formData.listingType === 'lost' ? 'LOST' :
+                                    formData.listingType === 'found' ? 'FOUND' :
+                                    formData.listingType === 'rent' ? 'RENTAL' :
+                                    formData.isAuction ? 'AUCTION' : 'SALE';
+                const isActive = currentMode === opt.mode;
+                return (
+                  <button
+                    key={opt.mode}
+                    type="button"
+                    onClick={() => {
+                      setFormData({ 
+                        ...formData, 
+                        ...opt.setup
+                      });
+                    }}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border font-bold text-xs transition-all duration-200 cursor-pointer ${
+                      isActive 
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25' 
+                        : 'bg-muted/55 border-border hover:bg-muted hover:border-muted-foreground/35'
+                    }`}
+                  >
+                    {opt.icon}
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
 
             {formData.listingType === 'rent' && (
@@ -375,7 +420,8 @@ export default function SellItemPage() {
               </label>
               <input 
                 type="number" required={formData.listingType !== 'lost' && formData.listingType !== 'found'}
-                value={formData.listingType === 'rent' ? formData.rentPrice : formData.price}
+                disabled={formData.listingType === 'lost' || formData.listingType === 'found'}
+                value={(formData.listingType === 'lost' || formData.listingType === 'found') ? '0' : (formData.listingType === 'rent' ? formData.rentPrice : formData.price)}
                 onChange={(e) => {
                   const val = e.target.value;
                   if (formData.listingType === 'rent') {
@@ -384,8 +430,8 @@ export default function SellItemPage() {
                     setFormData({...formData, price: val});
                   }
                 }}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
-                placeholder="e.g. 500"
+                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold disabled:opacity-50"
+                placeholder={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'N/A' : 'e.g. 500'}
               />
             </div>
           </div>
@@ -587,9 +633,10 @@ export default function SellItemPage() {
             <div>
               <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Category</label>
               <select 
-                value={formData.category}
+                value={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'Others' : formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
+                disabled={formData.listingType === 'lost' || formData.listingType === 'found'}
+                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold disabled:opacity-50"
               >
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -598,9 +645,10 @@ export default function SellItemPage() {
             <div>
               <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Condition</label>
               <select
-                value={formData.condition}
+                value={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'used' : formData.condition}
                 onChange={(e) => setFormData({...formData, condition: e.target.value})}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
+                disabled={formData.listingType === 'lost' || formData.listingType === 'found'}
+                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold disabled:opacity-50"
               >
                 <option value="new">🌟 Brand New (Sealed)</option>
                 <option value="like-new">✨ Like New (Barely Used)</option>
@@ -725,24 +773,26 @@ export default function SellItemPage() {
 
 
           {/* Urgent Exit Listing Toggle */}
-          <div className="flex items-center justify-between p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
-            <div className="flex items-start gap-2">
-              <Radio className="w-5 h-5 text-rose-500 mt-0.5 animate-pulse" />
-              <div>
-                <h3 className="font-bold text-sm text-rose-500 flex items-center gap-1.5">
-                  Mark as Urgent Sale! ⚡
-                  <span className="text-[9px] bg-rose-500 text-white font-mono px-1 py-0.2 rounded uppercase tracking-wider animate-bounce">Boost Listing</span>
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Highlight your item in bright orange with high priority sort</p>
+          {formData.listingType !== 'lost' && formData.listingType !== 'found' && (
+            <div className="flex items-center justify-between p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
+              <div className="flex items-start gap-2">
+                <Radio className="w-5 h-5 text-rose-500 mt-0.5 animate-pulse" />
+                <div>
+                  <h3 className="font-bold text-sm text-rose-500 flex items-center gap-1.5">
+                    Mark as Urgent Sale! ⚡
+                    <span className="text-[9px] bg-rose-500 text-white font-mono px-1 py-0.2 rounded uppercase tracking-wider animate-bounce">Boost Listing</span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Highlight your item in bright orange with high priority sort</p>
+                </div>
               </div>
+              <input 
+                type="checkbox"
+                checked={formData.isUrgent}
+                onChange={(e) => setFormData({ ...formData, isUrgent: e.target.checked })}
+                className="w-5 h-5 rounded border-rose-500/30 text-rose-500 focus:ring-rose-500 cursor-pointer"
+              />
             </div>
-            <input 
-              type="checkbox"
-              checked={formData.isUrgent}
-              onChange={(e) => setFormData({ ...formData, isUrgent: e.target.checked })}
-              className="w-5 h-5 rounded border-rose-500/30 text-rose-500 focus:ring-rose-500 cursor-pointer"
-            />
-          </div>
+          )}
 
           <button 
             type="submit" disabled={loading}
