@@ -20,6 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/ui/Navbar';
 
 export default function TemporaryRentalsPage() {
   const navigate = useNavigate();
@@ -255,12 +256,13 @@ export default function TemporaryRentalsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-800 relative pb-16">
+      <Navbar />
       {/* Pink & indigo styling gradients */}
       <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-pink-400/5 rounded-full blur-[100px] -z-10" />
       <div className="absolute top-1/2 left-1/4 w-[350px] h-[350px] bg-violet-400/5 rounded-full blur-[100px] -z-10" />
 
       {/* Nav Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-[73px] z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -392,15 +394,15 @@ export default function TemporaryRentalsPage() {
             </div>
           ) : filteredRentals.length === 0 ? (
             /* High Fidelity Empty States */
-            <div className="flex flex-col items-center justify-center text-center p-12 bg-white border border-slate-200 rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
-              <div className="p-4 bg-pink-50 text-pink-600 rounded-2xl border border-pink-100">
+            <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900/60 rounded-[2rem] shadow-sm max-w-xl mx-auto space-y-6">
+              <div className="p-4 bg-pink-50 text-pink-600 dark:bg-pink-400/5 dark:text-pink-400 rounded-2xl border border-pink-100 dark:border-pink-900/25">
                 <RotateCcw className="w-12 h-12" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-800">
-                  {activeTab === 'offers' ? 'No Active Rental Items' : 'No Peer Rental Requests'}
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                  No rentals available.
                 </h3>
-                <p className="text-xs text-slate-500 max-w-md">
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md font-semibold leading-relaxed">
                   {activeTab === 'offers' 
                     ? 'No students have listed items for rent in your campus block at the moment. All standard marketplace items are active.'
                     : 'No students have posted active seek requests. If you need an item temporarily, submit your request now!'}

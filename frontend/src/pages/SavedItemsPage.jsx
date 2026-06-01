@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Heart, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/ui/Navbar';
 
 export default function SavedItemsPage() {
   const { user } = useAuth();
@@ -38,16 +39,19 @@ export default function SavedItemsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border px-4 py-4 flex items-center gap-3">
-        <Link to="/dashboard" className="p-1.5 rounded-full hover:bg-muted transition cursor-pointer">
-          <ChevronLeft className="w-5 h-5" />
+      <Navbar />
+      
+      <div className="max-w-7xl mx-auto p-6">
+        <Link to="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6 transition">
+          <ChevronLeft className="w-5 h-5 mr-1" /> Back to Dashboard
         </Link>
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <Heart className="w-5 h-5 text-red-500 fill-red-500" /> Saved Items
-        </h1>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Heart className="w-8 h-8 text-red-500 fill-red-500" /> Saved Items
+          </h1>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
@@ -55,10 +59,10 @@ export default function SavedItemsPage() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-24 flex flex-col items-center max-w-sm mx-auto">
+          <div className="bg-card border border-border rounded-2xl p-10 text-center flex flex-col items-center max-w-2xl mx-auto py-16">
             <Heart className="w-16 h-16 text-muted-foreground/30 mb-4 animate-pulse" />
-            <h2 className="text-xl font-black mb-2 text-foreground">No saved items yet</h2>
-            <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+            <h2 className="text-xl font-bold mb-2">No saved items yet</h2>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm leading-relaxed">
               Browse listings and add them to your wishlist by clicking the ❤️ icon. Discover incredible student deals!
             </p>
             <Link
@@ -76,9 +80,9 @@ export default function SavedItemsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm group flex flex-col"
+                className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm group flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300"
               >
-                <div className="relative h-52 bg-muted">
+                <div className="relative h-52 bg-muted overflow-hidden">
                   <Link to={`/product/${product._id}`}>
                     <img
                       src={product.images[0]}
@@ -112,7 +116,7 @@ export default function SavedItemsPage() {
             ))}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

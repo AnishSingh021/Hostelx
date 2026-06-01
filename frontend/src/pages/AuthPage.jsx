@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Mail, 
   User, 
@@ -432,9 +432,9 @@ export default function AuthPage() {
               initial={{ opacity: 0, scale: 0.9, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="flex items-center justify-center p-1 rounded-2xl bg-transparent"
+              className="flex items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/50"
             >
-              <HostelXLogo className="w-16 h-16 sm:w-20 sm:h-20" />
+              <HostelXLogo className="w-14 h-14" />
             </motion.div>
             
             <h2 className="text-3xl font-black text-slate-900 tracking-tight animate-fade-in">
@@ -445,6 +445,14 @@ export default function AuthPage() {
                 ? (isLoginTab ? 'Log in with your CU account to browse hostel deals.' : 'Create an account to start trading inside Chandigarh University hostels.') 
                 : 'Choose your hostel to discover nearby listings from students around you.'}
             </p>
+
+            {step === 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 pt-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-500">
+                <span className="flex items-center gap-1">✓ Verified Hostel Community</span>
+                <span className="flex items-center gap-1">✓ Secure Authentication</span>
+                <span className="flex items-center gap-1">✓ Real-Time Marketplace</span>
+              </div>
+            )}
           </div>
 
           {/* MAIN WRAPPER FOR BOTH STEPS */}
@@ -638,8 +646,8 @@ export default function AuthPage() {
                 {/* Footnote toggling */}
                 <div className="text-center text-xs text-slate-500">
                   By continuing, you agree to HostelX's{' '}
-                  <a href="#" className="underline font-medium hover:text-slate-800">Terms of Service</a> and{' '}
-                  <a href="#" className="underline font-medium hover:text-slate-800">Privacy Policy</a>.
+                  <Link to="/terms" className="underline font-medium hover:text-slate-800">Terms of Service</Link> and{' '}
+                  <Link to="/privacy-policy" className="underline font-medium hover:text-slate-800">Privacy Policy</Link>.
                 </div>
               </motion.div>
             ) : (

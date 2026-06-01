@@ -19,6 +19,11 @@ import NearbyPage from './pages/NearbyPage';
 import LostAndFoundPage from './pages/LostAndFoundPage';
 import SemesterExitSalePage from './pages/SemesterExitSalePage';
 import TemporaryRentalsPage from './pages/TemporaryRentalsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import AboutPage from './pages/AboutPage';
+import HelpPage from './pages/HelpPage';
+import ContactPage from './pages/ContactPage';
 
 // Scroll to top on every route navigation
 function ScrollToTop() {
@@ -218,6 +223,13 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Public Legal & Support Routes */}
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           {/* Catch-all Route */}
           <Route

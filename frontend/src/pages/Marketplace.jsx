@@ -4,6 +4,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronLeft, X, HelpCircle, AlertOctagon, RefreshCw, ShoppingCart, Calendar, HelpCircle as FoundIcon, Hammer, ArrowUpDown, Tag, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeParseDescription } from '../lib/utils';
+import Navbar from '../components/ui/Navbar';
 
 const CATEGORY_SUGGESTIONS = [
   'Search "cheap chair under 1k" 🤖',
@@ -194,42 +195,10 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navbar />
       {/* Sticky Premium Search Bar Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4">
+      <header className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col gap-4">
-          
-          {/* Header row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate('/dashboard')} 
-                className="p-2 rounded-xl bg-card border border-border hover:bg-muted transition cursor-pointer"
-                title="Back to Dashboard"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight">Marketplace</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">Find student deals and essentials within campus bounds</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {/* Proximity Toggle */}
-              <button
-                onClick={() => setNearbyOnly(!nearbyOnly)}
-                className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all duration-200 cursor-pointer ${
-                  nearbyOnly 
-                    ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20' 
-                    : 'bg-card border-border text-muted-foreground hover:border-primary hover:text-primary'
-                }`}
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                Radius 1.5km
-              </button>
-
-            </div>
-          </div>
 
           {/* Search form with AI parser */}
           <form onSubmit={handleSearch} className="flex gap-2.5">

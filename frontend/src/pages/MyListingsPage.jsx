@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus, ChevronLeft, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/ui/Navbar';
 
 export default function MyListingsPage() {
   const { user } = useAuth();
@@ -52,8 +53,9 @@ export default function MyListingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground">
+      <Navbar />
+      <div className="max-w-7xl mx-auto p-6">
         <Link to="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6 transition">
           <ChevronLeft className="w-5 h-5 mr-1" /> Back to Dashboard
         </Link>

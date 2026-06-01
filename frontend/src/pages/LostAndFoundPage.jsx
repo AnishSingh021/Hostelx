@@ -24,6 +24,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/ui/Navbar';
 
 // Safely parse serialized metadata from description
 const parseItemDetails = (p) => {
@@ -377,13 +378,14 @@ export default function LostAndFoundPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-16">
+      <Navbar />
 
       {/* Red Ambient glow to highlight Alert styling */}
       <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-rose-500/5 rounded-full blur-[100px] -z-10" />
       <div className="absolute top-1/3 left-1/4 w-[350px] h-[350px] bg-red-500/5 rounded-full blur-[100px] -z-10" />
 
       {/* Nav Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -509,9 +511,9 @@ export default function LostAndFoundPage() {
 
         {/* Display Items List */}
         {filteredItems.length === 0 ? (
-          <div className="text-center py-16 bg-card border border-border rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4 animate-bounce">📢</div>
-            <h4 className="font-extrabold text-base text-foreground">No reports found on the bulletin</h4>
+          <div className="text-center py-16 bg-card border border-border rounded-[2rem] p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-muted/60 dark:bg-zinc-900 border border-border/80 flex items-center justify-center text-3xl mb-4 animate-bounce">📢</div>
+            <h4 className="font-extrabold text-base text-foreground">No reports found.</h4>
             <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center font-semibold">
               Be the first to file a report! Report your lost or found items to instantly alert students across all hostels.
             </p>

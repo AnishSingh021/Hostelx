@@ -18,6 +18,7 @@ import { FEATURED_CATEGORIES, VERIFIED_SELLERS } from '../components/fashion/Fas
 import OutfitCard from '../components/fashion/OutfitCard';
 import RentOutfitModal from '../components/fashion/RentOutfitModal';
 import UploadOutfitModal from '../components/fashion/UploadOutfitModal';
+import Navbar from '../components/ui/Navbar';
 
 export default function FashionRentalPage() {
   const navigate = useNavigate();
@@ -118,12 +119,13 @@ export default function FashionRentalPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-16">
+      <Navbar />
       {/* Absolute Background Ambient Glows */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10" />
       <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -z-10" />
 
       {/* Sticky Premium Nav Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
