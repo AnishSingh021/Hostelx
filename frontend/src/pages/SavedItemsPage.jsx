@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Heart, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 
 export default function SavedItemsPage() {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export default function SavedItemsPage() {
   useEffect(() => {
     const fetchSaved = async () => {
       try {
-        const res = await fetch('https://hostelx-backend-a228.onrender.com/api/products/saved', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/saved`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const data = await res.json();
@@ -29,7 +30,7 @@ export default function SavedItemsPage() {
 
   const handleUnlike = async (productId) => {
     try {
-      await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${productId}/like`, {
+      await fetch(`${BACKEND_URL}/api/products/${productId}/like`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${user.token}` }
       });
@@ -73,50 +74,59 @@ export default function SavedItemsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product, i) => (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm group flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300"
-              >
-                <div className="relative h-52 bg-muted overflow-hidden">
-                  <Link to={`/product/${product._id}`}>
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </Link>
-                  <button
-                    onClick={() => handleUnlike(product._id)}
-                    className="absolute top-2 right-2 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition cursor-pointer"
-                    title="Remove from saved"
-                  >
-                    <Heart className="w-5 h-5 fill-red-500 text-red-500" />
-                  </button>
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <Link to={`/product/${product._id}`}>
-                    <h3 className="font-semibold text-base line-clamp-1 hover:text-primary transition">{product.title}</h3>
-                  </Link>
-                  <p className="text-primary font-bold text-lg mt-1">₹{product.price.toLocaleString()}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" /> {product.hostel}
-                    </span>
-                    <span className="text-xs font-medium px-2 py-0.5 bg-secondary text-secondary-foreground rounded-full capitalize">
-                      {product.condition}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-muted text-muted-foreground text-xs uppercase font-bold">
+                <tr>
+                  <th className="px-4 py-3">Product</th>
+                  <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Hostel</th>
+                  <th className="px-4 py-3">Condition</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {products.map((product) => (
+                  <tr key={product._id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Link to={`/product/${product._id}`}>
+                          <img src={product.images[0]} alt={product.title} className="w-10 h-10 rounded-lg object-cover bg-muted flex-shrink-0" />
+                        </Link>
+                        <div>
+                          <Link to={`/product/${product._id}`} className="font-bold text-foreground line-clamp-1 hover:text-primary transition">{product.title}</Link>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-foreground">₹{product.price.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] font-semibold">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {product.hostel}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-secondary text-secondary-foreground">
+                        {product.condition}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button 
+                        onClick={() => handleUnlike(product._id)}
+                        className="p-1.5 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition cursor-pointer flex items-center gap-1"
+                        title="Remove from saved"
+                      >
+                        <Heart className="w-4 h-4 fill-destructive" /> Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
     </div>
   );
 }
+

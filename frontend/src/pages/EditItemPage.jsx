@@ -4,6 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { UploadCloud, X, CheckCircle, ChevronLeft, Camera } from 'lucide-react';
 import CameraCapture from '../components/CameraCapture';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { BACKEND_URL } from '../config';
 
 export default function EditItemPage() {
   const { id } = useParams();
@@ -42,7 +45,7 @@ export default function EditItemPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}`);
+        const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
         const data = await response.json();
         
         if (response.ok) {
@@ -115,7 +118,7 @@ export default function EditItemPage() {
       // Append any new image files
       newImages.forEach(img => submitData.append('images', img));
 
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -218,11 +221,11 @@ export default function EditItemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">Title</label>
-              <input type="text" required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+              <Input type="text" required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Price (₹)</label>
-              <input type="number" required={formData.listingType !== 'lost' && formData.listingType !== 'found'} disabled={formData.listingType === 'lost' || formData.listingType === 'found'} value={(formData.listingType === 'lost' || formData.listingType === 'found') ? '0' : formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50" />
+              <Input type="number" required={formData.listingType !== 'lost' && formData.listingType !== 'found'} disabled={formData.listingType === 'lost' || formData.listingType === 'found'} value={(formData.listingType === 'lost' || formData.listingType === 'found') ? '0' : formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full" />
             </div>
           </div>
 
@@ -254,9 +257,9 @@ export default function EditItemPage() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition mt-4">
+          <Button type="submit" disabled={loading} className="w-full py-6 mt-4">
             {loading ? 'Saving Changes...' : 'Update Ad'}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -268,3 +271,4 @@ export default function EditItemPage() {
     </div>
   );
 }
+

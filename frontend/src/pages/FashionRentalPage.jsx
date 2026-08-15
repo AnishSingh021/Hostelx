@@ -14,11 +14,11 @@ import {
   AlertCircle,
   Clock
 } from 'lucide-react';
+import { Input } from '../components/ui/Input';
 import { FEATURED_CATEGORIES, VERIFIED_SELLERS } from '../components/fashion/FashionDummyData';
 import OutfitCard from '../components/fashion/OutfitCard';
 import RentOutfitModal from '../components/fashion/RentOutfitModal';
 import UploadOutfitModal from '../components/fashion/UploadOutfitModal';
-import Navbar from '../components/ui/Navbar';
 
 export default function FashionRentalPage() {
   const navigate = useNavigate();
@@ -119,13 +119,10 @@ export default function FashionRentalPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-16">
-      <Navbar />
-      {/* Absolute Background Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[100px] -z-10" />
+      {/* Clean styling */}
 
       {/* Sticky Premium Nav Header */}
-      <header className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -136,11 +133,8 @@ export default function FashionRentalPage() {
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
+              <span className="font-extrabold text-xl tracking-tight text-foreground">
                 Rent Your Vibe
-              </span>
-              <span className="text-[9px] font-black px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full animate-pulse">
-                FIT HUB
               </span>
             </div>
             <p className="text-[10px] text-muted-foreground font-semibold">Hostel peer-to-peer wardrobe sharing network</p>
@@ -359,13 +353,13 @@ export default function FashionRentalPage() {
                 
                 {/* Search Input */}
                 <div className="relative w-full md:w-72">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
-                  <input
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground z-10" />
+                  <Input
                     type="text"
                     placeholder="Search brand, outfit, keyword..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9.5 pr-4 py-2.5 bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-xs font-semibold transition text-foreground"
+                    className="w-full pl-9.5 pr-4"
                   />
                 </div>
               </div>
@@ -544,3 +538,4 @@ export default function FashionRentalPage() {
     </div>
   );
 }
+

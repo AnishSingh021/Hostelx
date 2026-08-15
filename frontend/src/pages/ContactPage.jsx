@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, ArrowLeft, Send, CheckCircle2, User, FileText, Info, Copy, Check, Clock } from 'lucide-react';
+import { Mail, ArrowLeft, Send, CheckCircle2, User, FileText, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/ui/Footer';
@@ -14,13 +14,6 @@ export default function ContactPage() {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText('anishsingh10121@gmail.com');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,18 +29,18 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-[#475569] dark:text-zinc-300 flex flex-col justify-between font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-background text-muted-foreground flex flex-col justify-between font-sans">
       
       {/* Top Header */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between z-10 relative border-b border-[#E2E8F0] dark:border-zinc-900 bg-white dark:bg-[#090D16]">
+      <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between z-10 relative border-b border-border bg-card">
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition">
-          <span className="w-3 h-3 rounded-full bg-blue-600"></span>
-          <span className="font-extrabold text-sm tracking-wider text-[#0F172A] dark:text-white">HostelX Hub</span>
+          <span className="w-3 h-3 rounded-full bg-primary"></span>
+          <span className="font-bold text-sm tracking-wider text-foreground">HostelX Hub</span>
         </Link>
         
         <Link 
           to={user ? "/dashboard" : "/auth"} 
-          className="text-xs font-bold tracking-wider text-blue-600 dark:text-blue-400 hover:underline transition"
+          className="text-xs font-bold text-primary hover:underline transition"
         >
           {user ? "Dashboard →" : "Sign In →"}
         </Link>
@@ -59,20 +52,20 @@ export default function ContactPage() {
         {/* Back Link */}
         <Link 
           to="/" 
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#64748B] hover:text-[#0F172A] dark:hover:text-white transition"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
 
         {/* Page Hero */}
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-550/10 text-xs font-bold tracking-wide bg-blue-50 text-blue-600 border border-blue-100">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary">
             <Mail className="w-4 h-4" /> Support Form
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0F172A] dark:text-white">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Contact Support
           </h1>
-          <p className="text-sm text-[#475569] dark:text-zinc-300 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed font-medium">
             Have listing disputes? Need help with QR-code scans or platform boosts? File a support ticket directly. Our Chandigarh University helpdesk settles tickets within 12 hours.
           </p>
         </div>
@@ -81,19 +74,19 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
           
           {/* Support Form Card (Left Col) */}
-          <div className="md:col-span-3 bg-white dark:bg-zinc-950 border border-[#E2E8F0] dark:border-zinc-900 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+          <div className="md:col-span-3 bg-card border border-border rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
             {success ? (
-              <div className="text-center py-12 space-y-4 animate-fade-in flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 border border-emerald-250 flex items-center justify-center animate-bounce">
+              <div className="text-center py-12 space-y-4 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center animate-bounce">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="font-bold text-xl text-[#0F172A] dark:text-white">Ticket Filed Successfully!</h3>
-                <p className="text-sm text-[#475569] dark:text-zinc-300 font-semibold max-w-sm leading-relaxed">
+                <h3 className="font-bold text-xl text-foreground">Ticket Filed Successfully!</h3>
+                <p className="text-xs text-muted-foreground font-medium max-w-sm leading-relaxed">
                   We've received your inquiry! A campus operations specialist will inspect your query details and follow up via email within 12 hours.
                 </p>
                 <button
                   onClick={() => setSuccess(false)}
-                  className="mt-6 px-6 py-2.5 bg-[#0F172A] text-white hover:bg-zinc-800 rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer"
+                  className="mt-6 saas-btn-primary px-6 py-2.5 text-xs"
                 >
                   File another ticket
                 </button>
@@ -102,46 +95,46 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 
                 {/* Name */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block">Full Name</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-3.5 w-4 h-4 text-[#64748B]" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. Anish Singh"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-xl text-xs font-bold outline-none text-[#0F172A] dark:text-white focus:border-blue-500 transition"
+                      className="saas-input pl-10"
                     />
                   </div>
                 </div>
 
                 {/* Email */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block">Email Address</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-[#64748B]" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                       type="email"
                       required
                       placeholder="e.g. anish@google.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-xl text-xs font-bold outline-none text-[#0F172A] dark:text-white focus:border-blue-500 transition"
+                      className="saas-input pl-10"
                     />
                   </div>
                 </div>
 
                 {/* Topic Selector */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block">Support Subject</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Support Subject</label>
                   <div className="relative">
-                    <FileText className="absolute left-3.5 top-3.5 w-4 h-4 text-[#64748B]" />
+                    <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <select
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full pl-10 pr-10 py-3 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-xl text-xs font-bold outline-none text-[#0F172A] dark:text-white focus:border-blue-500 transition cursor-pointer appearance-none"
+                      className="saas-input pl-10 pr-10 cursor-pointer appearance-none"
                     >
                       <option value="General Inquiry">General Inquiry / Feedback</option>
                       <option value="Listing Disputes">Product Listing Dispute</option>
@@ -149,20 +142,20 @@ export default function ContactPage() {
                       <option value="Billing / Credit Boosts">Boost Credits Balance</option>
                       <option value="Scam Alert">Reporting Abuse or Scam</option>
                     </select>
-                    <div className="absolute right-4 top-4 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-[#64748B] border-l-transparent border-r-transparent w-0 h-0" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-t-[#64748B] border-l-transparent border-r-transparent w-0 h-0" />
                   </div>
                 </div>
 
                 {/* Message */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block">Support Details *</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Support Details *</label>
                   <textarea
                     required
                     rows="5"
                     placeholder="Describe listing IDs, transaction dates, or details of your technical issues..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-xl px-4 py-3 text-xs font-semibold outline-none resize-none text-[#0F172A] dark:text-white focus:border-blue-500 transition"
+                    className="saas-input resize-none"
                   />
                 </div>
 
@@ -170,10 +163,10 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full saas-btn-primary py-3.5 mt-2"
                 >
                   {loading ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
                       <Send className="w-3.5 h-3.5" /> Submit Support Ticket
@@ -189,56 +182,36 @@ export default function ContactPage() {
           <div className="md:col-span-2 space-y-6">
             
             {/* Guidelines Card */}
-            <div className="bg-white dark:bg-zinc-950 border border-[#E2E8F0] dark:border-zinc-900 rounded-2xl p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm text-[#0F172A] dark:text-white flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-blue-500" /> Ticket Guidelines
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                <Info className="w-4 h-4 text-primary" /> Ticket Guidelines
               </h3>
-              <ul className="text-xs text-[#475569] dark:text-zinc-300 space-y-3 font-semibold leading-relaxed">
-                <li>💡 <strong className="text-[#0F172A] dark:text-white font-bold">Be Specific:</strong> Include direct product names and seller names inside your text.</li>
-                <li>🖼️ <strong className="text-[#0F172A] dark:text-white font-bold">Provide Evidence:</strong> In case of transactional disputes, retain screenshots of chats.</li>
-                <li>📧 <strong className="text-[#0F172A] dark:text-white font-bold">Email Communications:</strong> Support replies will arrive directly at your verified login email.</li>
+              <ul className="text-xs text-muted-foreground space-y-3 font-semibold leading-relaxed">
+                <li>💡 <strong className="text-foreground font-bold">Be Specific:</strong> Include direct product names and seller names inside your text.</li>
+                <li>🖼️ <strong className="text-foreground font-bold">Provide Evidence:</strong> In case of transactional disputes, retain screenshots of chats.</li>
+                <li>📧 <strong className="text-foreground font-bold">Email Communications:</strong> Support replies will arrive directly at your verified login email.</li>
               </ul>
             </div>
 
             {/* Direct Contact Card (Contact HostelX) */}
-            <div className="bg-white dark:bg-zinc-950 border-2 border-blue-100 dark:border-blue-900 rounded-2xl p-6 space-y-5 shadow-sm">
+            <div className="bg-card border border-primary/20 rounded-3xl p-6 space-y-5 shadow-sm">
               <div className="space-y-1">
-                <h4 className="font-bold text-lg text-[#0F172A] dark:text-white">Contact HostelX</h4>
-                <p className="text-sm text-[#475569] dark:text-zinc-300 font-semibold leading-relaxed">
-                  Have feedback, feature suggestions, bug reports, or partnership inquiries?
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Direct Inquiry</p>
+                <h4 className="font-bold text-base text-foreground">Contact Support Desk</h4>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                  Have questions, found a bug, or want to suggest custom additions?
                 </p>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#64748B]">
-                  <Clock className="w-4 h-4 text-blue-500" />
-                  <span>Response time: Within 24-48 hours</span>
-                </div>
-
-                <div className="flex flex-col gap-2.5 pt-1">
+              <div className="space-y-4 pt-1">
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">Support Email</span>
                   <a 
                     href="mailto:anishsingh10121@gmail.com"
-                    className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold text-xs border border-blue-100 dark:border-blue-900 hover:bg-blue-100 transition"
+                    className="saas-btn-secondary w-full py-3 text-xs flex items-center justify-center gap-2"
                   >
                     <Mail className="w-4 h-4" /> anishsingh10121@gmail.com
                   </a>
-                  
-                  <button 
-                    onClick={handleCopyEmail}
-                    className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-[#475569] dark:text-zinc-300 font-bold text-xs transition cursor-pointer"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-500" />
-                        <span className="text-emerald-500">Email Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        <span>Copy Email Address</span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
             </div>
@@ -255,3 +228,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

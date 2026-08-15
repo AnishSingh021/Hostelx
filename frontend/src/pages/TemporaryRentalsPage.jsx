@@ -20,7 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 
 export default function TemporaryRentalsPage() {
   const navigate = useNavigate();
@@ -39,12 +39,22 @@ export default function TemporaryRentalsPage() {
     return today.toISOString().split('T')[0];
   });
   const [booking, setBooking] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadData, setUploadData] = useState({
+    title: '',
+    description: '',
+    rentPrice: '',
+    rentalDuration: 'day',
+    category: 'Electronics',
+    isUrgent: false
+  });
+  const [isUploading, setIsUploading] = useState(false);
 
   // Fetch rentals dynamically
   const fetchRentalsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
+      const response = await fetch(`${BACKEND_URL}/api/products`);
       if (!response.ok) throw new Error('Failed to load rentals');
       const data = await response.json();
       
@@ -63,6 +73,44 @@ export default function TemporaryRentalsPage() {
   useEffect(() => {
     fetchRentalsData();
   }, [user]);
+
+  const handleUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) return navigate('/auth');
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('title', uploadData.title);
+      formData.append('description', uploadData.description);
+      formData.append('rentPrice', uploadData.rentPrice);
+      formData.append('rentalDuration', uploadData.rentalDuration);
+      formData.append('category', uploadData.category);
+      formData.append('listingType', 'rent');
+      formData.append('isUrgent', uploadData.isUrgent);
+      
+      const response = await fetch(`${BACKEND_URL}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        triggerToast('🎉 Rental item listed successfully!');
+        setIsUploadOpen(false);
+        setUploadData({ title: '', description: '', rentPrice: '', rentalDuration: 'day', category: 'Electronics', isUrgent: false });
+        fetchRentalsData();
+      } else {
+        triggerToast('❌ Failed to list rental item.');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('❌ Error listing item.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Scroll to top on tab change
   useEffect(() => {
@@ -105,12 +153,12 @@ export default function TemporaryRentalsPage() {
       return <Music className="w-5 h-5 text-rose-500" />;
     }
     if (cat.includes('camera') || cat.includes('photo') || cat.includes('video')) {
-      return <Camera className="w-5 h-5 text-amber-500" />;
+      return <Camera className="w-5 h-5 text-amber-400" />;
     }
     if (cat.includes('tv') || cat.includes('monitor') || cat.includes('screen') || cat.includes('electronics')) {
       return <Tv className="w-5 h-5 text-violet-500" />;
     }
-    return <SlidersHorizontal className="w-5 h-5 text-slate-500" />;
+    return <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />;
   };
 
   // Helper to calculate pricing dynamically
@@ -166,7 +214,7 @@ export default function TemporaryRentalsPage() {
 
     try {
       // 1. Create/Access chat with the owner
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/chats', {
+      const response = await fetch(`${BACKEND_URL}/api/chats`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -184,7 +232,7 @@ export default function TemporaryRentalsPage() {
         // 2. Post automated booking message
         const bookingMsg = `🎉 Rental Booking Request! I would like to rent your "${selectedItem.title}" starting on ${startDate} for ${rentDays} days. \n\nEstimate Cost: ₹${cost} (Rate: ₹${rates.daily}/day, ₹${rates.weekly}/week). \nDeposit Agreement: ${depositRequirement}. \nLet's coordinate meetup coordinates!`;
 
-        await fetch(`https://hostelx-backend-a228.onrender.com/api/chats/${chat._id}/messages`, {
+        await fetch(`${BACKEND_URL}/api/chats/${chat._id}/messages`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json', 
@@ -211,7 +259,7 @@ export default function TemporaryRentalsPage() {
   const handleOfferToRent = async (item) => {
     if (!user) return navigate('/auth');
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/chats', {
+      const response = await fetch(`${BACKEND_URL}/api/chats`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -228,7 +276,7 @@ export default function TemporaryRentalsPage() {
         
         const offerMsg = `👋 Hi! I saw your request looking to rent "${item.title}". I have this item available and would be happy to lend/rent it to you. Let me know when you need it and we can discuss meetup details!`;
         
-        await fetch(`https://hostelx-backend-a228.onrender.com/api/chats/${chat._id}/messages`, {
+        await fetch(`${BACKEND_URL}/api/chats/${chat._id}/messages`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json', 
@@ -255,42 +303,36 @@ export default function TemporaryRentalsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/70 text-slate-800 relative pb-16">
-      <Navbar />
-      {/* Pink & indigo styling gradients */}
-      <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-pink-400/5 rounded-full blur-[100px] -z-10" />
-      <div className="absolute top-1/2 left-1/4 w-[350px] h-[350px] bg-violet-400/5 rounded-full blur-[100px] -z-10" />
+    <div className="min-h-screen bg-secondary/70 text-foreground relative pb-16">
+      {/* Clean styling */}
 
       {/* Nav Header */}
-      <header className="sticky top-[73px] z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
-            className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center justify-center"
+            className="p-2 rounded-xl bg-card border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition cursor-pointer flex items-center justify-center"
             title="Back to Dashboard"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="font-extrabold text-xl tracking-tight text-foreground">
                 Temporary Rentals
               </span>
-              <span className="text-[9px] font-black px-2 py-0.5 bg-pink-100 text-pink-600 border border-pink-200 rounded-full">
-                HIRE DEPOT
-              </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-semibold">Scientific calculators, monitors, gaming and equipment hire</p>
+            <p className="text-[10px] text-muted-foreground font-semibold">Scientific calculators, monitors, gaming and equipment hire</p>
           </div>
         </div>
 
-        <Link 
-          to="/sell?listingType=rent"
+        <button 
+          onClick={() => setIsUploadOpen(true)}
           className="flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           List Rental
-        </Link>
+        </button>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
@@ -302,7 +344,7 @@ export default function TemporaryRentalsPage() {
               key={alert.id}
               className={`p-3.5 border rounded-2xl text-[11px] font-bold flex items-start gap-3 shadow-sm ${
                 alert.type === 'warning' 
-                  ? 'bg-amber-50 border-amber-200 text-amber-700' 
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' 
                   : 'bg-pink-50 border-pink-200 text-pink-700'
               }`}
             >
@@ -313,40 +355,23 @@ export default function TemporaryRentalsPage() {
         </div>
 
         {/* Main Concept Header */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-r from-pink-50 via-white to-indigo-50 border border-slate-200 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+        <div className="relative rounded-[2rem] overflow-hidden bg-muted/40 border border-border p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-3">
-            <span className="inline-flex items-center gap-1 bg-pink-100 text-pink-700 border border-pink-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <RotateCcw className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '6s' }} />
-              Duration-Based Rentals
-            </span>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-800">Rent Gadgets & Equipment</h1>
-            <p className="text-xs text-slate-600 max-w-lg leading-relaxed font-medium">
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">Rent Gadgets & Equipment</h1>
+            <p className="text-xs text-muted-foreground max-w-lg leading-relaxed font-medium">
               Don't shell out thousands for a scientific calculator you only need for one semester exam, or a gaming console for just a weekend wing gathering. Rent securely from fellow hostel mates on a daily or weekly basis.
             </p>
-          </div>
-
-
-          <div className="bg-white border border-slate-200 p-4.5 rounded-2xl flex items-start gap-3.5 max-w-xs self-start md:self-auto shadow-sm">
-            <div className="p-3 bg-pink-50 text-pink-600 border border-pink-100 rounded-xl flex-shrink-0 mt-0.5">
-              <ShieldCheck className="w-5.5 h-5.5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-slate-800 font-sans">Collateral Secure Lock</h4>
-              <p className="text-[9px] text-slate-500 leading-normal font-semibold">
-                Rentals specify security requirements (refundable deposits or student IDs) for maximum asset protection.
-              </p>
-            </div>
           </div>
         </div>
 
         {/* Navigation Tabs (Offers vs Seeks) */}
-        <div className="flex border-b border-slate-200 p-1 bg-white rounded-2xl w-fit shadow-sm">
+        <div className="flex border-b border-border p-1 bg-card rounded-2xl w-fit shadow-sm">
           <button
             onClick={() => setActiveTab('offers')}
             className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'offers' 
                 ? 'bg-pink-600 text-white shadow-md' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
             Available for Hire (Offers)
@@ -356,7 +381,7 @@ export default function TemporaryRentalsPage() {
             className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'seeks' 
                 ? 'bg-pink-600 text-white shadow-md' 
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
             Requested by Peers (Seeking)
@@ -365,44 +390,43 @@ export default function TemporaryRentalsPage() {
 
         {/* Pricing Selection Matrix Section */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+          <div className="flex items-center justify-between border-b border-border pb-2">
             <div>
-              <h3 className="font-extrabold text-lg text-slate-800">
+              <h3 className="font-extrabold text-lg text-foreground">
                 {activeTab === 'offers' ? 'Dorm Items for Rent' : 'Peer Rental Requests'}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 {activeTab === 'offers' 
                   ? 'High-utility devices and items listed by peers on campus.' 
                   : 'Postings by students in search of specific tools or equipment.'}
               </p>
             </div>
-            <span className="text-[9px] font-bold text-pink-600 bg-pink-50 border border-pink-200 px-2.5 py-1 rounded-lg">RATE MATRIX</span>
           </div>
 
           {loading ? (
             /* Premium Loading Skeletons */
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[1, 2, 3].map(n => (
-                <div key={n} className="bg-white border border-slate-200 rounded-3xl p-6 h-96 animate-pulse space-y-4 shadow-sm">
-                  <div className="aspect-video w-full rounded-2xl bg-slate-200" />
-                  <div className="h-5 bg-slate-200 rounded w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded w-1/2" />
-                  <div className="h-20 bg-slate-100 rounded" />
-                  <div className="h-10 bg-slate-200 rounded w-full mt-4" />
+                <div key={n} className="bg-card border border-border rounded-3xl p-6 h-96 animate-pulse space-y-4 shadow-sm">
+                  <div className="aspect-video w-full rounded-2xl bg-muted" />
+                  <div className="h-5 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                  <div className="h-20 bg-secondary rounded" />
+                  <div className="h-10 bg-muted rounded w-full mt-4" />
                 </div>
               ))}
             </div>
           ) : filteredRentals.length === 0 ? (
             /* High Fidelity Empty States */
-            <div className="flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900/60 rounded-[2rem] shadow-sm max-w-xl mx-auto space-y-6">
-              <div className="p-4 bg-pink-50 text-pink-600 dark:bg-pink-400/5 dark:text-pink-400 rounded-2xl border border-pink-100 dark:border-pink-900/25">
+            <div className="flex flex-col items-center justify-center text-center p-12 bg-card border border-border rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
+              <div className="p-4 bg-pink-50 text-pink-600 rounded-2xl border border-pink-100">
                 <RotateCcw className="w-12 h-12" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-                  No rentals available.
+                <h3 className="text-xl font-bold text-foreground">
+                  {activeTab === 'offers' ? 'No Active Rental Items' : 'No Peer Rental Requests'}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md font-semibold leading-relaxed">
+                <p className="text-xs text-muted-foreground max-w-md">
                   {activeTab === 'offers' 
                     ? 'No students have listed items for rent in your campus block at the moment. All standard marketplace items are active.'
                     : 'No students have posted active seek requests. If you need an item temporarily, submit your request now!'}
@@ -411,17 +435,17 @@ export default function TemporaryRentalsPage() {
               <div className="pt-2 flex flex-col sm:flex-row gap-3 w-full justify-center">
                 <button 
                   onClick={fetchRentalsData}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
+                  className="px-5 py-2.5 bg-secondary hover:bg-muted text-secondary-foreground text-xs font-bold rounded-xl transition cursor-pointer"
                 >
                   Refresh Feed
                 </button>
-                <Link 
-                  to="/sell?listingType=rent"
-                  className="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
+                <button 
+                  onClick={() => setIsUploadOpen(true)}
+                  className="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {activeTab === 'offers' ? 'Rent Out Your Item' : 'Post Request'}
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </button>
               </div>
             </div>
           ) : (
@@ -437,14 +461,14 @@ export default function TemporaryRentalsPage() {
                 return (
                   <div 
                     key={item._id}
-                    className={`bg-white border rounded-3xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 group ${
-                      isUrgent ? 'border-rose-300 ring-1 ring-rose-200/50' : 'border-slate-200 hover:border-pink-400'
+                    className={`bg-card border rounded-3xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 group ${
+                      isUrgent ? 'border-rose-300 ring-1 ring-rose-200/50' : 'border-border hover:border-pink-400'
                     }`}
                   >
                     <div>
                       {/* Thumbnail (only for offer items) */}
                       {activeTab === 'offers' && (
-                        <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 mb-4">
+                        <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-secondary border border-border mb-4">
                           <img 
                             src={item.images?.[0] || 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60'} 
                             alt={item.title} 
@@ -452,7 +476,7 @@ export default function TemporaryRentalsPage() {
                           />
                           
                           {/* Security Deposit preference tag */}
-                          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur text-[8.5px] font-black px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-800 uppercase flex items-center gap-1 shadow-sm">
+                          <span className="absolute top-3 left-3 bg-card/95 backdrop-blur text-[8.5px] font-black px-2.5 py-0.5 rounded-lg border border-border text-foreground uppercase flex items-center gap-1 shadow-sm">
                             {depositPreference}
                           </span>
 
@@ -466,57 +490,57 @@ export default function TemporaryRentalsPage() {
 
                       {/* Header info */}
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-slate-100 rounded-lg flex-shrink-0 text-slate-700">
+                        <div className="p-1.5 bg-secondary rounded-lg flex-shrink-0 text-foreground">
                           {getCategoryIcon(item.category)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-black text-sm text-slate-800 group-hover:text-pink-600 transition truncate">{item.title}</h4>
-                          <p className="text-[9px] text-slate-400 font-bold">{ownerHostel} · {ownerRoom}</p>
+                          <h4 className="font-black text-sm text-foreground group-hover:text-pink-600 transition truncate">{item.title}</h4>
+                          <p className="text-[9px] text-muted-foreground font-bold">{ownerHostel} · {ownerRoom}</p>
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-600 leading-relaxed mt-3.5 font-semibold">{item.description}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-3.5 font-semibold">{item.description}</p>
                       
                       {/* Rate comparison metrics (only for offer items) */}
                       {activeTab === 'offers' ? (
-                        <div className="grid grid-cols-2 gap-3 mt-4 bg-slate-50 border border-slate-200 p-3 rounded-2xl">
-                          <div className="text-center border-r border-slate-200">
-                            <p className="text-[8.5px] text-slate-400 uppercase font-black">Daily Rate</p>
-                            <p className="text-base font-black text-slate-800 mt-0.5">₹{rates.daily}<span className="text-[10px] text-slate-400 font-semibold">/day</span></p>
+                        <div className="grid grid-cols-2 gap-3 mt-4 bg-secondary border border-border p-3 rounded-2xl">
+                          <div className="text-center border-r border-border">
+                            <p className="text-[8.5px] text-muted-foreground uppercase font-black">Daily Rate</p>
+                            <p className="text-base font-black text-foreground mt-0.5">₹{rates.daily}<span className="text-[10px] text-muted-foreground font-semibold">/day</span></p>
                           </div>
                           <div className="text-center">
-                            <p className="text-[8.5px] text-slate-400 uppercase font-black">Weekly Tier</p>
+                            <p className="text-[8.5px] text-muted-foreground uppercase font-black">Weekly Tier</p>
                             <p className="text-base font-black text-pink-600 mt-0.5">₹{rates.weekly}<span className="text-[10px] text-pink-600 font-semibold">/week</span></p>
                           </div>
                         </div>
                       ) : (
-                        <div className="mt-4 bg-slate-50 border border-slate-200 p-3.5 rounded-2xl">
+                        <div className="mt-4 bg-secondary border border-border p-3.5 rounded-2xl">
                           <div className="flex justify-between items-center text-xs font-bold">
-                            <span className="text-slate-400">Offered Budget:</span>
-                            <span className="text-pink-600 text-sm font-black">₹{item.rentPrice || item.price}<span className="text-[10px] font-bold text-slate-500">/{item.rentalDuration || 'day'}</span></span>
+                            <span className="text-muted-foreground">Offered Budget:</span>
+                            <span className="text-pink-600 text-sm font-black">₹{item.rentPrice || item.price}<span className="text-[10px] font-bold text-muted-foreground">/{item.rentalDuration || 'day'}</span></span>
                           </div>
                         </div>
                       )}
                     </div>
 
                     {/* Footer details */}
-                    <div className="pt-4 border-t border-slate-200 mt-5.5 flex items-center justify-between">
+                    <div className="pt-4 border-t border-border mt-5.5 flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase">{activeTab === 'offers' ? 'Owner' : 'Requestee'}</p>
-                        <p className="text-xs font-black text-slate-800">{ownerName}</p>
+                        <p className="text-[9px] text-muted-foreground font-bold uppercase">{activeTab === 'offers' ? 'Owner' : 'Requestee'}</p>
+                        <p className="text-xs font-black text-foreground">{ownerName}</p>
                       </div>
 
                       {activeTab === 'offers' ? (
                         <button 
                           onClick={() => handleOpenRentalCalculator(item)}
-                          className="px-4 py-2.5 bg-slate-900 text-white hover:bg-slate-800 text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
+                          className="px-4 py-2.5 bg-primary text-primary-foreground hover:opacity-90 text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1.5 shadow-sm"
                         >
                           <Calendar className="w-4 h-4" /> Book Hire
                         </button>
                       ) : (
                         <button 
                           onClick={() => handleOfferToRent(item)}
-                          className="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
+                          className="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-primary-foreground text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
                         >
                           Offer to Rent
                         </button>
@@ -541,48 +565,48 @@ export default function TemporaryRentalsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedItem(null)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-sm bg-white border border-slate-200 shadow-2xl rounded-3xl p-6 z-10 space-y-4"
+              className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-3xl p-6 z-10 space-y-4"
             >
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-pink-50 text-pink-600 border border-pink-100 rounded-xl">
                   <Calendar className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-slate-800">Booking Rental Planner</h3>
-                  <p className="text-[10px] text-slate-400 font-semibold">Select days & estimate dynamic tier fees</p>
+                  <h3 className="font-extrabold text-base text-foreground">Booking Rental Planner</h3>
+                  <p className="text-[10px] text-muted-foreground font-semibold">Select days & estimate dynamic tier fees</p>
                 </div>
               </div>
 
-              <div className="border-t border-b border-slate-100 py-4.5 space-y-4 text-xs font-bold">
+              <div className="border-t border-b border-border py-4.5 space-y-4 text-xs font-bold">
                 <div className="flex justify-between gap-3">
-                  <span className="text-slate-400">Asset Selected:</span>
-                  <span className="text-slate-800 text-right truncate max-w-[200px]">{selectedItem.title}</span>
+                  <span className="text-muted-foreground">Asset Selected:</span>
+                  <span className="text-foreground text-right truncate max-w-[200px]">{selectedItem.title}</span>
                 </div>
                 
                 {/* Form selectors */}
-                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                <div className="space-y-3 bg-secondary p-4 rounded-2xl border border-border/80">
                   
                   {/* Start Date */}
                   <div>
-                    <label className="block text-[8.5px] font-black uppercase text-slate-400 mb-1">Select Rental Start Date</label>
+                    <label className="block text-[8.5px] font-black uppercase text-muted-foreground mb-1">Select Rental Start Date</label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer text-slate-700"
+                      className="w-full bg-card border border-border rounded-xl px-3 py-1.5 text-xs font-bold outline-none cursor-pointer text-foreground"
                     />
                   </div>
 
                   {/* Hire duration */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-[8.5px] font-black text-slate-400 uppercase">
+                    <div className="flex justify-between text-[8.5px] font-black text-muted-foreground uppercase">
                       <span>Rent Duration</span>
                       <span className="text-pink-600 font-extrabold">{rentDays} Days</span>
                     </div>
@@ -594,10 +618,10 @@ export default function TemporaryRentalsPage() {
                       step="1"
                       value={rentDays}
                       onChange={(e) => setRentDays(Number(e.target.value))}
-                      className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-600"
+                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-pink-500"
                     />
                     
-                    <div className="flex justify-between text-[8.5px] text-slate-400 font-black tracking-wider uppercase">
+                    <div className="flex justify-between text-[8.5px] text-muted-foreground font-black tracking-wider uppercase">
                       <span>1 Day</span>
                       <span>7 Days (Week Discount)</span>
                       <span>30 Days (Max)</span>
@@ -607,20 +631,20 @@ export default function TemporaryRentalsPage() {
                 </div>
 
                 {/* Rental calculations */}
-                <div className="space-y-2 border-t border-slate-100 pt-3">
+                <div className="space-y-2 border-t border-border pt-3">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Rental Cost:</span>
-                    <span className="text-slate-800 font-extrabold">₹{calculateTotalCost(selectedItem, rentDays)}</span>
+                    <span className="text-muted-foreground">Rental Cost:</span>
+                    <span className="text-foreground font-extrabold">₹{calculateTotalCost(selectedItem, rentDays)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Security Deposit:</span>
-                    <span className="text-slate-800 font-extrabold">
+                    <span className="text-muted-foreground">Security Deposit:</span>
+                    <span className="text-foreground font-extrabold">
                       {selectedItem.rentPrice > 1000 ? '₹1,500 Refundable Cash' : 'Collateral Student ID Card'}
                     </span>
                   </div>
                   
-                  <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200">
-                    <span className="text-sm font-black text-slate-700">Total Estimate:</span>
+                  <div className="flex justify-between items-center pt-2 border-t border-dashed border-border">
+                    <span className="text-sm font-black text-foreground">Total Estimate:</span>
                     <span className="text-xl font-black text-pink-600">₹{calculateTotalCost(selectedItem, rentDays)}</span>
                   </div>
                 </div>
@@ -628,7 +652,7 @@ export default function TemporaryRentalsPage() {
               </div>
 
               {/* Warning Alert */}
-              <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl text-[9px] font-black leading-relaxed flex items-start gap-1.5">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-2xl text-[9px] font-black leading-relaxed flex items-start gap-1.5">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>Return reminders are automated. Rented assets must be returned in the original working condition to unlock collateral or cash deposits.</span>
               </div>
@@ -638,14 +662,14 @@ export default function TemporaryRentalsPage() {
                 <button 
                   onClick={() => setSelectedItem(null)}
                   disabled={booking}
-                  className="py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-200 transition cursor-pointer disabled:opacity-50"
+                  className="py-2.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl border border-border hover:bg-muted transition cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleConfirmRentalOrder}
                   disabled={booking}
-                  className="py-2.5 bg-pink-600 text-white text-xs font-black rounded-xl hover:bg-pink-700 transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="py-2.5 bg-pink-600 text-primary-foreground text-xs font-black rounded-xl hover:bg-pink-700 transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {booking ? 'Reserving...' : 'Book Hire'}
                 </button>
@@ -656,6 +680,130 @@ export default function TemporaryRentalsPage() {
         )}
       </AnimatePresence>
 
+      {/* Upload Rental Modal */}
+      <AnimatePresence>
+        {isUploadOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsUploadOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg bg-card border border-border shadow-2xl rounded-[2rem] p-6 sm:p-8 z-10 overflow-y-auto max-h-[90vh]"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-xl font-black text-foreground">Post a Rental Listing</h2>
+                  <p className="text-xs text-muted-foreground font-semibold mt-1">List your item or post a request directly here.</p>
+                </div>
+                <button 
+                  onClick={() => setIsUploadOpen(false)}
+                  className="p-2 bg-secondary text-muted-foreground rounded-xl hover:text-foreground transition cursor-pointer"
+                >
+                  <Plus className="w-5 h-5 rotate-45" />
+                </button>
+              </div>
+
+              <form onSubmit={handleUploadSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-foreground uppercase">Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={uploadData.title}
+                    onChange={(e) => setUploadData({ ...uploadData, title: e.target.value })}
+                    className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="e.g. Scientific Calculator Casio"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-foreground uppercase">Description</label>
+                  <textarea
+                    required
+                    value={uploadData.description}
+                    onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
+                    className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary outline-none min-h-[100px] resize-none"
+                    placeholder="Provide condition details, model number, etc."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-foreground uppercase">Rate (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      value={uploadData.rentPrice}
+                      onChange={(e) => setUploadData({ ...uploadData, rentPrice: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                      placeholder="e.g. 50"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-foreground uppercase">Per</label>
+                    <select
+                      value={uploadData.rentalDuration}
+                      onChange={(e) => setUploadData({ ...uploadData, rentalDuration: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                    >
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-foreground uppercase">Category</label>
+                  <select
+                    value={uploadData.category}
+                    onChange={(e) => setUploadData({ ...uploadData, category: e.target.value })}
+                    className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    <option value="Electronics">Electronics</option>
+                    <option value="Books">Books & Study</option>
+                    <option value="Gaming">Gaming & Consoles</option>
+                    <option value="Cameras">Cameras & Photo</option>
+                    <option value="Music">Instruments & Audio</option>
+                    <option value="Other">Other Equipment</option>
+                  </select>
+                </div>
+
+                <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-secondary/50 transition">
+                  <input
+                    type="checkbox"
+                    checked={uploadData.isUrgent}
+                    onChange={(e) => setUploadData({ ...uploadData, isUrgent: e.target.checked })}
+                    className="w-4 h-4 text-primary accent-primary"
+                  />
+                  <div>
+                    <p className="text-sm font-black text-foreground">Mark as Urgent</p>
+                    <p className="text-[10px] text-muted-foreground font-semibold">Will be highlighted on the feed.</p>
+                  </div>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="w-full py-4 mt-2 bg-pink-600 text-white rounded-xl text-sm font-black tracking-wide hover:bg-pink-700 shadow-lg shadow-pink-600/20 active:scale-95 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isUploading ? 'Posting...' : 'Post Listing'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
+

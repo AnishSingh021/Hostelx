@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
-import Footer from '../components/ui/Footer';
 
 // Hardcoded particles for background motion
 const BACKGROUND_PARTICLES = Array.from({ length: 30 }).map((_, i) => ({
@@ -274,7 +273,7 @@ export default function LandingPage() {
                   }}
                   className="text-sm sm:text-base md:text-lg text-zinc-500 dark:text-zinc-400 max-w-md md:max-w-lg leading-relaxed font-semibold"
                 >
-                  The trusted marketplace built exclusively for Chandigarh University hostellers. Buy, sell, rent, and discover items within your hostel community.
+                  A trusted marketplace built for Chandigarh University hostellers. Buy, sell, rent, and trade within your hostel community.
                 </motion.p>
 
                 {/* Magnetic Hover CTA Wrapper */}
@@ -333,18 +332,19 @@ export default function LandingPage() {
       </main>
 
       {/* 5. Footer Bar */}
-      <AnimatePresence>
-        {introComplete && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="w-full mt-auto"
-          >
-            <Footer />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.footer 
+        initial={{ opacity: 0 }}
+        animate={introComplete ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        className="w-full max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground z-10 border-t border-zinc-100/50 dark:border-zinc-900/50"
+      >
+        <span>&copy; {new Date().getFullYear()} HostelX Marketplace Inc.</span>
+        <div className="flex gap-4">
+          <span>Peer-to-Peer Wardrobe Exchange</span>
+          <span>&middot;</span>
+          <span>Live Bids Terminal</span>
+        </div>
+      </motion.footer>
     </div>
   );
 }
@@ -388,3 +388,4 @@ function MagneticButton({ children }) {
     </motion.div>
   );
 }
+

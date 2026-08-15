@@ -1,74 +1,101 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { uploadToCloudinary } = require('../utils/cloudinary');
+const { verifyFirebaseToken } = require('../utils/firebaseAdmin');
+
+if (!process.env.JWT_SECRET) {
+  // Fail loudly instead of silently signing tokens with a public
+  // fallback string that anyone could forge.
+  throw new Error('JWT_SECRET is not set. Refusing to start without it.');
+}
+
+// Admin allow-list, kept out of source control. Set as a comma
+// separated string, e.g. ADMIN_EMAILS="a@x.com,b@y.com"
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 // Helper to generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
 
-// Mock Google Auth logic since Firebase is pending configuration
+const userResponse = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  profileImage: user.profileImage,
+  college: user.college,
+  hostel: user.hostel,
+  room: user.room,
+  wing: user.wing,
+  floor: user.floor,
+  role: user.role,
+  token: generateToken(user._id),
+});
+
+// Real login: the client sends a Firebase ID token obtained from an
+// actual Google Sign-In / email-password sign-in on the frontend.
+// We verify it with firebase-admin, so the email in play is *proven*,
+// not just whatever the request body claims.
 const googleLogin = async (req, res) => {
-  const { name, email, profileImage } = req.body;
+  const { idToken, profileImage } = req.body;
 
   try {
-    // Define admin emails here
-    const ADMIN_EMAILS = [
-      'admin@hostelx.com',
-      'anishsingh10121@gmail.com', // Added as a default based on repo/DB credentials
-      // You can add your email here to automatically receive admin access!
-    ];
+    console.log('[Google Auth] Request received');
+    console.log('[Google Auth] Firebase token received:', !!idToken);
+    
+    const decoded = await verifyFirebaseToken(idToken);
+    const email = decoded.email;
+    const name = decoded.name || 'HostelX Student';
+    
+    console.log('[Google Auth] Verified email:', email);
+    console.log('[Google Auth] MongoDB readyState:', require('mongoose').connection.readyState);
 
-    const shouldBeAdmin = ADMIN_EMAILS.includes(email?.toLowerCase());
+    if (!email) {
+      return res.status(400).json({ message: 'Token did not contain a verified email' });
+    }
 
-    // Check if user exists
+    if (!email.endsWith('@cuchd.in')) {
+      return res.status(403).json({ message: 'Access restricted to Chandigarh University students only. Please use your @cuchd.in email.' });
+    }
+
+    const shouldBeAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+
     let user = await User.findOne({ email });
 
     if (user) {
-      // Dynamic upgrade to admin if user exists and their email is in the admin list
       if (shouldBeAdmin && user.role !== 'admin') {
         user.role = 'admin';
         await user.save();
       }
-
-      // User exists, just log them in
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        profileImage: user.profileImage,
-        college: user.college,
-        hostel: user.hostel,
-        room: user.room,
-        wing: user.wing,
-        floor: user.floor,
-        role: user.role,
-        token: generateToken(user._id),
-      });
-    } else {
-      // User doesn't exist, create new user
-      user = await User.create({
-        name,
-        email,
-        profileImage,
-        role: shouldBeAdmin ? 'admin' : 'user',
-      });
-
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        profileImage: user.profileImage,
-        role: user.role,
-        token: generateToken(user._id),
-        message: 'New user created. Please complete profile.'
-      });
+      return res.json(userResponse(user));
     }
+
+    user = await User.create({
+      name,
+      email,
+      profileImage,
+      googleId: decoded.uid,
+      role: shouldBeAdmin ? 'admin' : 'user',
+    });
+
+    res.status(201).json({
+      ...userResponse(user),
+      message: 'New user created. Please complete profile.',
+    });
   } catch (error) {
-    console.error('Auth Error:', error.message);
-    res.status(500).json({ message: error.message || 'Server Error in authentication' });
+    console.error('========== GOOGLE LOGIN ERROR ==========');
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('========================================');
+    
+    const status = error.statusCode || 500;
+    // Temporarily return the actual error message for debugging
+    res.status(status).json({ message: error.message });
   }
 };
 

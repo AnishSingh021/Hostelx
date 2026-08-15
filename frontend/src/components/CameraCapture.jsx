@@ -412,3 +412,4 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
     </AnimatePresence>
   );
 }
+

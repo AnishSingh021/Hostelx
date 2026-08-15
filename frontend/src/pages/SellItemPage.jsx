@@ -4,6 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, X, MapPin, CheckCircle, Tag, AlertTriangle, Truck, Hourglass, Gavel, Radio, Info, Camera, TrendingDown } from 'lucide-react';
 import CameraCapture from '../components/CameraCapture';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { BACKEND_URL } from '../config';
 
 export default function SellItemPage() {
   const { user } = useAuth();
@@ -69,7 +72,7 @@ export default function SellItemPage() {
         ...(conditionVal && { condition: conditionVal }),
         ...(durationVal && { usageDuration: durationVal })
       });
-      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/price-suggestion?${params.toString()}`, {
+      const res = await fetch(`${BACKEND_URL}/api/products/price-suggestion?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
       if (res.ok) {
@@ -187,7 +190,7 @@ export default function SellItemPage() {
     });
 
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products', {
+      const response = await fetch(`${BACKEND_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -263,19 +266,13 @@ export default function SellItemPage() {
           
           {/* Listing Type Picker */}
           <div>
-            <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Listing Category Mode</label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+            <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Selling Mode</label>
+            <div className="grid grid-cols-2 gap-2.5">
               {[
                 { mode: 'SALE', label: 'SALE (Sell)', icon: <Tag className="w-4 h-4" />, setup: { listingType: 'buy', isAuction: false } },
-                { mode: 'RENTAL', label: 'RENTAL (Rent)', icon: <Hourglass className="w-4 h-4" />, setup: { listingType: 'rent', isAuction: false } },
-                { mode: 'LOST', label: 'LOST (Report)', icon: <AlertTriangle className="w-4 h-4" />, setup: { listingType: 'lost', isAuction: false, price: '0', condition: 'used' } },
-                { mode: 'FOUND', label: 'FOUND (Report)', icon: <CheckCircle className="w-4 h-4" />, setup: { listingType: 'found', isAuction: false, price: '0', condition: 'used' } },
                 { mode: 'AUCTION', label: 'AUCTION (Bid)', icon: <Gavel className="w-4 h-4" />, setup: { listingType: 'buy', isAuction: true } },
               ].map(opt => {
-                const currentMode = formData.listingType === 'lost' ? 'LOST' :
-                                    formData.listingType === 'found' ? 'FOUND' :
-                                    formData.listingType === 'rent' ? 'RENTAL' :
-                                    formData.isAuction ? 'AUCTION' : 'SALE';
+                const currentMode = formData.isAuction ? 'AUCTION' : 'SALE';
                 const isActive = currentMode === opt.mode;
                 return (
                   <button
@@ -390,12 +387,12 @@ export default function SellItemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Listing Title</label>
-              <input 
+              <Input 
                 type="text" required
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
                 onBlur={handleTitleBlur}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
+                className="w-full"
                 placeholder={
                   formData.listingType === 'emergency' 
                     ? "What do you urgently need?" 
@@ -418,7 +415,7 @@ export default function SellItemPage() {
                   ? 'Your Budget Limit (₹)'
                   : 'Selling Price (₹)'}
               </label>
-              <input 
+              <Input 
                 type="number" required={formData.listingType !== 'lost' && formData.listingType !== 'found'}
                 disabled={formData.listingType === 'lost' || formData.listingType === 'found'}
                 value={(formData.listingType === 'lost' || formData.listingType === 'found') ? '0' : (formData.listingType === 'rent' ? formData.rentPrice : formData.price)}
@@ -430,7 +427,7 @@ export default function SellItemPage() {
                     setFormData({...formData, price: val});
                   }
                 }}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold disabled:opacity-50"
+                className="w-full"
                 placeholder={(formData.listingType === 'lost' || formData.listingType === 'found') ? 'N/A' : 'e.g. 500'}
               />
             </div>
@@ -438,7 +435,7 @@ export default function SellItemPage() {
 
           {/* AI Price Suggestion Panel */}
           <AnimatePresence>
-            {formData.title && priceSuggestion && (
+            {false && formData.title && priceSuggestion && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -659,11 +656,11 @@ export default function SellItemPage() {
 
             <div>
               <label className="block text-sm font-bold uppercase tracking-wider text-muted-foreground mb-1">Meetup Hostel location</label>
-              <input 
+              <Input 
                 type="text" required
                 value={formData.hostel}
                 onChange={(e) => setFormData({...formData, hostel: e.target.value})}
-                className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm font-semibold"
+                className="w-full"
               />
             </div>
           </div>
@@ -750,12 +747,12 @@ export default function SellItemPage() {
                 >
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Starting Bid (₹)</label>
-                    <input 
+                    <Input 
                       type="number"
                       required={formData.isAuction}
                       value={formData.startingBid}
                       onChange={(e) => setFormData({...formData, startingBid: e.target.value})}
-                      className="w-full px-4 py-2 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-semibold"
+                      className="w-full"
                       placeholder="e.g. 100"
                     />
                   </div>
@@ -794,12 +791,13 @@ export default function SellItemPage() {
             </div>
           )}
 
-          <button 
-            type="submit" disabled={loading}
-            className="w-full bg-primary text-primary-foreground py-3.5 rounded-2xl font-bold hover:bg-primary/95 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition duration-200 mt-4 cursor-pointer flex items-center justify-center gap-2"
+          <Button 
+            type="submit" 
+            disabled={loading}
+            className="w-full mt-4 py-6 text-base shadow-lg shadow-primary/20"
           >
             {loading ? 'Uploading Images & Creating Listing...' : 'Submit Listing & Post Ad 🚀'}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -811,3 +809,4 @@ export default function SellItemPage() {
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, ArrowLeft, MessageCircle, ChevronDown, ChevronUp, Sparkles, Mail } from 'lucide-react';
+import { HelpCircle, ArrowLeft, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Footer from '../components/ui/Footer';
@@ -26,7 +26,7 @@ export default function HelpPage() {
       a: "Renting is duration-based (daily/weekly). Sellers specify rental collateral inside product listings (such as a refundable cash deposit or student ID card handover). When renting, calculate the cost using our Planner, submit the booking request, chat to coordinate handovers, and return the item on time to recover your collateral."
     },
     {
-      q: "How does the Lost & Found Smart Match engine work?",
+      q: "How does the Lost & Found Match engine work?",
       a: "When reporting a lost or found item, HostelX uses semantic keyword analysis of your description text. The scanner immediately checks the campus database for potential match overlaps. If an overlap is flagged, you will receive an automatic system notification to review the matching claim details."
     },
     {
@@ -36,18 +36,18 @@ export default function HelpPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-[#475569] dark:text-zinc-300 flex flex-col justify-between font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-background text-muted-foreground flex flex-col justify-between font-sans">
       
       {/* Top Header */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between z-10 relative border-b border-[#E2E8F0] dark:border-zinc-900 bg-white dark:bg-[#090D16]">
+      <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between z-10 relative border-b border-border bg-card">
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition">
-          <span className="w-3 h-3 rounded-full bg-blue-600"></span>
-          <span className="font-extrabold text-sm tracking-wider text-[#0F172A] dark:text-white">HostelX Hub</span>
+          <span className="w-3 h-3 rounded-full bg-primary"></span>
+          <span className="font-bold text-sm tracking-wider text-foreground">HostelX Hub</span>
         </Link>
         
         <Link 
           to={user ? "/dashboard" : "/auth"} 
-          className="text-xs font-bold tracking-wider text-blue-600 dark:text-blue-400 hover:underline transition"
+          className="text-xs font-bold text-primary hover:underline transition"
         >
           {user ? "Dashboard →" : "Sign In →"}
         </Link>
@@ -59,27 +59,27 @@ export default function HelpPage() {
         {/* Back Link */}
         <Link 
           to="/" 
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#64748B] hover:text-[#0F172A] dark:hover:text-white transition"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
 
         {/* Page Hero */}
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold tracking-wide text-blue-600">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary">
             <HelpCircle className="w-4 h-4" /> Support Desk
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0F172A] dark:text-white">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Help Center
           </h1>
-          <p className="text-sm text-[#475569] dark:text-zinc-300 max-w-2xl leading-relaxed">
-            Have questions about student safety, P2P transactions, live auction terminals, or listing boosts? Browse our expanding FAQ index or reach out directly to support specialists.
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed font-medium">
+            Have questions about student safety, P2P transactions, live auction terminals, or listing boosts? Browse our FAQ index or reach out directly to support specialists.
           </p>
         </div>
 
-        {/* Interactive FAQ Grid */}
+        {/* FAQ Grid */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-6">
+          <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-6">
             Frequently Asked Questions
           </h3>
 
@@ -89,18 +89,18 @@ export default function HelpPage() {
               return (
                 <div 
                   key={idx}
-                  className="bg-white dark:bg-zinc-950 border border-[#E2E8F0] dark:border-zinc-900 rounded-2xl overflow-hidden shadow-sm transition"
+                  className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm transition"
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between p-5 text-left text-sm font-bold tracking-wide text-[#0F172A] dark:text-white transition-colors hover:bg-zinc-50 cursor-pointer"
+                    className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-foreground hover:bg-secondary cursor-pointer"
                   >
                     <span>{faq.q}</span>
-                    {isOpen ? <ChevronUp className="w-4 h-4 text-[#64748B]" /> : <ChevronDown className="w-4 h-4 text-[#64748B]" />}
+                    {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </button>
                   
                   {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-sm text-[#475569] dark:text-zinc-300 font-semibold leading-relaxed border-t border-[#E2E8F0] dark:border-zinc-900/40">
+                    <div className="px-5 pb-5 pt-1 text-sm text-muted-foreground font-medium leading-relaxed border-t border-border">
                       {faq.a}
                     </div>
                   )}
@@ -111,21 +111,19 @@ export default function HelpPage() {
         </div>
 
         {/* Support CTA Callout */}
-        <div className="bg-white dark:bg-zinc-950 border border-[#E2E8F0] dark:border-zinc-900 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+        <div className="bg-card border border-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-1">
-            <h4 className="font-bold text-lg text-[#0F172A] dark:text-white">Still Need Assistance?</h4>
-            <p className="text-sm text-[#64748B] font-semibold">
+            <h4 className="font-bold text-lg text-foreground">Still Need Assistance?</h4>
+            <p className="text-xs text-muted-foreground font-medium">
               Our operations desks resolve student ticket queries within 12 hours.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link 
-              to="/contact"
-              className="inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider bg-[#0F172A] text-white hover:bg-zinc-800 px-6 py-3.5 rounded-xl shadow transition text-center"
-            >
-              <MessageCircle className="w-4.5 h-4.5" /> Open Ticket
-            </Link>
-          </div>
+          <Link 
+            to="/contact"
+            className="saas-btn-primary px-6 py-3.5 text-xs flex items-center gap-2"
+          >
+            <MessageCircle className="w-4 h-4" /> Open Ticket
+          </Link>
         </div>
 
       </main>
@@ -136,3 +134,4 @@ export default function HelpPage() {
     </div>
   );
 }
+

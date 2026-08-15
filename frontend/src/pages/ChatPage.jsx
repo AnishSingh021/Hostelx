@@ -36,7 +36,7 @@ export default function ChatPage() {
   // Fetch chats
   const fetchChats = useCallback(async () => {
     try {
-      const res = await fetch('https://hostelx-backend-a228.onrender.com/api/chats', {
+      const res = await fetch(`${BACKEND_URL}/api/chats`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
@@ -90,7 +90,7 @@ export default function ChatPage() {
 
   const markRead = async (chatId) => {
     try {
-      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/chats/${chatId}/read`, {
+      const res = await fetch(`${BACKEND_URL}/api/chats/${chatId}/read`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${user.token}` },
       });
@@ -151,7 +151,7 @@ export default function ChatPage() {
       }
 
       const res = await fetch(
-        `https://hostelx-backend-a228.onrender.com/api/chats/${selectedChat._id}/messages`,
+        `${BACKEND_URL}/api/chats/${selectedChat._id}/messages`,
         { method: 'POST', headers, body }
       );
 
@@ -199,7 +199,7 @@ export default function ChatPage() {
     setReactionMenu(null);
     try {
       const res = await fetch(
-        `https://hostelx-backend-a228.onrender.com/api/chats/${selectedChat._id}/messages/${msgId}/react`,
+        `${BACKEND_URL}/api/chats/${selectedChat._id}/messages/${msgId}/react`,
         {
           method: 'PUT',
           headers: {
@@ -365,11 +365,11 @@ export default function ChatPage() {
                               <img
                                 src={msg.image}
                                 alt="shared"
-                                className={`max-w-xs rounded-2xl object-cover cursor-pointer ${mine ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
+                                className={`max-w-xs rounded-lg object-cover cursor-pointer ${mine ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
                               />
                             ) : (
                               <div
-                                className={`px-4 py-2 rounded-2xl text-sm leading-relaxed break-words ${
+                                className={`px-4 py-2 rounded-lg text-sm leading-relaxed break-words ${
                                   mine
                                     ? 'bg-primary text-primary-foreground rounded-br-sm'
                                     : 'bg-secondary text-secondary-foreground rounded-bl-sm'
@@ -461,7 +461,7 @@ export default function ChatPage() {
                         className="w-6 h-6 rounded-full object-cover"
                         alt=""
                       />
-                      <div className="bg-secondary rounded-2xl rounded-bl-sm px-4 py-2 flex gap-1 items-center">
+                      <div className="bg-secondary rounded-lg rounded-bl-sm px-4 py-2 flex gap-1 items-center">
                         {[0, 1, 2].map((i) => (
                           <span
                             key={i}
@@ -495,14 +495,14 @@ export default function ChatPage() {
               </AnimatePresence>
 
               {/* Input Area */}
-              <div className="px-4 py-3 border-t border-border bg-background flex-shrink-0">
-                <div className="flex items-end gap-2">
+              <div className="px-4 py-3 pb-6 md:pb-4 border-t border-border bg-background flex-shrink-0 relative z-20 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
+                <div className="flex items-end gap-3 max-w-4xl mx-auto">
                   {/* Image picker */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer flex-shrink-0"
+                    className="p-3.5 rounded-full bg-secondary text-secondary-foreground hover:bg-muted transition cursor-pointer flex-shrink-0 shadow-sm border border-border/50"
                   >
-                    <Image className="w-5 h-5" />
+                    <Image className="w-6 h-6" />
                   </button>
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImagePick} />
 
@@ -512,19 +512,19 @@ export default function ChatPage() {
                     value={newMessage}
                     onChange={handleTyping}
                     onKeyDown={handleKeyDown}
-                    placeholder="Message..."
+                    placeholder="Type a message..."
                     disabled={!!imageFile}
-                    className="flex-1 bg-muted border-none rounded-2xl px-4 py-2.5 resize-none outline-none focus:ring-2 focus:ring-primary text-sm max-h-32 placeholder:text-muted-foreground disabled:opacity-50 transition"
-                    style={{ minHeight: '42px' }}
+                    className="flex-1 bg-card border border-border rounded-xl px-5 py-4 resize-none outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base max-h-32 placeholder:text-muted-foreground disabled:opacity-50 transition shadow-sm"
+                    style={{ minHeight: '56px' }}
                   />
 
                   {/* Send */}
                   <button
                     onClick={sendMessage}
                     disabled={(!newMessage.trim() && !imageFile) || sending}
-                    className="p-2.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition disabled:opacity-40 flex-shrink-0 cursor-pointer"
+                    className="p-4 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition disabled:opacity-40 flex-shrink-0 cursor-pointer shadow-md active:scale-95"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-5 h-5 ml-0.5" />
                   </button>
                 </div>
               </div>
@@ -544,3 +544,4 @@ function MessageIcon({ className }) {
     </svg>
   );
 }
+

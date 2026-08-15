@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { safeParseDescription } from '../lib/utils';
-import Navbar from '../components/ui/Navbar';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -20,6 +19,8 @@ import {
   Award,
   Building
 } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { BACKEND_URL } from '../config';
 
 // Default campus center coordinates (e.g. Chandigarh University baseline setup)
 const DEFAULT_CAMPUS_LAT = 28.3639;
@@ -79,7 +80,7 @@ export default function NearbyPage() {
   // Sync products list from backend
   const fetchProducts = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products');
+      const response = await fetch(`${BACKEND_URL}/api/products`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -144,7 +145,8 @@ export default function NearbyPage() {
       (error) => {
         setGpsError(error.message);
         setGpsStatus('denied');
-      }
+      },
+      { timeout: 5000 }
     );
   };
 
@@ -252,10 +254,9 @@ export default function NearbyPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative pb-10">
-      <Navbar />
       
       {/* Header bar consistent with Dashboard */}
-      <header className="max-w-7xl w-full mx-auto px-6 py-5 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-md sticky top-[73px] z-30">
+      <header className="max-w-7xl w-full mx-auto px-6 py-5 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center gap-4">
           <Link 
             to="/dashboard" 
@@ -393,13 +394,13 @@ export default function NearbyPage() {
             
             {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+              <Input
                 type="text"
                 placeholder="Search nearby campus items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-xl focus:ring-1 focus:ring-primary focus:border-primary outline-none text-xs font-semibold text-foreground placeholder:text-muted-foreground"
+                className="w-full pl-10 pr-4"
               />
             </div>
 
@@ -440,32 +441,24 @@ export default function NearbyPage() {
               <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Syncing nearby coordinates...</span>
             </div>
           ) : processedProducts.length === 0 ? (
-            <div className="text-center py-20 bg-card border border-border rounded-[2rem] p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <div className="text-center py-20 bg-card border border-border rounded-2xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
               <div className="p-4 bg-muted text-muted-foreground rounded-2xl mb-4">
                 <MapPin className="w-8 h-8 text-primary animate-bounce" />
               </div>
-              <h4 className="font-extrabold text-base text-foreground">No nearby listings yet.</h4>
-              <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center font-semibold">
-                Be the first student in your hostel to post an item. Expand your search radius or help seed the community by posting yours.
+              <h4 className="font-extrabold text-base text-foreground">No nearby hostel listings found</h4>
+              <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center">
+                Expand your search radius or hostel filters to discover more campus deals around you!
               </p>
-              <div className="flex gap-3 mt-5">
-                <button
-                  onClick={() => {
-                    setMaxDistance(3000);
-                    setSelectedHostel('All');
-                    setSelectedCollege('All');
-                  }}
-                  className="px-4 py-2 bg-muted hover:bg-secondary text-foreground font-bold text-xs rounded-xl border border-border cursor-pointer transition active:scale-95"
-                >
-                  Expand Radius to 3km
-                </button>
-                <Link
-                  to="/sell"
-                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition active:scale-95 flex items-center justify-center"
-                >
-                  Post an Item
-                </Link>
-              </div>
+              <button
+                onClick={() => {
+                  setMaxDistance(3000);
+                  setSelectedHostel('All');
+                  setSelectedCollege('All');
+                }}
+                className="mt-5 px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
+              >
+                Expand Radius to 3km
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -503,7 +496,7 @@ export default function NearbyPage() {
                           </span>
                         )}
                         {item.isRental && (
-                          <span className="bg-blue-100 text-blue-800 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-blue-200">
+                          <span className="bg-primary/10 text-primary text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-primary/30">
                             Rent
                           </span>
                         )}
@@ -596,3 +589,4 @@ export default function NearbyPage() {
     </div>
   );
 }
+

@@ -5,6 +5,7 @@ import { Search, MapPin, ChevronLeft, X, HelpCircle, AlertOctagon, RefreshCw, Sh
 import { useAuth } from '../context/AuthContext';
 import { safeParseDescription } from '../lib/utils';
 import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 
 const CATEGORY_SUGGESTIONS = [
   'Search "cheap chair under 1k" 🤖',
@@ -104,7 +105,7 @@ export default function Marketplace() {
         queryParams.append('userLng', lng);
       }
 
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products?${queryParams}`);
+      const response = await fetch(`${BACKEND_URL}/api/products?${queryParams}`);
       let data = await response.json();
 
       // Redundant Lost & Found merge block removed to enforce strict separation
@@ -253,7 +254,7 @@ export default function Marketplace() {
             <motion.div 
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex gap-2 bg-muted/40 p-1.5 rounded-2xl max-w-xs border border-border mt-3"
+              className="flex gap-2 bg-muted/40 p-1.5 rounded-lg max-w-xs border border-border mt-3"
             >
               <button
                 type="button"
@@ -283,35 +284,42 @@ export default function Marketplace() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-6">
-        
-        {/* Categories Bar */}
-        <div className="flex overflow-x-auto gap-2 pb-4 mb-6 no-scrollbar">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setActiveCategory(c)}
-              className={`whitespace-nowrap px-4 py-2 rounded-xl border text-xs font-bold transition duration-200 cursor-pointer ${
-                activeCategory === c
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card text-card-foreground border-border hover:border-primary hover:text-primary'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+      <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row gap-6">
+        {/* Left Sidebar Filters */}
+        <aside className="w-full md:w-64 flex-shrink-0">
+          <div className="sticky top-[180px] bg-card border border-border rounded-lg p-4 shadow-sm">
+            <h2 className="font-extrabold text-sm mb-4">Categories</h2>
+            <div className="flex flex-col gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setActiveCategory(c)}
+                  className={`text-left px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${
+                    activeCategory === c
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
+                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Main Content */}
+        <main className="flex-1 min-w-0">
 
 
         {/* Products Grid */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-card border border-border rounded-2xl h-80" />
+              <div key={i} className="animate-pulse bg-card border border-border rounded-lg h-80" />
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-20 bg-card border border-border rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+          <div className="text-center py-20 bg-card border border-border rounded-lg p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4 animate-bounce">📦</div>
             <h4 className="font-extrabold text-base text-foreground">No listings available yet</h4>
             <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center">
@@ -346,7 +354,7 @@ export default function Marketplace() {
                     <Link to={`/product/${product._id}`}>
                       <motion.div
                         whileHover={{ y: -6 }}
-                        className={`bg-card border rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full relative ${
+                        className={`bg-card border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col h-full relative ${
                           isUrgent 
                             ? 'border-rose-500/50 shadow-rose-500/5 ring-1 ring-rose-500/10' 
                             : isBoosted 
@@ -463,6 +471,7 @@ export default function Marketplace() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }
@@ -490,3 +499,4 @@ function RadioIcon(props) {
     </svg>
   );
 }
+

@@ -160,3 +160,4 @@ export default function OutfitCard({ outfit, onRentClick }) {
     </motion.div>
   );
 }
+

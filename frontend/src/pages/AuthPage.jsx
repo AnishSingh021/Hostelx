@@ -170,10 +170,12 @@ export default function AuthPage() {
 
   // Synchronize authenticated Firebase user with MongoDB backend
   const syncWithBackend = async (firebaseUser, displayNameValue) => {
-    const response = await fetch('https://hostelx-backend-a228.onrender.com/api/auth/google', {
+    const idToken = await firebaseUser.getIdToken();
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        idToken,
         name: displayNameValue || firebaseUser.displayName || 'HostelX Student',
         email: firebaseUser.email,
         profileImage: firebaseUser.photoURL || FallbackAvatar
@@ -296,7 +298,7 @@ export default function AuthPage() {
     const currentUser = JSON.parse(stored);
     
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/auth/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -350,23 +352,31 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen w-full flex items-stretch justify-center bg-gray-50 text-slate-800 antialiased">
       
-      {/* LEFT COLUMN: Modern Campus Startup Branding & Features Showcase (Hidden on Mobile) */}
-      <div className="hidden md:flex md:w-1/2 lg:w-3/5 bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-800 text-white relative overflow-hidden flex-col justify-between p-12 lg:p-16">
+      {/* LEFT COLUMN: Premium Modern Branding (Hidden on Mobile) */}
+      <div className="hidden md:flex md:w-1/2 lg:w-3/5 text-white relative overflow-hidden flex-col justify-between p-12 lg:p-16">
         
-        {/* Abstract decorative glowing grid in background */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/25 rounded-full blur-[80px] -ml-28 -mb-28 pointer-events-none" />
+        {/* Cinematic Photographic Background */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] ease-linear scale-110"
+          style={{ backgroundImage: "url('/assets/login_bg.png')" }}
+        />
+        {/* Rich gradient overlay for text readability and cinematic feel */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-indigo-900/80 to-blue-900/90 pointer-events-none mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 pointer-events-none" />
         
         {/* Top Header */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="bg-white p-2 rounded-xl shadow-lg">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 relative z-10"
+        >
+          <div className="bg-white/10 backdrop-blur-xl p-2.5 rounded-2xl border border-white/20 shadow-2xl">
             <HostelXLogo className="w-8 h-8" />
           </div>
-          <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+          <span className="font-extrabold text-2xl tracking-tight text-white drop-shadow-md">
             HostelX
           </span>
-        </div>
+        </motion.div>
 
         {/* Feature Cards Grid (Middle Content) */}
         <div className="my-auto max-w-lg space-y-8 relative z-10">
@@ -402,12 +412,15 @@ export default function AuthPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 + idx * 0.1 }}
-                className="bg-white/10 backdrop-blur-sm hover:bg-white/15 transition-colors border border-white/10 rounded-2xl p-4 flex flex-col justify-between"
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" }}
+                className="bg-white/5 backdrop-blur-md transition-all border border-white/10 rounded-2xl p-5 flex flex-col justify-between shadow-lg"
               >
-                <feat.icon className="w-6 h-6 text-teal-300 mb-2" />
+                <div className="bg-gradient-to-br from-blue-400 to-indigo-400 w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-inner">
+                  <feat.icon className="w-5 h-5 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">{feat.label}</h3>
-                  <p className="text-xs text-blue-100/75 mt-1">{feat.desc}</p>
+                  <h3 className="font-bold text-white text-sm tracking-wide">{feat.label}</h3>
+                  <p className="text-xs text-blue-100/70 mt-1.5 leading-relaxed">{feat.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -415,16 +428,18 @@ export default function AuthPage() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-blue-200/60 relative z-10 border-t border-white/10 pt-6">
+        <div className="flex items-center justify-between text-xs text-blue-200/50 relative z-10 border-t border-white/5 pt-6 font-medium">
           <span>© {new Date().getFullYear()} HostelX Technologies</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Secure Authentication</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> Secure Authentication</span>
         </div>
       </div>
 
       {/* RIGHT COLUMN: The Interactive Authenticating Card (Mobile Friendly) */}
-      <div className="w-full md:w-1/2 lg:w-2/5 flex flex-col justify-center items-center p-6 md:p-12 lg:p-16 bg-white">
+      <div className="w-full md:w-1/2 lg:w-2/5 flex flex-col justify-center items-center p-6 md:p-12 lg:p-16 bg-white relative">
+        {/* Subtle right-side ambient glow */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-50" />
         
-        <div className="w-full max-w-md flex flex-col items-stretch space-y-8">
+        <div className="w-full max-w-md flex flex-col items-stretch space-y-8 relative z-10">
           
           {/* Centered Brand Header Logo (Both Mobile & Desktop) */}
           <div className="text-center flex flex-col items-center space-y-4">
@@ -432,7 +447,7 @@ export default function AuthPage() {
               initial={{ opacity: 0, scale: 0.9, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="flex items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/50"
+              className="flex items-center justify-center p-4 rounded-[2rem] bg-gradient-to-br from-white to-slate-50 border border-slate-100 shadow-xl shadow-blue-900/5"
             >
               <HostelXLogo className="w-14 h-14" />
             </motion.div>
@@ -440,17 +455,15 @@ export default function AuthPage() {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight animate-fade-in">
               {step === 1 ? (isLoginTab ? 'Welcome Back' : 'Join HostelX') : 'Complete Setup'}
             </h2>
-            <p className="text-sm text-slate-500 font-normal leading-relaxed max-w-xs">
+            <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-xs">
               {step === 1 
                 ? (isLoginTab ? 'Log in with your CU account to browse hostel deals.' : 'Create an account to start trading inside Chandigarh University hostels.') 
                 : 'Choose your hostel to discover nearby listings from students around you.'}
             </p>
 
             {step === 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 pt-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-500">
-                <span className="flex items-center gap-1">✓ Verified Hostel Community</span>
-                <span className="flex items-center gap-1">✓ Secure Authentication</span>
-                <span className="flex items-center gap-1">✓ Real-Time Marketplace</span>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1.5 pt-1.5 text-[10px] font-black uppercase tracking-wider text-indigo-600">
+                <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Verified CU Student</span>
               </div>
             )}
           </div>
@@ -468,38 +481,42 @@ export default function AuthPage() {
                 className="space-y-6"
               >
                 {/* 1. GOOGLE LOGIN POPUP ACTION */}
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.01, y: -1 }}
+                  whileTap={{ scale: 0.99 }}
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 active:scale-[0.99] transition-all cursor-pointer shadow-sm hover:shadow"
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-slate-200 rounded-2xl font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm"
                 >
                   <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                   Continue with Google
-                </button>
+                </motion.button>
 
-                <div className="relative flex py-2 items-center text-xs text-slate-400 uppercase font-semibold">
+                <div className="relative flex py-2 items-center text-xs text-slate-400 uppercase font-bold tracking-widest">
                   <div className="flex-grow border-t border-slate-100"></div>
                   <span className="flex-shrink mx-4">or use Email</span>
                   <div className="flex-grow border-t border-slate-100"></div>
                 </div>
 
                 {/* Form Navigation Tabs */}
-                <div className="bg-slate-100 p-1.5 rounded-xl flex items-center relative">
-                  <button
+                <div className="bg-slate-100/70 p-1.5 rounded-2xl flex items-center relative backdrop-blur-sm">
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={() => handleTabToggle(true)}
-                    className={`flex-1 text-center py-2 text-sm font-semibold rounded-lg z-10 transition-colors ${isLoginTab ? 'text-blue-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`flex-1 text-center py-2.5 text-sm font-bold rounded-xl z-10 transition-all duration-300 ${isLoginTab ? 'text-indigo-700 bg-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
                   >
                     Log In
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={() => handleTabToggle(false)}
-                    className={`flex-1 text-center py-2 text-sm font-semibold rounded-lg z-10 transition-colors ${!isLoginTab ? 'text-blue-600 bg-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    className={`flex-1 text-center py-2.5 text-sm font-bold rounded-xl z-10 transition-all duration-300 ${!isLoginTab ? 'text-indigo-700 bg-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
                   >
                     Sign Up
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* ERROR FEEDBACK BANNER */}
@@ -544,15 +561,15 @@ export default function AuthPage() {
 
                   {/* EMAIL INPUT */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                    <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-widest">Email Address</label>
+                    <div className="relative group">
+                      <Mail className="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       <input
                         type="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all ${validationErrors.email ? 'border-red-400 focus:ring-red-400' : 'border-slate-200'}`}
+                        className={`w-full pl-11 pr-4 py-3.5 bg-slate-50/50 border rounded-2xl text-sm font-semibold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white outline-none transition-all ${validationErrors.email ? 'border-red-400 focus:ring-red-400/20 focus:border-red-500' : 'border-slate-200'}`}
                         placeholder="yourname@college.edu"
                       />
                     </div>
@@ -564,27 +581,27 @@ export default function AuthPage() {
                   {/* PASSWORD INPUT */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password</label>
                       {isLoginTab && (
-                        <button type="button" className="text-xs text-blue-600 font-bold hover:underline cursor-pointer">
+                        <button type="button" className="text-xs text-indigo-600 font-bold hover:text-indigo-800 transition-colors cursor-pointer">
                           Forgot?
                         </button>
                       )}
                     </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                    <div className="relative group">
+                      <Lock className="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       <input
                         type={showPassword ? "text" : "password"}
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className={`w-full pl-10 pr-10 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all ${validationErrors.password ? 'border-red-400 focus:ring-red-400' : 'border-slate-200'}`}
+                        className={`w-full pl-11 pr-12 py-3.5 bg-slate-50/50 border rounded-2xl text-sm font-semibold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white outline-none transition-all ${validationErrors.password ? 'border-red-400 focus:ring-red-400/20 focus:border-red-500' : 'border-slate-200'}`}
                         placeholder="••••••••"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -601,21 +618,21 @@ export default function AuthPage() {
                       animate={{ opacity: 1, height: 'auto' }}
                       className="space-y-1.5"
                     >
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Confirm Password</label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                      <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-widest">Confirm Password</label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         <input
                           type={showConfirmPassword ? "text" : "password"}
                           required
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                          className={`w-full pl-10 pr-10 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all ${validationErrors.confirmPassword ? 'border-red-400 focus:ring-red-400' : 'border-slate-200'}`}
+                          className={`w-full pl-11 pr-12 py-3.5 bg-slate-50/50 border rounded-2xl text-sm font-semibold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white outline-none transition-all ${validationErrors.confirmPassword ? 'border-red-400 focus:ring-red-400/20 focus:border-red-500' : 'border-slate-200'}`}
                           placeholder="••••••••"
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
                         >
                           {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -627,10 +644,12 @@ export default function AuthPage() {
                   )}
 
                   {/* SUBMIT BUTTON */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.01, y: -1 }}
+                    whileTap={{ scale: 0.99 }}
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg active:scale-[0.99] transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer mt-8 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -640,7 +659,7 @@ export default function AuthPage() {
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </form>
 
                 {/* Footnote toggling */}
@@ -1032,3 +1051,5 @@ export default function AuthPage() {
     </div>
   );
 }
+
+

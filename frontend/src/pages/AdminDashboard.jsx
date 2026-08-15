@@ -15,6 +15,7 @@ import {
   ChevronRight,
   TrendingDown
 } from 'lucide-react';
+import { BACKEND_URL } from '../config';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/admin/stats', {
+      const response = await fetch(`${BACKEND_URL}/api/admin/stats`, {
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
       const data = await response.json();
@@ -48,7 +49,7 @@ export default function AdminDashboard() {
   const handleDeleteProduct = async (id) => {
     if(window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/admin/product/${id}`, {
+        const response = await fetch(`${BACKEND_URL}/api/admin/product/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${user.token}` }
         });
@@ -134,7 +135,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Admin Header with Glassmorphic design */}
-        <div className="relative overflow-hidden bg-card/40 border border-border backdrop-blur-md p-8 rounded-3xl flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-xl">
+        <div className="relative overflow-hidden bg-card/40 border border-border backdrop-blur-md p-8 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-xl">
           <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -z-10 animate-pulse"></div>
           <div className="absolute bottom-0 left-0 w-60 h-60 bg-indigo-500/5 rounded-full blur-[80px] -z-10"></div>
           
@@ -173,7 +174,7 @@ export default function AdminDashboard() {
         {/* 6-Card High-Fidelity Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Card 1: Users */}
-          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
+          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-lg flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-110 transition">
                 <Users className="w-6 h-6" />
@@ -187,7 +188,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Card 2: Products */}
-          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
+          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-lg flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl group-hover:scale-110 transition">
                 <ShoppingBag className="w-6 h-6" />
@@ -201,7 +202,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Card 3: Chats */}
-          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
+          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-lg flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-110 transition">
                 <MessageSquare className="w-6 h-6" />
@@ -215,7 +216,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Card 4: Boosted */}
-          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
+          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-lg flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl group-hover:scale-110 transition">
                 <Zap className="w-6 h-6 animate-pulse" />
@@ -229,7 +230,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Card 5: Bids Placed */}
-          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-2xl flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
+          <div className="bg-card/50 border border-border backdrop-blur-sm p-5 rounded-lg flex flex-col justify-between shadow-md hover:shadow-lg hover:border-primary/20 transition-all group">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition">
                 <TrendingUp className="w-6 h-6" />
@@ -243,7 +244,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Card 6: Platform Revenue with golden/emerald gradient glowing theme */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500/20 via-card/50 to-primary/10 border-2 border-emerald-500/30 p-5 rounded-2xl flex flex-col justify-between shadow-lg shadow-emerald-500/5 group hover:shadow-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300">
+          <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500/20 via-card/50 to-primary/10 border-2 border-emerald-500/30 p-5 rounded-lg flex flex-col justify-between shadow-lg shadow-emerald-500/5 group hover:shadow-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl -z-10 group-hover:scale-125 transition-all"></div>
             
             <div className="flex justify-between items-start">
@@ -263,7 +264,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Chart Section A: Category Distribution */}
-          <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-xl flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
@@ -380,7 +381,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Chart Section B: Hostel Transaction Metrics */}
-          <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-xl flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
@@ -436,7 +437,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Feature Conversion & Monetization Funnel */}
-        <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl">
+        <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl">
               <Zap className="w-5 h-5" />
@@ -450,7 +451,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Conversion 1: Boosted Rate */}
-            <div className="bg-secondary/40 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
+            <div className="bg-secondary/40 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full blur-xl group-hover:scale-125 transition-all"></div>
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -472,7 +473,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Conversion 2: Urgent Boost Rate */}
-            <div className="bg-secondary/40 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
+            <div className="bg-secondary/40 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rounded-full blur-xl group-hover:scale-125 transition-all"></div>
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -494,7 +495,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Conversion 4: Bidding Engagement */}
-            <div className="bg-secondary/40 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
+            <div className="bg-secondary/40 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-16 h-16 bg-pink-500/5 rounded-full blur-xl group-hover:scale-125 transition-all"></div>
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -522,7 +523,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Recent Products with clean responsive design */}
-          <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl">
+          <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
@@ -538,48 +539,56 @@ export default function AdminDashboard() {
               </span>
             </div>
 
-            <div className="divide-y divide-border/60">
-              {stats.recentProducts && stats.recentProducts.length > 0 ? (
-                stats.recentProducts.map(p => (
-                  <div key={p._id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      {p.images && p.images[0] ? (
-                        <img src={p.images[0]} alt={p.title} className="w-12 h-12 rounded-xl object-cover border border-border flex-shrink-0 shadow-sm" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-bold text-muted-foreground border border-border">No Img</div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-sm text-foreground truncate max-w-[150px] group-hover:text-primary transition">{p.title}</p>
-                          {p.isBoosted && <span className="px-1.5 py-0.5 text-[8px] font-extrabold text-amber-500 bg-amber-500/10 rounded border border-amber-500/20">BOOSTED</span>}
-                          {p.isUrgent && <span className="px-1.5 py-0.5 text-[8px] font-extrabold text-red-500 bg-red-500/10 rounded border border-red-500/20">URGENT</span>}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                          Seller: <span className="font-medium text-foreground">{p.seller?.name || 'Unknown'}</span> ({p.hostel || 'No Hostel'})
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-sm font-extrabold text-foreground px-2 py-1 bg-secondary rounded-lg border border-border">₹{p.price}</span>
-                      <button 
-                        onClick={() => handleDeleteProduct(p._id)}
-                        className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition duration-150 active:scale-90 border border-transparent hover:border-destructive/10"
-                        title="Delete violation item"
-                      >
-                        <Trash2 className="w-4.5 h-4.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-muted-foreground text-sm">No recent products available.</div>
-              )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-border/60 text-muted-foreground font-bold uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Product</th>
+                    <th className="pb-3">Seller</th>
+                    <th className="pb-3">Price</th>
+                    <th className="pb-3 pr-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {stats.recentProducts && stats.recentProducts.length > 0 ? (
+                    stats.recentProducts.map(p => (
+                      <tr key={p._id} className="hover:bg-secondary/40 transition-colors group">
+                        <td className="py-2.5 pl-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground max-w-[120px] truncate">{p.title}</span>
+                            <div className="flex gap-1">
+                              {p.isBoosted && <span className="px-1.5 py-0.5 text-[8px] font-extrabold text-amber-500 bg-amber-500/10 rounded">BOOST</span>}
+                              {p.isUrgent && <span className="px-1.5 py-0.5 text-[8px] font-extrabold text-red-500 bg-red-500/10 rounded">URGENT</span>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2.5 max-w-[100px] truncate text-muted-foreground">
+                          {p.seller?.name || 'Unknown'}
+                        </td>
+                        <td className="py-2.5 font-bold text-foreground">₹{p.price}</td>
+                        <td className="py-2.5 pr-2 text-right">
+                          <button 
+                            onClick={() => handleDeleteProduct(p._id)}
+                            className="p-1.5 text-destructive hover:bg-destructive/10 rounded-lg transition active:scale-90 opacity-70 group-hover:opacity-100"
+                            title="Delete violation item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="py-6 text-center text-muted-foreground text-sm">No recent products available.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
           {/* Recent Users with sleek list structure */}
-          <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl">
+          <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-teal-500/10 text-teal-500 rounded-xl">
@@ -595,35 +604,38 @@ export default function AdminDashboard() {
               </span>
             </div>
 
-            <div className="divide-y divide-border/60">
-              {stats.recentUsers && stats.recentUsers.length > 0 ? (
-                stats.recentUsers.map(u => (
-                  <div key={u._id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4 group">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <img 
-                        src={u.profileImage} 
-                        alt={u.name} 
-                        className="w-12 h-12 rounded-full border border-border object-cover flex-shrink-0 shadow-sm transition group-hover:scale-105" 
-                      />
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm text-foreground truncate max-w-[180px]">{u.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{u.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end flex-shrink-0 gap-1.5">
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-secondary text-primary rounded-full border border-border uppercase">
-                        {u.hostel || 'N/A'}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground font-semibold">
-                        Room: {u.room || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-muted-foreground text-sm">No recent users registered.</div>
-              )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead>
+                  <tr className="border-b border-border/60 text-muted-foreground font-bold uppercase tracking-wider">
+                    <th className="pb-3 pl-2">User</th>
+                    <th className="pb-3">Email</th>
+                    <th className="pb-3">Hostel</th>
+                    <th className="pb-3 pr-2 text-right">Room</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {stats.recentUsers && stats.recentUsers.length > 0 ? (
+                    stats.recentUsers.map(u => (
+                      <tr key={u._id} className="hover:bg-secondary/40 transition-colors group">
+                        <td className="py-2.5 pl-2">
+                          <div className="flex items-center gap-2">
+                            <img src={u.profileImage} alt={u.name} className="w-6 h-6 rounded-full border border-border object-cover" />
+                            <span className="font-semibold text-foreground max-w-[120px] truncate">{u.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 max-w-[120px] truncate text-muted-foreground">{u.email}</td>
+                        <td className="py-2.5 text-muted-foreground">{u.hostel || 'N/A'}</td>
+                        <td className="py-2.5 pr-2 text-right font-semibold text-foreground">{u.room || 'N/A'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="py-6 text-center text-muted-foreground text-sm">No recent users registered.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -633,3 +645,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

@@ -27,7 +27,9 @@ import {
   Info,
   BadgeAlert,
   Menu,
-  Shirt
+  Shirt,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/ui/Navbar';
@@ -41,11 +43,24 @@ export default function Dashboard() {
   const [emergencyListings, setEmergencyListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showBoostInfo, setShowBoostInfo] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    if (theme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const fetchEmergencies = async () => {
       try {
-        const res = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=emergency');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products?listingType=emergency`);
         if (res.ok) {
           const data = await res.json();
           setEmergencyListings(data.slice(0, 10));
@@ -69,7 +84,8 @@ export default function Dashboard() {
         () => {
           // Permission denied — navigate anyway without location
           navigate(path);
-        }
+        },
+        { timeout: 5000 }
       );
     } else {
       navigate(path);
@@ -205,7 +221,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         
         {/* Welcome greeting with real-time animated transitions */}
         <motion.div
@@ -237,7 +253,18 @@ export default function Dashboard() {
 
           {/* Quick Stats Pill with live time */}
           <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
-            <div className="text-right">
+            <div className="flex items-center gap-4 text-right">
+              <button
+                onClick={() => {
+                  if (theme === 'system') setTheme('dark');
+                  else if (theme === 'dark') setTheme('light');
+                  else setTheme('system');
+                }}
+                className="p-2 bg-muted rounded-full hover:bg-muted/80 transition text-muted-foreground hover:text-foreground"
+                title={`Theme: ${theme}`}
+              >
+                {theme === 'dark' ? <Moon className="w-4 h-4" /> : theme === 'light' ? <Sun className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+              </button>
               <p className="text-xs font-semibold text-muted-foreground">
                 Hostel: <span className="text-foreground font-bold">{user.hostel}</span>
               </p>
@@ -255,7 +282,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
           onClick={() => navigate('/saved')}
-          className="relative overflow-hidden bg-gradient-to-r from-rose-500/10 via-card/50 to-primary/5 border border-rose-500/20 rounded-2xl p-4.5 shadow-sm cursor-pointer hover:border-rose-500/40 hover:shadow-md transition-all duration-300 flex items-center gap-4 group"
+          className="relative overflow-hidden bg-gradient-to-r from-rose-500/10 via-card/50 to-primary/5 border border-rose-500/20 rounded-lg p-4.5 shadow-sm cursor-pointer hover:border-rose-500/40 hover:shadow-md transition-all duration-300 flex items-center gap-4 group"
         >
           <div className="p-3 bg-rose-500/20 text-rose-500 rounded-xl group-hover:scale-110 transition shadow-inner flex-shrink-0">
             <Bell className="w-5.5 h-5.5 animate-bounce" />
@@ -278,7 +305,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="relative overflow-hidden bg-card border border-border shadow-md rounded-3xl p-6 group"
+          className="relative overflow-hidden bg-card border border-border shadow-md rounded-lg p-6 group"
         >
           <div className="flex items-center gap-2 mb-4">
             <Search className="w-5 h-5 text-primary" />
@@ -293,12 +320,12 @@ export default function Dashboard() {
                 placeholder="Search items in your hostel..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-muted/40 border border-border focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 rounded-2xl text-sm font-medium transition"
+                className="w-full pl-12 pr-4 py-3 bg-muted/40 border border-border focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 rounded-lg text-sm font-medium transition"
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold rounded-2xl hover:bg-primary/95 shadow-md shadow-primary/25 hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="px-6 py-3 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:bg-primary/95 shadow-md shadow-primary/25 hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               Search
             </button>
@@ -326,7 +353,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
           {/* Boost Credits HUD Card */}
-          <div className="bg-card/50 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-amber-500/20 transition-all duration-300">
+          <div className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-amber-500/20 transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl group-hover:scale-105 transition">
                 <Zap className="w-5.5 h-5.5 fill-amber-500 animate-pulse" />
@@ -350,7 +377,7 @@ export default function Dashboard() {
           </div>
 
           {/* Active Auctions/Bids Stats Card */}
-          <div className="bg-card/50 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-pink-500/20 transition-all duration-300">
+          <div className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-pink-500/20 transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-105 transition">
                 <Gavel className="w-5.5 h-5.5" />
@@ -367,7 +394,7 @@ export default function Dashboard() {
           {/* Location radius check card */}
           <div 
             onClick={() => handleNavigateWithLocation('/nearby')}
-            className="bg-card/50 border border-border p-5 rounded-2xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-teal-500/20 cursor-pointer hover:bg-teal-500/[0.02] transition-all duration-300"
+            className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-teal-500/20 cursor-pointer hover:bg-teal-500/[0.02] transition-all duration-300"
           >
             <div className="flex justify-between items-start">
               <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-105 transition">
@@ -389,7 +416,7 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-rose-500/10 border-2 border-rose-500/20 rounded-2xl relative overflow-hidden shadow-lg shadow-rose-500/5"
+            className="p-4 bg-rose-500/10 border-2 border-rose-500/20 rounded-lg relative overflow-hidden shadow-lg shadow-rose-500/5"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="flex items-center gap-2 text-rose-500 font-extrabold text-xs uppercase tracking-wider animate-pulse">
@@ -436,7 +463,7 @@ export default function Dashboard() {
             {/* Shortcut 1: Lost & Found Section */}
             <div 
               onClick={() => handleNavigateWithLocation('/lost-found')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl group-hover:scale-110 transition">
                 <Search className="w-5 h-5" />
@@ -450,7 +477,7 @@ export default function Dashboard() {
             {/* Shortcut 2: Semester Exit Sale */}
             <div 
               onClick={() => handleNavigateWithLocation('/exit-sale')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-red-500/10 text-red-500 rounded-xl group-hover:scale-110 transition">
                 <Flame className="w-5 h-5 fill-red-500 animate-pulse" />
@@ -464,7 +491,7 @@ export default function Dashboard() {
             {/* Shortcut 3: Temporary Item Rentals */}
             <div 
               onClick={() => handleNavigateWithLocation('/rentals')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-110 transition">
                 <RotateCcw className="w-5 h-5" />
@@ -478,7 +505,7 @@ export default function Dashboard() {
             {/* Shortcut 4: Auction / Bidding System */}
             <div 
               onClick={() => handleNavigateWithLocation('/auctions')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition">
                 <Gavel className="w-5 h-5" />
@@ -492,7 +519,7 @@ export default function Dashboard() {
             {/* Shortcut 5: Campus Fit Rental */}
             <div 
               onClick={() => navigate('/fashion')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
+              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[8px] font-black uppercase tracking-wider rounded-bl-lg">
                 New
@@ -524,7 +551,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + i * 0.05 }}
                 onClick={item.action}
-                className={`w-full flex items-center gap-5 p-5 rounded-2xl text-left transition-all duration-200 cursor-pointer ${item.style}`}
+                className={`w-full flex items-center gap-5 p-5 rounded-lg text-left transition-all duration-200 cursor-pointer ${item.style}`}
               >
                 <div className={`p-3.5 rounded-xl ${item.iconBg} flex-shrink-0`}>
                   {item.icon}
@@ -556,7 +583,7 @@ export default function Dashboard() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-3xl p-6 backdrop-blur-lg z-10 space-y-4"
+              className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-lg p-6 backdrop-blur-lg z-10 space-y-4"
             >
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
@@ -590,3 +617,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

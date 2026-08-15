@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus, ChevronLeft, Eye } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 
 export default function MyListingsPage() {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export default function MyListingsPage() {
 
   const fetchMyListings = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products/my/listings', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my/listings`, {
         headers: {
           'Authorization': `Bearer ${user.token}`
         }
@@ -34,7 +35,7 @@ export default function MyListingsPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this listing? This cannot be undone.')) {
       try {
-        const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}`, {
+        const response = await fetch(`${BACKEND_URL}/api/products/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${user.token}`
@@ -78,50 +79,71 @@ export default function MyListingsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(product => (
-              <div key={product._id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
-                <div className="h-48 w-full bg-muted relative">
-                  <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
-                  {/* Status Badge */}
-                  <div className={`absolute top-2 left-2 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-semibold capitalize ${
-                    product.status === 'sold'
-                      ? 'bg-destructive/90 text-white'
-                      : 'bg-background/90 text-foreground'
-                  }`}>
-                    {product.status}
-                  </div>
-                  {/* Views Badge */}
-                  <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5 text-primary" />
-                    <span>{product.views || 0} views</span>
-                  </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-bold text-lg line-clamp-1 mb-1">{product.title}</h3>
-                  <p className="text-primary font-bold text-xl mb-1">₹{product.price}</p>
-                  <p className="text-xs text-muted-foreground mb-4">{product.category} · {product.condition}</p>
-                  
-                  <div className="mt-auto flex gap-3">
-                    <button 
-                      onClick={() => navigate(`/edit-item/${product._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-secondary text-secondary-foreground py-2 rounded-xl font-medium hover:opacity-80 transition cursor-pointer"
-                    >
-                      <Edit className="w-4 h-4" /> Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(product._id)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-destructive/10 text-destructive py-2 rounded-xl font-medium hover:bg-destructive/20 transition cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" /> Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-muted text-muted-foreground text-xs uppercase font-bold">
+                <tr>
+                  <th className="px-4 py-3">Product</th>
+                  <th className="px-4 py-3">Price</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Views</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {products.map(product => (
+                  <tr key={product._id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <img src={product.images[0]} alt={product.title} className="w-10 h-10 rounded-lg object-cover bg-muted flex-shrink-0" />
+                        <div>
+                          <p className="font-bold text-foreground line-clamp-1">{product.title}</p>
+                          <p className="text-[10px] text-muted-foreground">{product.category} · {product.condition}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-foreground">₹{product.price}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        product.status === 'sold'
+                          ? 'bg-destructive/10 text-destructive'
+                          : 'bg-emerald-500/10 text-emerald-500'
+                      }`}>
+                        {product.status || 'Active'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-muted-foreground font-semibold">
+                        <Eye className="w-3.5 h-3.5" />
+                        {product.views || 0}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => navigate(`/edit-item/${product._id}`)}
+                          className="p-1.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-muted transition cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product._id)}
+                          className="p-1.5 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition cursor-pointer"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
     </div>
   );
 }
+

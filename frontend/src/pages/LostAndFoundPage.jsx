@@ -23,8 +23,10 @@ import {
   X,
   MessageSquare
 } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
-import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 
 // Safely parse serialized metadata from description
 const parseItemDetails = (p) => {
@@ -166,7 +168,7 @@ export default function LostAndFoundPage() {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=lost_found');
+      const response = await fetch(`${BACKEND_URL}/api/products?listingType=lost_found`);
       if (response.ok) {
         const data = await response.json();
         // filter lost/found/recovered products
@@ -261,7 +263,7 @@ export default function LostAndFoundPage() {
         }
       }
 
-      const res = await fetch('https://hostelx-backend-a228.onrender.com/api/products', {
+      const res = await fetch(`${BACKEND_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`
@@ -323,7 +325,7 @@ export default function LostAndFoundPage() {
 
   const handleMarkAsRecovered = async (itemId) => {
     try {
-      const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${itemId}`, {
+      const res = await fetch(`${BACKEND_URL}/api/products/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -378,14 +380,9 @@ export default function LostAndFoundPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-16">
-      <Navbar />
-
-      {/* Red Ambient glow to highlight Alert styling */}
-      <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-rose-500/5 rounded-full blur-[100px] -z-10" />
-      <div className="absolute top-1/3 left-1/4 w-[350px] h-[350px] bg-red-500/5 rounded-full blur-[100px] -z-10" />
 
       {/* Nav Header */}
-      <header className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -396,20 +393,20 @@ export default function LostAndFoundPage() {
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-rose-500 via-orange-400 to-amber-500 bg-clip-text text-transparent">
+              <span className="font-extrabold text-xl tracking-tight text-foreground">
                 Lost & Found Hub
               </span>
-              <span className="text-[9px] font-black px-2 py-0.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-full animate-pulse flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> LIVE REPORTING
+              <span className="text-[9px] font-black px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full flex items-center gap-1">
+                LIVE BULLETIN
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground font-semibold">Campus instant recovery, rewards, and AI smart tagging</p>
+            <p className="text-[10px] text-muted-foreground font-semibold">Campus instant recovery network</p>
           </div>
         </div>
 
         <button 
           onClick={() => setIsReportModalOpen(true)}
-          className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-rose-500/20 cursor-pointer active:scale-95 transition"
+          className="flex items-center gap-1.5 bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 rounded-xl text-xs font-black shadow-md cursor-pointer active:scale-95 transition"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           Report Item
@@ -418,37 +415,13 @@ export default function LostAndFoundPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Smart Recovery Active Banner */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-rose-950/20 via-card to-amber-950/10 border border-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Active Recovery Banner */}
+        <div className="relative rounded-3xl overflow-hidden bg-muted/40 border border-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <Search className="w-3 h-3 animate-pulse" />
-              Smart-Match Active
-            </span>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight">Active Recovery Bulletin</h1>
             <p className="text-xs text-muted-foreground max-w-lg leading-relaxed font-medium">
-              Lost keys in the canteen? Left your calculator in the exam hall? Report details with a snapshot. Our semantic smart-match scanner compares lost tags with found tags in real-time.
+              Lost your keys in the canteen? Left a calculator in the exam hall? Report details with a snapshot and instantly alert the campus network.
             </p>
-          </div>
-
-          {/* Smart Match Ticker */}
-          <div className="bg-card border border-border/80 p-4.5 rounded-2xl flex items-center gap-4 max-w-sm">
-            <div className="p-3 bg-amber-500/15 text-amber-500 rounded-xl flex-shrink-0 relative">
-              <ShieldAlert className="w-6 h-6 animate-pulse" />
-              {smartMatchesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center animate-bounce">
-                  {smartMatchesCount}
-                </span>
-              )}
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-foreground">Overlap Scanner Engine</h4>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-normal font-semibold">
-                {smartMatchesCount > 0 
-                  ? `AI matched ${smartMatchesCount} overlapping lost/found item clusters currently.` 
-                  : 'Currently monitoring campus database for matches. 0 active conflicts.'}
-              </p>
-            </div>
           </div>
         </div>
 
@@ -490,18 +463,18 @@ export default function LostAndFoundPage() {
 
           {/* Search Input */}
           <div className="relative w-full md:w-80">
-            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-muted-foreground" />
-            <input
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+            <Input
               type="text"
               placeholder="Search by keywords, tags, blocks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card border border-border pl-10 pr-4 py-2 rounded-xl text-xs font-semibold outline-none focus:border-rose-500/50 transition"
+              className="w-full pl-10 pr-4"
             />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-2.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground hover:text-foreground"
               >
                 Clear
               </button>
@@ -511,9 +484,9 @@ export default function LostAndFoundPage() {
 
         {/* Display Items List */}
         {filteredItems.length === 0 ? (
-          <div className="text-center py-16 bg-card border border-border rounded-[2rem] p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-muted/60 dark:bg-zinc-900 border border-border/80 flex items-center justify-center text-3xl mb-4 animate-bounce">📢</div>
-            <h4 className="font-extrabold text-base text-foreground">No reports found.</h4>
+          <div className="text-center py-16 bg-card border border-border rounded-3xl p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-3xl mb-4 animate-bounce">📢</div>
+            <h4 className="font-extrabold text-base text-foreground">No reports found on the bulletin</h4>
             <p className="text-xs text-muted-foreground mt-2 max-w-xs leading-relaxed text-center font-semibold">
               Be the first to file a report! Report your lost or found items to instantly alert students across all hostels.
             </p>
@@ -989,3 +962,4 @@ export default function LostAndFoundPage() {
     </div>
   );
 }
+

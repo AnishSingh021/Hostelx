@@ -284,3 +284,4 @@ export default function RentOutfitModal({ outfit, onClose, onRentSuccess }) {
     </div>
   );
 }
+

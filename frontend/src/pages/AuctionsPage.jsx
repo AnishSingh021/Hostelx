@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { safeParseDescription } from '../lib/utils';
-import Navbar from '../components/ui/Navbar';
 import { 
   Gavel, 
   ChevronLeft, 
@@ -19,6 +18,11 @@ import {
   Search,
   SlidersHorizontal
 } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { BACKEND_URL } from '../config';
 
 const FallbackProductImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100' fill='none'><rect width='100' height='100' rx='16' fill='%23f1f5f9'/><path d='M35 45 L50 32 L65 45 M37 70 L63 70 M40 47 L60 67 M60 47 L40 67' stroke='%23cbd5e1' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><circle cx='50' cy='56' r='4' fill='%23cbd5e1'/></svg>";
 
@@ -39,7 +43,7 @@ export default function AuctionsPage() {
   // Main products fetch
   const fetchAuctions = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/products?listingType=auction');
+      const response = await fetch(`${BACKEND_URL}/api/products?listingType=auction`);
       if (response.ok) {
         const data = await response.json();
         // Filter only products marked as auctions
@@ -76,7 +80,7 @@ export default function AuctionsPage() {
     if (!selectedAuction) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${selectedAuction._id}`);
+        const res = await fetch(`${BACKEND_URL}/api/products/${selectedAuction._id}`);
         if (res.ok) {
           const updated = await res.json();
           setSelectedAuction(updated);
@@ -112,7 +116,7 @@ export default function AuctionsPage() {
 
     setBidLoading(true);
     try {
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${selectedAuction._id}/bid`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${selectedAuction._id}/bid`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +130,7 @@ export default function AuctionsPage() {
         setBidSuccess(true);
         setBidAmount('');
         // Re-fetch listing details immediately
-        const resDetail = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${selectedAuction._id}`);
+        const resDetail = await fetch(`${BACKEND_URL}/api/products/${selectedAuction._id}`);
         if (resDetail.ok) {
           const updated = await resDetail.json();
           setSelectedAuction(updated);
@@ -189,12 +193,12 @@ export default function AuctionsPage() {
     }, [createdAt]);
 
     const colorClass = urgency === 'ended'
-      ? 'bg-slate-100 text-slate-500 border-slate-200'
+      ? 'bg-secondary text-muted-foreground border-border'
       : urgency === 'critical'
       ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse'
       : urgency === 'warning'
-      ? 'bg-amber-50 text-amber-600 border-amber-200'
-      : 'bg-blue-50 text-blue-600 border-blue-200';
+      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      : 'bg-primary/10 text-primary border-primary/30';
 
     return (
       <span className={`flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded font-mono border ${colorClass}`}>
@@ -235,30 +239,29 @@ export default function AuctionsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-zinc-950/20 text-slate-900 dark:text-zinc-100 flex flex-col relative pb-10">
-      <Navbar />
+    <div className="min-h-screen bg-secondary/50 text-foreground flex flex-col relative pb-10">
       
       {/* Header bar */}
-      <header className="max-w-7xl w-full mx-auto px-4 py-6 flex items-center justify-between border-b border-slate-200/80 dark:border-zinc-900/60">
+      <header className="max-w-7xl w-full mx-auto px-4 py-6 flex items-center justify-between border-b border-border/80">
         <div className="flex items-center gap-4">
           <Link 
             to="/dashboard" 
-            className="p-2.5 bg-white border border-slate-200 hover:border-slate-300 rounded-2xl shadow-sm transition cursor-pointer text-slate-600 hover:text-slate-900"
+            className="p-2.5 bg-card border border-border hover:border-border rounded-2xl shadow-sm transition cursor-pointer text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-black tracking-tight flex items-center gap-2 text-slate-900">
-              <Gavel className="w-5.5 h-5.5 text-blue-600" />
+            <h1 className="text-xl font-black tracking-tight flex items-center gap-2 text-foreground">
+              <Gavel className="w-5.5 h-5.5 text-primary" />
               Live Auction Terminal
             </h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Real-time student bidding desk</p>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">Real-time student bidding desk</p>
           </div>
         </div>
 
         {/* Global Live Stat Chip */}
-        <span className="flex items-center gap-2 text-xs font-black bg-blue-50 text-blue-600 px-3.5 py-1.5 rounded-2xl border border-blue-200 shadow-sm">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
+        <span className="flex items-center gap-2 text-xs font-black bg-primary/10 text-primary px-3.5 py-1.5 rounded-2xl border border-primary/30 shadow-sm">
+          <span className="w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
           LIVE DEMAND INDEX
         </span>
       </header>
@@ -270,7 +273,7 @@ export default function AuctionsPage() {
         <div className="flex-1 space-y-6 min-w-0">
           
           {/* Action Row: Search and Tabs */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-slate-200/80 p-4 rounded-3xl shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border/80 p-4 rounded-3xl shadow-sm">
             
             {/* Tabs List */}
             <div className="flex flex-wrap gap-2">
@@ -288,8 +291,8 @@ export default function AuctionsPage() {
                   }}
                   className={`flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase px-4 py-2 rounded-xl border transition cursor-pointer ${
                     activeTab === tab.id
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20'
-                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                      ? 'bg-primary text-white border-primary shadow-sm shadow-blue-500/20'
+                      : 'bg-secondary border-border text-muted-foreground hover:border-border hover:text-foreground'
                   }`}
                 >
                   {tab.icon}
@@ -300,13 +303,13 @@ export default function AuctionsPage() {
 
             {/* Search Input bar */}
             <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+              <Input
                 type="text"
                 placeholder="Search live deals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none text-xs font-semibold text-slate-700 transition"
+                className="w-full pl-9"
               />
             </div>
 
@@ -314,25 +317,25 @@ export default function AuctionsPage() {
 
           {/* Directory Listings container */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-              <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
-              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Syncing Live Bidding Ledger...</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-64 rounded-3xl" />
+              ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-slate-200/80 dark:border-zinc-900/60 rounded-[2rem] p-8 max-w-md mx-auto flex flex-col items-center shadow-sm">
-              <div className="p-4 bg-blue-500/10 text-blue-600 dark:bg-blue-400/5 dark:text-blue-400 rounded-2xl mb-4">
-                <Gavel className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-pulse" />
-              </div>
-              <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-200">No active auctions currently.</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-xs leading-relaxed text-center font-semibold">
-                Be the first to list an item for auction and start a live bidding race! Sell study gear, gadgets, or exit bundles fast.
-              </p>
-              <Link
-                to="/sell?listingType=auction"
-                className="mt-5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl hover:opacity-90 active:scale-[0.99] transition shadow-md shadow-blue-500/20"
-              >
-                Start your first auction
-              </Link>
+            <div className="pt-10">
+              <EmptyState
+                icon={Gavel}
+                title="No live auctions running yet"
+                description="Be the first to list an item for auction and start a live bidding race! Sell study gear, gadgets, or exit bundles fast."
+                action={
+                  <Link to="/sell">
+                    <Button>
+                      Start your first auction
+                    </Button>
+                  </Link>
+                }
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -346,10 +349,10 @@ export default function AuctionsPage() {
                     layout
                     whileHover={{ y: -4 }}
                     onClick={() => setSelectedAuction(item)}
-                    className={`bg-white border p-5 rounded-3xl cursor-pointer flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden group ${
+                    className={`bg-card border p-5 rounded-3xl cursor-pointer flex flex-col justify-between gap-4 transition-all duration-300 relative overflow-hidden group ${
                       isSelected 
-                        ? 'border-blue-500 bg-blue-50/20 shadow-md ring-1 ring-blue-500/20' 
-                        : 'border-slate-200 hover:border-slate-300 shadow-sm'
+                        ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary/20' 
+                        : 'border-border hover:border-border shadow-sm'
                     }`}
                   >
                     {/* Top image & status */}
@@ -357,37 +360,37 @@ export default function AuctionsPage() {
                       <img
                         src={item.images?.[0] || FallbackProductImage}
                         alt={item.title}
-                        className="w-18 h-18 rounded-2xl object-cover border border-slate-100 flex-shrink-0 group-hover:scale-102 transition"
+                        className="w-18 h-18 rounded-2xl object-cover border border-border flex-shrink-0 group-hover:scale-102 transition"
                       />
                       <div className="overflow-hidden min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
-                          <span className="text-[9px] font-black uppercase text-blue-600 tracking-wider">Active Auction</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                          <span className="text-[9px] font-black uppercase text-primary tracking-wider">Active Auction</span>
                         </div>
-                        <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                        <h3 className="font-extrabold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
                           {item.title}
                         </h3>
-                        <p className="text-[9px] text-slate-500 truncate font-semibold">
+                        <p className="text-[9px] text-muted-foreground truncate font-semibold">
                           📍 {item.hostel} · Room {item.seller?.room || 'Dorm'}
                         </p>
                       </div>
                     </div>
 
                     {/* Auction specific stats card */}
-                    <div className="grid grid-cols-2 gap-2.5 pt-3.5 border-t border-slate-100">
-                      <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                        <span className="text-[8px] text-slate-500 uppercase font-black block">Starting Bid</span>
-                        <span className="text-xs font-black text-slate-800">₹{item.startingBid}</span>
+                    <div className="grid grid-cols-2 gap-2.5 pt-3.5 border-t border-border">
+                      <div className="bg-secondary p-2 rounded-xl border border-border">
+                        <span className="text-[8px] text-muted-foreground uppercase font-black block">Starting Bid</span>
+                        <span className="text-xs font-black text-foreground">₹{item.startingBid}</span>
                       </div>
-                      <div className="bg-blue-50/50 p-2 rounded-xl border border-blue-100">
-                        <span className="text-[8px] text-blue-600 uppercase font-black block">Highest Bid</span>
-                        <span className="text-xs font-black text-blue-700">₹{currentBid}</span>
+                      <div className="bg-primary/15 p-2 rounded-xl border border-primary/20">
+                        <span className="text-[8px] text-primary uppercase font-black block">Highest Bid</span>
+                        <span className="text-xs font-black text-primary">₹{currentBid}</span>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center gap-1 text-[9px] text-slate-500 font-bold uppercase">
-                        <Users className="w-3.5 h-3.5 text-slate-400" />
+                      <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-bold uppercase">
+                        <Users className="w-3.5 h-3.5 text-muted-foreground" />
                         <span>{item.bids?.length || 0} active bids</span>
                         {user && item.bids?.length >= 2 && (() => {
                           const sorted = [...(item.bids || [])].sort((a, b) => b.amount - a.amount);
@@ -419,7 +422,7 @@ export default function AuctionsPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-md relative overflow-hidden space-y-6 sticky top-6"
+                className="bg-card border border-border rounded-[2rem] p-6 shadow-md relative overflow-hidden space-y-6 sticky top-6"
               >
                 {/* Glowing border top accent */}
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-indigo-600"></div>
@@ -427,23 +430,23 @@ export default function AuctionsPage() {
                 {/* Selected header */}
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="inline-flex items-center gap-1 text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded uppercase">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-black text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded uppercase">
                       Live Console Connected
                     </span>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 mt-2 truncate max-w-[200px]" title={selectedAuction.title}>
+                    <h3 className="font-extrabold text-sm sm:text-base text-foreground mt-2 truncate max-w-[200px]" title={selectedAuction.title}>
                       {selectedAuction.title}
                     </h3>
                   </div>
                   <button
                     onClick={() => setSelectedAuction(null)}
-                    className="text-xs font-bold text-slate-400 hover:text-slate-600 hover:underline cursor-pointer"
+                    className="text-xs font-bold text-muted-foreground hover:text-muted-foreground hover:underline cursor-pointer"
                   >
                     Disconnect
                   </button>
                 </div>
 
                 {/* Main Product Showcase */}
-                <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
+                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border bg-secondary">
                   <img 
                     src={selectedAuction.images?.[0] || FallbackProductImage} 
                     alt="" 
@@ -455,45 +458,45 @@ export default function AuctionsPage() {
                 </div>
 
                 {/* Grid details */}
-                <div className="bg-slate-50 p-4.5 rounded-2xl border border-slate-100 space-y-3">
+                <div className="bg-secondary p-4.5 rounded-2xl border border-border space-y-3">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Starting Price</span>
-                    <span className="font-black text-slate-800">₹{selectedAuction.startingBid}</span>
+                    <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px]">Starting Price</span>
+                    <span className="font-black text-foreground">₹{selectedAuction.startingBid}</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs border-t border-slate-200 pt-2.5">
-                    <span className="text-blue-600 font-black uppercase tracking-wider text-[9px]">Live High Bid</span>
-                    <span className="text-base font-black text-blue-600">₹{getHighestBid(selectedAuction)}</span>
+                  <div className="flex justify-between items-center text-xs border-t border-border pt-2.5">
+                    <span className="text-primary font-black uppercase tracking-wider text-[9px]">Live High Bid</span>
+                    <span className="text-base font-black text-primary">₹{getHighestBid(selectedAuction)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs border-t border-slate-200 pt-2.5">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Bids Logged</span>
-                    <span className="font-bold text-slate-800">{selectedAuction.bids?.length || 0} rounds</span>
+                  <div className="flex justify-between items-center text-xs border-t border-border pt-2.5">
+                    <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px]">Bids Logged</span>
+                    <span className="font-bold text-foreground">{selectedAuction.bids?.length || 0} rounds</span>
                   </div>
                 </div>
 
                 {/* Auto-Bid Section */}
-                <div className="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-4 space-y-3">
+                <div className="bg-secondary/50 border border-border/60 rounded-2xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-black text-slate-800 uppercase tracking-wider">Auto-Bid Ceiling</p>
-                      <p className="text-[9px] text-slate-500 mt-0.5">System bids up to your max when outbid</p>
+                      <p className="text-[10px] font-black text-foreground uppercase tracking-wider">Auto-Bid Ceiling</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">System bids up to your max when outbid</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setAutoBidEnabled(p => !p)}
-                      className={`w-10 h-5 rounded-full border transition-all duration-200 cursor-pointer relative ${autoBidEnabled ? 'bg-blue-600 border-blue-600' : 'bg-slate-200 border-slate-300'}`}
+                      className={`w-10 h-5 rounded-full border transition-all duration-200 cursor-pointer relative ${autoBidEnabled ? 'bg-primary border-primary' : 'bg-secondary border-border'}`}
                     >
-                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200 ${autoBidEnabled ? 'left-5' : 'left-0.5'}`} />
+                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-card transition-all duration-200 ${autoBidEnabled ? 'left-5' : 'left-0.5'}`} />
                     </button>
                   </div>
                   {autoBidEnabled && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
-                      <input
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="relative mt-2">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground z-10">₹</span>
+                      <Input
                         type="number"
                         placeholder={`Max ceiling (current: ₹${getHighestBid(selectedAuction)})`}
                         value={autoBidMax}
                         onChange={(e) => setAutoBidMax(e.target.value)}
-                        className="w-full pl-7 pr-4 py-2 bg-white border border-blue-300 rounded-xl focus:ring-1 focus:ring-blue-500 outline-none text-xs font-black text-slate-800"
+                        className="w-full pl-8"
                       />
                     </motion.div>
                   )}
@@ -502,14 +505,14 @@ export default function AuctionsPage() {
                 {/* Bid input form */}
                 <form onSubmit={handlePlaceBid} className="space-y-3">
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">₹</span>
-                    <input
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground z-10">₹</span>
+                    <Input
                       type="number"
                       required
                       placeholder={`Enter bid (min ₹${getHighestBid(selectedAuction) + 1})`}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      className="w-full pl-8.5 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-1 focus:ring-blue-500 outline-none text-xs font-black text-slate-800"
+                      className="w-full pl-9 py-6 text-base"
                     />
                   </div>
 
@@ -521,20 +524,20 @@ export default function AuctionsPage() {
                   )}
 
                   {bidSuccess && (
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-bold rounded-xl flex items-center gap-1.5">
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-xl flex items-center gap-1.5">
                       <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
                       Bid registered successfully! 🔨
                     </div>
                   )}
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={bidLoading}
-                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-black rounded-2xl shadow-md hover:shadow-lg transition duration-300 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                    className="w-full py-6 text-sm font-black flex items-center justify-center gap-2"
                   >
                     {bidLoading ? (
                       <>
-                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                         Transmitting Bid...
                       </>
                     ) : (
@@ -543,46 +546,46 @@ export default function AuctionsPage() {
                         Place Bidding Proposal
                       </>
                     )}
-                  </button>
+                  </Button>
                 </form>
 
                 {/* Real bid timeline log */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-wider">
-                    <History className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center gap-1 text-[9px] font-black text-muted-foreground uppercase tracking-wider">
+                    <History className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>Real-time Bidding Logs</span>
                   </div>
 
-                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 max-h-40 overflow-y-auto no-scrollbar space-y-3">
+                  <div className="bg-secondary border border-border rounded-2xl p-4 max-h-40 overflow-y-auto no-scrollbar space-y-3">
                     {selectedAuction.bids?.length > 0 ? (
                       selectedAuction.bids.slice().reverse().map((bid, i) => (
-                        <div key={i} className="flex items-center justify-between gap-2 text-xs border-b border-slate-200/50 pb-2 last:border-0 last:pb-0">
+                        <div key={i} className="flex items-center justify-between gap-2 text-xs border-b border-border/50 pb-2 last:border-0 last:pb-0">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-[10px] border border-slate-300 flex-shrink-0">
+                            <div className="w-6 h-6 rounded-full bg-secondary text-muted-foreground flex items-center justify-center font-bold text-[10px] border border-border flex-shrink-0">
                               {bid.bidder?.name?.charAt(0) || 'U'}
                             </div>
-                            <span className="font-bold text-slate-700 truncate text-[11px]">{bid.bidder?.name || 'Anonymous User'}</span>
+                            <span className="font-bold text-foreground truncate text-[11px]">{bid.bidder?.name || 'Anonymous User'}</span>
                           </div>
                           <div className="text-right">
-                            <span className="font-black text-blue-600 text-[11px]">₹{bid.amount}</span>
-                            <span className="text-[8px] text-slate-400 block">
+                            <span className="font-black text-primary text-[11px]">₹{bid.amount}</span>
+                            <span className="text-[8px] text-muted-foreground block">
                               {new Date(bid.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </span>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-[10px] text-slate-400 font-semibold text-center italic py-4">No live bidding activity yet. Place a bid to kickstart this auction!</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold text-center italic py-4">No live bidding activity yet. Place a bid to kickstart this auction!</p>
                     )}
                   </div>
                 </div>
 
               </motion.div>
             ) : (
-              <div className="bg-white border border-slate-200 border-dashed rounded-[2rem] p-8 text-center flex flex-col items-center justify-center h-80 sticky top-6 shadow-sm">
-                <Gavel className="w-10 h-10 text-slate-300 mb-3 animate-pulse" />
-                <h4 className="font-bold text-xs text-slate-500">No Terminal Selected</h4>
-                <p className="text-[10px] text-slate-400 mt-2 max-w-[200px] leading-relaxed">
+              <div className="bg-card border border-border border-dashed rounded-[2rem] p-8 text-center flex flex-col items-center justify-center h-80 sticky top-6 shadow-sm">
+                <Gavel className="w-10 h-10 text-muted-foreground mb-3 animate-pulse" />
+                <h4 className="font-bold text-xs text-muted-foreground">No Terminal Selected</h4>
+                <p className="text-[10px] text-muted-foreground mt-2 max-w-[200px] leading-relaxed">
                   Click any active auction card from the left directory to connect to its live bidding console.
                 </p>
               </div>
@@ -594,3 +597,4 @@ export default function AuctionsPage() {
     </div>
   );
 }
+

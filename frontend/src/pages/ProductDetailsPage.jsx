@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, MessageCircle, ChevronLeft, Heart, Eye, TrendingDown, Truck, Clock, Hammer, ShieldCheck, Star, Send, ArrowRight, ShieldAlert, Award } from 'lucide-react';
+import { MapPin, MessageCircle, ChevronLeft, Heart, Eye, TrendingDown, Truck, Clock, Hammer, ShieldCheck, Star, Send, ArrowRight, ShieldAlert, Award, Image as ImageIcon, X, Loader2, Camera } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { Button } from '../components/ui/Button';
+import Navbar from '../components/ui/Navbar';
+import { BACKEND_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { safeParseDescription, parseItemDetails } from '../lib/utils';
 
@@ -23,6 +28,7 @@ export default function ProductDetailsPage() {
   const [bidLoading, setBidLoading] = useState(false);
   const [handoverCode, setHandoverCode] = useState('');
   const [verifyingCode, setVerifyingCode] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [meetupSuccess, setMeetupSuccess] = useState(false);
 
   // Review states
@@ -33,7 +39,7 @@ export default function ProductDetailsPage() {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}`);
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
       if (response.ok) {
         const data = await response.json();
         setProduct(data);
@@ -53,7 +59,7 @@ export default function ProductDetailsPage() {
 
   const handleStartChat = async () => {
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/chats', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chats`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
         body: JSON.stringify({ userId: product.seller._id, productId: product._id })
@@ -70,7 +76,7 @@ export default function ProductDetailsPage() {
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
 
     try {
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}/like`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}/like`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
@@ -99,7 +105,7 @@ export default function ProductDetailsPage() {
 
     setBidLoading(true);
     try {
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}/bid`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}/bid`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -133,7 +139,7 @@ export default function ProductDetailsPage() {
 
     setVerifyingCode(true);
     try {
-      const response = await fetch(`https://hostelx-backend-a228.onrender.com/api/products/${id}/meetup-confirm`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}/meetup-confirm`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +171,7 @@ export default function ProductDetailsPage() {
     setReviewSuccessMsg('');
 
     try {
-      const response = await fetch('https://hostelx-backend-a228.onrender.com/api/auth/review', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -199,7 +205,7 @@ export default function ProductDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="space-y-4 w-full max-w-4xl p-8">
-          <div className="animate-pulse bg-muted rounded-3xl h-80 w-full" />
+          <div className="animate-pulse bg-muted rounded-lg h-80 w-full" />
           <div className="animate-pulse bg-muted rounded-xl h-6 w-1/2" />
           <div className="animate-pulse bg-muted rounded-xl h-4 w-1/3" />
         </div>
@@ -234,7 +240,7 @@ export default function ProductDetailsPage() {
             <motion.div 
               initial={{ scale: 0.8, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="bg-card border border-border p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm text-center"
+              className="bg-card border border-border p-8 rounded-lg shadow-2xl flex flex-col items-center max-w-sm text-center"
             >
               <Award className="w-20 h-20 text-emerald-500 mb-4 animate-bounce" />
               <h2 className="text-2xl font-bold text-emerald-500">Transaction Confirmed!</h2>
@@ -272,7 +278,7 @@ export default function ProductDetailsPage() {
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-start gap-3 text-emerald-600 dark:text-emerald-400 mb-6"
+            className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-lg flex items-start gap-3 text-emerald-600 dark:text-emerald-400 mb-6"
           >
             <TrendingDown className="w-5 h-5 mt-0.5 animate-pulse" />
             <div>
@@ -288,7 +294,7 @@ export default function ProductDetailsPage() {
           
           {/* Column 1: Images */}
           <div className="space-y-4">
-            <div className="aspect-square w-full rounded-3xl overflow-hidden bg-muted border border-border relative">
+            <div className="aspect-square w-full rounded-lg overflow-hidden bg-muted border border-border relative">
               <motion.img
                 key={activeImage}
                 initial={{ opacity: 0.8 }}
@@ -311,7 +317,7 @@ export default function ProductDetailsPage() {
                   <button
                     key={index}
                     onClick={() => setActiveImage(index)}
-                    className={`w-16 h-16 rounded-2xl overflow-hidden border-2 flex-shrink-0 transition cursor-pointer ${
+                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition cursor-pointer ${
                       activeImage === index ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
@@ -380,7 +386,7 @@ export default function ProductDetailsPage() {
 
             {/* Rent active panel (If listingType === rent) */}
             {product.listingType === 'rent' && (
-              <div className="bg-sky-500/5 border border-sky-500/20 p-3.5 rounded-2xl flex gap-3 text-sm">
+              <div className="bg-sky-500/5 border border-sky-500/20 p-3.5 rounded-lg flex gap-3 text-sm">
                 <Clock className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-sky-500 block">
@@ -400,7 +406,7 @@ export default function ProductDetailsPage() {
               const details = parseItemDetails(product);
               return (
                 <div className="space-y-6">
-                  <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                  <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
                     <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-2">Item Description</h3>
                     <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-sm font-medium">
                       {details.desc}
@@ -408,7 +414,7 @@ export default function ProductDetailsPage() {
                   </div>
                   
                   {(product.listingType === 'lost' || product.listingType === 'found') && (
-                    <div className="bg-muted/20 border border-border rounded-2xl p-5 space-y-4">
+                    <div className="bg-muted/20 border border-border rounded-lg p-5 space-y-4">
                       <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Report Details</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                         <div>
@@ -434,7 +440,7 @@ export default function ProductDetailsPage() {
 
             {/* Auction Bidding Console */}
             {product.isAuction && (
-              <div className="bg-card border border-amber-500/20 rounded-2xl p-5 shadow-sm space-y-4 relative overflow-hidden">
+              <div className="bg-card border border-amber-500/20 rounded-lg p-5 shadow-sm space-y-4 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-bl-xl text-[10px] font-bold uppercase flex items-center gap-1">
                   <Hammer className="w-3.5 h-3.5 animate-bounce" />
                   Live Auction
@@ -505,7 +511,7 @@ export default function ProductDetailsPage() {
 
             {/* Secure Meetup & Exchange Code Handover Verification */}
             {product.listingType !== 'lost' && product.listingType !== 'found' && (
-              <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="bg-card border border-border rounded-lg p-5 shadow-sm space-y-4">
                 <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   Secure Exchange Handover
@@ -527,15 +533,8 @@ export default function ProductDetailsPage() {
                     <div className="bg-muted/40 border border-border p-4 rounded-xl flex flex-col items-center text-center space-y-3">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Exchange Code verification token</span>
                       
-                      <div className="bg-white p-3 rounded-2xl border-2 border-primary/20 shadow-md">
-                        {/* Interactive Vector Mockup QR code */}
-                        <svg className="w-28 h-28 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <rect x="2" y="2" width="6" height="6" rx="1" />
-                          <rect x="16" y="2" width="6" height="6" rx="1" />
-                          <rect x="2" y="16" width="6" height="6" rx="1" />
-                          <rect x="8" y="8" width="8" height="8" rx="1" />
-                          <path d="M12 2v4M12 16v4M2 12h4M16 12h6M12 12h.01" strokeWidth="2.5" />
-                        </svg>
+                      <div className="bg-white p-3 rounded-lg border-2 border-primary/20 shadow-md">
+                        <QRCodeSVG value={product.meetupCode} size={150} />
                       </div>
 
                       <span className="text-xs font-mono font-black bg-primary/10 text-primary px-3.5 py-1.5 rounded-xl border border-primary/25">
@@ -546,27 +545,55 @@ export default function ProductDetailsPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-muted/30 border border-border p-4 rounded-xl space-y-2.5">
+                    <div className="bg-muted/30 border border-border p-4 rounded-xl space-y-2.5 flex flex-col items-center">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block text-center">Verify Handover Securely</span>
-                      <div className="flex gap-2">
+                      
+                      {showScanner ? (
+                        <div className="w-full max-w-[250px] overflow-hidden rounded-xl border-2 border-primary mb-2">
+                          <Scanner 
+                            onScan={(result) => {
+                              if (result && result.length > 0) {
+                                setHandoverCode(result[0].rawValue);
+                                setShowScanner(false);
+                              }
+                            }}
+                          />
+                          <button 
+                            onClick={() => setShowScanner(false)}
+                            className="w-full bg-muted text-xs font-bold py-2 hover:bg-secondary transition"
+                          >
+                            Cancel Scan
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowScanner(true)}
+                          className="bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-bold hover:opacity-90 transition cursor-pointer text-xs w-full flex justify-center items-center gap-2 mb-2 shadow-sm"
+                        >
+                          <Camera className="w-4 h-4" />
+                          Scan QR Code
+                        </button>
+                      )}
+
+                      <div className="flex gap-2 w-full">
                         <input
                           type="text"
                           maxLength="6"
                           value={handoverCode}
                           onChange={(e) => setHandoverCode(e.target.value.replace(/\D/g, ''))}
                           className="flex-grow px-3 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none text-center font-mono font-bold tracking-widest text-sm"
-                          placeholder="6-digit exchange code"
+                          placeholder="or type 6-digit code"
                         />
                         <button
                           onClick={handleConfirmMeetup}
                           disabled={verifyingCode}
-                          className="bg-primary text-primary-foreground px-4 py-2 rounded-xl font-bold hover:opacity-90 transition cursor-pointer text-xs"
+                          className="bg-secondary text-secondary-foreground border border-border px-4 py-2 rounded-xl font-bold hover:bg-muted transition cursor-pointer text-xs"
                         >
-                          {verifyingCode ? 'Confirming...' : 'Verify'}
+                          {verifyingCode ? '...' : 'Verify'}
                         </button>
                       </div>
-                      <p className="text-[9px] text-muted-foreground text-center">
-                        Ask the seller to show their secure exchange code. Input it here at handover to unlock the listing and secure your deal!
+                      <p className="text-[9px] text-muted-foreground text-center mt-2">
+                        Scan the seller's QR code or manually enter the 6-digit code to securely complete this transaction.
                       </p>
                     </div>
                   )}
@@ -576,7 +603,7 @@ export default function ProductDetailsPage() {
           )}
 
             {/* Seller profile card & Review logger */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm space-y-4">
               <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
                 {product.listingType === 'lost' || product.listingType === 'found' ? 'Reporter Coordinates' : 'Seller Coordinates'}
               </h3>
@@ -701,3 +728,4 @@ export default function ProductDetailsPage() {
     </div>
   );
 }
+
