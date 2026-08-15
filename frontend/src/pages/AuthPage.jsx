@@ -26,6 +26,7 @@ import {
   Home
 } from 'lucide-react';
 import { CAMPUS_DATA } from '../data/hostels';
+import { BACKEND_URL } from '../config';
 import { auth, googleProvider } from '../firebase';
 import { 
   signInWithPopup, 
@@ -171,7 +172,7 @@ export default function AuthPage() {
   // Synchronize authenticated Firebase user with MongoDB backend
   const syncWithBackend = async (firebaseUser, displayNameValue) => {
     const idToken = await firebaseUser.getIdToken();
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
+    const response = await fetch(`${BACKEND_URL}/api/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -298,7 +299,7 @@ export default function AuthPage() {
     const currentUser = JSON.parse(stored);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
