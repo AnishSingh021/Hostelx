@@ -29,17 +29,17 @@ if (!admin.apps.length) {
   if (!projectId || !clientEmail || !privateKey) {
     console.error(
       '[firebaseAdmin] Missing FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY env vars. ' +
-      'Server-side token verification will fail until these are set.'
+      'Server-side token verification will fail until these are set in your hosting provider (Render).'
     );
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+    });
   }
-
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId,
-      clientEmail,
-      privateKey,
-    }),
-  });
 }
 
 /**
