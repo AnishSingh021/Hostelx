@@ -217,7 +217,11 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4 // Force IPv4 to prevent DNS resolution hangs
+    });
     console.log('MongoDB Connected Successfully');
     console.log(`[MongoDB] readyState: ${mongoose.connection.readyState}, host: ${mongoose.connection.host}, db: ${mongoose.connection.name}`);
 
