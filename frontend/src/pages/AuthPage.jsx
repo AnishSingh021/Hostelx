@@ -177,7 +177,7 @@ export default function AuthPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         idToken,
-        name: displayNameValue || firebaseUser.displayName || 'HostelX Student',
+        name: displayNameValue || firebaseUser.displayName || 'Student',
         email: firebaseUser.email,
         profileImage: firebaseUser.photoURL || FallbackAvatar
       })

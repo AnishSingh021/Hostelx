@@ -106,7 +106,10 @@ export default function Dashboard() {
     );
   }
 
-  const firstName = user.name?.split(' ')[0] || 'there';
+  let firstName = user.name?.split(' ')[0] || 'there';
+  if (firstName === 'HostelX' || user.name === 'HostelX Student') {
+    firstName = 'there';
+  }
 
   // Dynamic Time-Based Greeting System — Real-time updates every minute
   const buildGreetingData = () => {
@@ -168,7 +171,7 @@ export default function Dashboard() {
       desc: 'Browse nearby products',
       icon: <ShoppingBag className="w-7 h-7" />,
       action: () => handleNavigateWithLocation('/marketplace'),
-      style: 'bg-card text-card-foreground border border-border hover:border-primary hover:bg-primary/5 shadow-md',
+      style: 'bg-card/40 backdrop-blur-xl text-card-foreground border border-white/20 dark:border-white/10 hover:border-primary hover:bg-primary/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
       iconBg: 'bg-primary/10 text-primary',
     },
     {
@@ -176,7 +179,7 @@ export default function Dashboard() {
       desc: 'Upload product / post ads',
       icon: <Tag className="w-7 h-7" />,
       action: () => handleNavigateWithLocation('/sell'),
-      style: 'bg-card text-card-foreground border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary sell-btn shadow-md',
+      style: 'bg-card/40 backdrop-blur-xl text-card-foreground border border-white/20 dark:border-white/10 hover:bg-primary/90 hover:text-primary-foreground hover:border-primary sell-btn shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
       iconBg: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
     },
     {
@@ -184,7 +187,7 @@ export default function Dashboard() {
       desc: 'View your wishlist',
       icon: <Bookmark className="w-7 h-7" />,
       action: () => navigate('/saved'),
-      style: 'bg-card text-card-foreground border border-border hover:bg-rose-500/5 hover:border-rose-400 shadow-md',
+      style: 'bg-card/40 backdrop-blur-xl text-card-foreground border border-white/20 dark:border-white/10 hover:bg-rose-500/10 hover:border-rose-400 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
       iconBg: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
     },
     {
@@ -192,7 +195,7 @@ export default function Dashboard() {
       desc: 'Manage your products',
       icon: <List className="w-7 h-7" />,
       action: () => navigate('/my-listings'),
-      style: 'bg-card text-card-foreground border border-border hover:bg-violet-500/5 hover:border-violet-400 shadow-md',
+      style: 'bg-card/40 backdrop-blur-xl text-card-foreground border border-white/20 dark:border-white/10 hover:bg-violet-500/10 hover:border-violet-400 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
       iconBg: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
     },
   ];
@@ -203,7 +206,7 @@ export default function Dashboard() {
       desc: 'Manage marketplace',
       icon: <ShieldCheck className="w-7 h-7" />,
       action: () => navigate('/admin'),
-      style: 'bg-card text-card-foreground border border-destructive/30 hover:border-destructive hover:bg-destructive/5 shadow-md',
+      style: 'bg-card/40 backdrop-blur-xl text-card-foreground border border-destructive/30 hover:border-destructive hover:bg-destructive/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
       iconBg: 'bg-destructive/10 text-destructive',
     });
   }
@@ -218,7 +221,11 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Glassmorphism Background Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full bg-rose-500/10 blur-[100px] pointer-events-none" />
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
@@ -305,7 +312,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="relative overflow-hidden bg-card border border-border shadow-md rounded-lg p-6 group"
+          className="relative overflow-hidden bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-xl p-6 group"
         >
           <div className="flex items-center gap-2 mb-4">
             <Search className="w-5 h-5 text-primary" />
@@ -320,7 +327,7 @@ export default function Dashboard() {
                 placeholder="Search items in your hostel..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-muted/40 border border-border focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 rounded-lg text-sm font-medium transition"
+                className="w-full pl-12 pr-4 py-3 bg-background/50 backdrop-blur-md border border-white/20 dark:border-white/10 focus:border-primary outline-none focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-medium transition"
               />
             </div>
             <button
@@ -341,7 +348,7 @@ export default function Dashboard() {
                   setSearchQuery(qs.query);
                   handleNavigateWithLocation(`/marketplace?search=${encodeURIComponent(qs.query)}`);
                 }}
-                className="px-3 py-1 bg-muted/60 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition cursor-pointer"
+                className="px-3 py-1 bg-background/40 backdrop-blur-sm border border-white/20 dark:border-white/10 rounded-xl text-xs font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/10 transition cursor-pointer shadow-sm"
               >
                 {qs.text}
               </button>
@@ -353,7 +360,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
           {/* Boost Credits HUD Card */}
-          <div className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-amber-500/20 transition-all duration-300">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 p-5 rounded-xl flex flex-col justify-between shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] relative overflow-hidden group hover:border-amber-500/40 hover:bg-card/60 transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl group-hover:scale-105 transition">
                 <Zap className="w-5.5 h-5.5 fill-amber-500 animate-pulse" />
@@ -377,7 +384,7 @@ export default function Dashboard() {
           </div>
 
           {/* Active Auctions/Bids Stats Card */}
-          <div className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-pink-500/20 transition-all duration-300">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 p-5 rounded-xl flex flex-col justify-between shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] relative overflow-hidden group hover:border-pink-500/40 hover:bg-card/60 transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-105 transition">
                 <Gavel className="w-5.5 h-5.5" />
@@ -394,7 +401,7 @@ export default function Dashboard() {
           {/* Location radius check card */}
           <div 
             onClick={() => handleNavigateWithLocation('/nearby')}
-            className="bg-card/50 border border-border p-5 rounded-lg flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-teal-500/20 cursor-pointer hover:bg-teal-500/[0.02] transition-all duration-300"
+            className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 p-5 rounded-xl flex flex-col justify-between shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] relative overflow-hidden group hover:border-teal-500/40 cursor-pointer hover:bg-card/60 transition-all duration-300"
           >
             <div className="flex justify-between items-start">
               <div className="p-3 bg-teal-500/10 text-teal-500 rounded-xl group-hover:scale-105 transition">
@@ -416,7 +423,7 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-rose-500/10 border-2 border-rose-500/20 rounded-lg relative overflow-hidden shadow-lg shadow-rose-500/5"
+            className="p-4 bg-rose-500/10 backdrop-blur-xl border-2 border-rose-500/30 rounded-xl relative overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="flex items-center gap-2 text-rose-500 font-extrabold text-xs uppercase tracking-wider animate-pulse">
@@ -433,7 +440,7 @@ export default function Dashboard() {
                 <div
                   key={item._id}
                   onClick={() => navigate(`/product/${item._id}`)}
-                  className="flex-shrink-0 w-64 bg-card border border-rose-500/20 hover:border-rose-500 rounded-xl p-3.5 cursor-pointer hover:shadow-md transition-all duration-200"
+                  className="flex-shrink-0 w-64 bg-card/60 backdrop-blur-md border border-rose-500/30 hover:border-rose-500 rounded-xl p-3.5 cursor-pointer hover:shadow-lg transition-all duration-200"
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -463,7 +470,7 @@ export default function Dashboard() {
             {/* Shortcut 1: Lost & Found Section */}
             <div 
               onClick={() => handleNavigateWithLocation('/lost-found')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl group-hover:scale-110 transition">
                 <Search className="w-5 h-5" />
@@ -477,7 +484,7 @@ export default function Dashboard() {
             {/* Shortcut 2: Semester Exit Sale */}
             <div 
               onClick={() => handleNavigateWithLocation('/exit-sale')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-red-500/10 text-red-500 rounded-xl group-hover:scale-110 transition">
                 <Flame className="w-5 h-5 fill-red-500 animate-pulse" />
@@ -491,7 +498,7 @@ export default function Dashboard() {
             {/* Shortcut 3: Temporary Item Rentals */}
             <div 
               onClick={() => handleNavigateWithLocation('/rentals')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-pink-500/10 text-pink-500 rounded-xl group-hover:scale-110 transition">
                 <RotateCcw className="w-5 h-5" />
@@ -505,7 +512,7 @@ export default function Dashboard() {
             {/* Shortcut 4: Auction / Bidding System */}
             <div 
               onClick={() => handleNavigateWithLocation('/auctions')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
             >
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition">
                 <Gavel className="w-5 h-5" />
@@ -519,7 +526,7 @@ export default function Dashboard() {
             {/* Shortcut 5: Campus Fit Rental */}
             <div 
               onClick={() => navigate('/fashion')}
-              className="bg-card border border-border hover:border-primary/40 hover:bg-primary/5 p-4.5 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[8px] font-black uppercase tracking-wider rounded-bl-lg">
                 New
