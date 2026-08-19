@@ -62,17 +62,13 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
       return;
     }
 
-    const newImages = validImageFiles.map(file => ({
+    setImages(prev => [...prev, ...validImageFiles.map(file => ({
       file,
-      url: URL.createObjectURL(file)
-    }));
-
-    setImages(prev => [...prev, ...newImages]);
+      url: URL.createObjectURL(file) // For preview only
+    }))]);
   };
 
   const removeImage = (indexToRemove) => {
-    // Revoke the Object URL to prevent memory leaks
-    URL.revokeObjectURL(images[indexToRemove].url);
     setImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
@@ -89,33 +85,38 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
 
     setLoading(true);
     
-    // Create new custom outfit item
-    const newFit = {
-      id: `fit-custom-${Date.now()}`,
-      title: title.trim(),
-      brand: brand.trim() || 'Custom Label',
-      size,
-      occasion,
-      gender,
-      rentPrice: Number(rentPrice),
-      securityDeposit: Number(securityDeposit),
-      description: description.trim(),
-      image: images[0].url,
-      gallery: images.map(img => img.url),
-      ownerName: user?.name || 'Self',
-      ownerAvatar: user?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
-      rating: 5.0,
-      reviewsCount: 0,
-      availability: true,
-      college: user?.college || 'Chandigarh University',
-      hostel: user?.hostel || 'Zakir B',
-      views: 1
-    };
+    try {
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('brand', brand.trim());
+      formData.append('size', size);
+      formData.append('occasion', occasion);
+      formData.append('gender', gender);
+      formData.append('rentPrice', rentPrice);
+      formData.append('securityDeposit', securityDeposit);
+      formData.append('description', description.trim());
+      formData.append('image', images[0].file);
 
-    setTimeout(() => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/outfits`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to upload outfit');
+      }
+
+      const newFit = await res.json();
       setLoading(false);
       onUploadSuccess(newFit);
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Something went wrong while uploading.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -440,8 +441,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
         isOpen={isCameraOpen}
         onClose={() => setIsCameraOpen(false)}
         onCapture={(file) => {
-          const url = URL.createObjectURL(file);
-          setImages(prev => [...prev, { file, url }]);
+          setImages(prev => [...prev, { file, url: URL.createObjectURL(file) }]);
         }}
       />
     </>

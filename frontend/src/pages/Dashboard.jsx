@@ -523,6 +523,20 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Shortcut: My Rental Requests */}
+            <div 
+              onClick={() => handleNavigateWithLocation('/my-rentals')}
+              className="bg-card/40 backdrop-blur-xl border border-white/20 dark:border-white/10 hover:border-primary/50 hover:bg-card/60 p-4.5 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-lg cursor-pointer transition flex flex-col items-center justify-center text-center gap-2.5 group"
+            >
+              <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl group-hover:scale-110 transition">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground">Rental Requests</h4>
+                <p className="text-[9px] text-muted-foreground mt-0.5">Manage your outfits</p>
+              </div>
+            </div>
+
             {/* Shortcut 5: Campus Fit Rental */}
             <div 
               onClick={() => navigate('/fashion')}

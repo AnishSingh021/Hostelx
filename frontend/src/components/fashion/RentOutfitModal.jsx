@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Shield, CreditCard, CheckCircle2, QrCode } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function RentOutfitModal({ outfit, onClose, onRentSuccess }) {
   const [rentDays, setRentDays] = useState(1);
@@ -13,18 +14,36 @@ export default function RentOutfitModal({ outfit, onClose, onRentSuccess }) {
   const securityDeposit = outfit.securityDeposit;
   const totalAmount = rentalFee + securityDeposit;
 
-  const handleCheckout = () => {
+  const { user } = useAuth();
+
+  const handleCheckout = async () => {
     if (!agreedToPolicy) return;
     setIsProcessing(true);
     
-    // Simulate transaction processing
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/outfits/${outfit.id}/rent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ message: `Requesting to rent for ${rentDays} days.` })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to send rental request');
+      }
+
       setIsProcessing(false);
       setIsSuccess(true);
       if (onRentSuccess) {
         onRentSuccess(outfit.id);
       }
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      setIsProcessing(false);
+      alert('Failed to send rental request. Please try again.');
+    }
   };
 
   const dayOptions = [

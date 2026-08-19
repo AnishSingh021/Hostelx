@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { 
   ChevronLeft, 
   Search, 
@@ -24,11 +25,33 @@ export default function FashionRentalPage() {
   const navigate = useNavigate();
   
   // State variables
-  const [outfits, setOutfits] = useState(() => {
-    // Only load user-uploaded items (stored in sessionStorage), never dummy data
-    const cached = sessionStorage.getItem('campusFits');
-    return cached ? JSON.parse(cached) : [];
-  });
+  const { user } = useAuth();
+  const [outfits, setOutfits] = useState([]);
+  const [loadingOutfits, setLoadingOutfits] = useState(true);
+
+  useEffect(() => {
+    const fetchOutfits = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/outfits`);
+        if (res.ok) {
+          const data = await res.json();
+          // The components expect 'id' but Mongo provides '_id', and ownerName/Avatar
+          const formatted = data.map(o => ({
+            ...o, 
+            id: o._id,
+            ownerName: o.owner?.name || 'User',
+            ownerAvatar: o.owner?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'
+          }));
+          setOutfits(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch outfits", err);
+      } finally {
+        setLoadingOutfits(false);
+      }
+    };
+    fetchOutfits();
+  }, []);
 
   // Wishlist stored in localStorage
   const [wishlist, setWishlist] = useState(() => {
@@ -65,7 +88,6 @@ export default function FashionRentalPage() {
   // Save outfits state when modified
   const updateOutfitsState = (updatedList) => {
     setOutfits(updatedList);
-    sessionStorage.setItem('campusFits', JSON.stringify(updatedList));
   };
 
   // Toast handler
@@ -76,7 +98,13 @@ export default function FashionRentalPage() {
 
   // Upload handler
   const handleUploadFit = (newFit) => {
-    const updated = [newFit, ...outfits];
+    const formattedFit = {
+      ...newFit,
+      id: newFit._id,
+      ownerName: newFit.owner?.name || 'User',
+      ownerAvatar: newFit.owner?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'
+    };
+    const updated = [formattedFit, ...outfits];
     updateOutfitsState(updated);
     setIsUploadOpen(false);
     triggerToast(`✨ "${newFit.title}" has been published to hostel fashion feeds!`);
@@ -188,8 +216,11 @@ export default function FashionRentalPage() {
           </div>
         </div>
 
-        {/* Community Closet empty state vs content grid */}
-        {outfits.length === 0 ? (
+        {loadingOutfits ? (
+          <div className="py-20 flex justify-center">
+            <span className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></span>
+          </div>
+        ) : outfits.length === 0 ? (
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
             <div className="max-w-2xl space-y-3">
               <h2 className="text-2xl md:text-3xl font-black tracking-tight">

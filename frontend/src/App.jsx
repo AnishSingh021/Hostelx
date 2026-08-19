@@ -24,6 +24,7 @@ import TermsPage from './pages/TermsPage';
 import AboutPage from './pages/AboutPage';
 import HelpPage from './pages/HelpPage';
 import ContactPage from './pages/ContactPage';
+import MyRentalsPage from './pages/MyRentalsPage';
 
 // Scroll to top on every route navigation
 function ScrollToTop() {
@@ -174,6 +175,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <FashionRentalPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/my-rentals"
+            element={
+              <ProtectedRoute>
+                <MyRentalsPage />
               </ProtectedRoute>
             }
           />
