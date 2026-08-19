@@ -59,9 +59,7 @@ const googleLogin = async (req, res) => {
       return res.status(400).json({ message: 'Token did not contain a verified email' });
     }
 
-    if (!email.endsWith('@cuchd.in')) {
-      return res.status(403).json({ message: 'Access restricted to Chandigarh University students only. Please use your @cuchd.in email.' });
-    }
+
 
     const shouldBeAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
 
