@@ -72,7 +72,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
     setImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) {
       setErrorMsg('Please fill in both title and description.');
