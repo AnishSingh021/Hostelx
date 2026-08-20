@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { safeParseDescription } from '../lib/utils';
+import { CAMPUS_DATA } from '../data/hostels';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -59,13 +60,14 @@ function getDeterministicCoords(hostelName, collegeName, baseLat, baseLng) {
   };
 }
 
+const CU_HOSTELS = CAMPUS_DATA['Chandigarh University'].categories.flatMap(cat => cat.hostels);
+
 export default function NearbyPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedHostel, setSelectedHostel] = useState('All');
-  const [selectedCollege, setSelectedCollege] = useState('All');
   const [sortBy, setSortBy] = useState('nearest'); // 'nearest', 'same-hostel', 'same-university', 'newest'
   const [maxDistance, setMaxDistance] = useState(1000); // in meters
   
@@ -165,12 +167,6 @@ export default function NearbyPage() {
     ...products.map(getProductHostel).filter(Boolean)
   ])];
 
-  // Discover colleges dynamically
-  const dynamicColleges = [...new Set([
-    ...(user?.college ? [user.college] : []),
-    ...products.map(getProductCollege).filter(Boolean)
-  ])];
-
   // Process and sort products based on distance and metadata
   const processedProducts = products
     .map(item => {
@@ -213,12 +209,6 @@ export default function NearbyPage() {
         if (itemHostel.toLowerCase() !== selectedHostel.toLowerCase()) return false;
       }
 
-      // Filter by dynamic college
-      if (selectedCollege !== 'All') {
-        const itemCollege = getProductCollege(item);
-        if (itemCollege.toLowerCase() !== selectedCollege.toLowerCase()) return false;
-      }
-
       // Filter by walking radius
       return item.calculatedDistance <= maxDistance;
     })
@@ -229,12 +219,6 @@ export default function NearbyPage() {
       if (sortBy === 'same-hostel') {
         const aSame = user?.hostel && getProductHostel(a).toLowerCase() === user.hostel.toLowerCase() ? 1 : 0;
         const bSame = user?.hostel && getProductHostel(b).toLowerCase() === user.hostel.toLowerCase() ? 1 : 0;
-        if (aSame !== bSame) return bSame - aSame;
-        return a.calculatedDistance - b.calculatedDistance;
-      }
-      if (sortBy === 'same-university') {
-        const aSame = user?.college && getProductCollege(a).toLowerCase() === user.college.toLowerCase() ? 1 : 0;
-        const bSame = user?.college && getProductCollege(b).toLowerCase() === user.college.toLowerCase() ? 1 : 0;
         if (aSame !== bSame) return bSame - aSame;
         return a.calculatedDistance - b.calculatedDistance;
       }
@@ -327,7 +311,7 @@ export default function NearbyPage() {
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-muted-foreground">University:</span>
-                <span className="font-semibold text-foreground truncate max-w-36">{user?.college || 'Not Configured'}</span>
+                <span className="font-semibold text-foreground truncate max-w-36">Chandigarh University</span>
               </div>
             </div>
 
@@ -360,27 +344,14 @@ export default function NearbyPage() {
                 onChange={(e) => setSelectedHostel(e.target.value)}
                 className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary cursor-pointer"
               >
-                <option value="All">All Hostels ({dynamicHostels.length})</option>
-                {dynamicHostels.map(h => (
+                <option value="All">All Hostels ({CU_HOSTELS.length})</option>
+                {CU_HOSTELS.map(h => (
                   <option key={h} value={h}>{h}</option>
                 ))}
               </select>
             </div>
 
-            {/* Filter by University */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Filter by University:</label>
-              <select
-                value={selectedCollege}
-                onChange={(e) => setSelectedCollege(e.target.value)}
-                className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary cursor-pointer"
-              >
-                <option value="All">All Universities ({dynamicColleges.length})</option>
-                {dynamicColleges.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
+
 
           </div>
 
@@ -414,7 +385,6 @@ export default function NearbyPage() {
                 {[
                   { id: 'nearest', label: 'Nearest' },
                   { id: 'same-hostel', label: 'Hostel' },
-                  { id: 'same-university', label: 'University' },
                   { id: 'newest', label: 'Newest' }
                 ].map(opt => (
                   <button
@@ -453,7 +423,6 @@ export default function NearbyPage() {
                 onClick={() => {
                   setMaxDistance(3000);
                   setSelectedHostel('All');
-                  setSelectedCollege('All');
                 }}
                 className="mt-5 px-4 py-2 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-95"
               >

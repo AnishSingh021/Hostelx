@@ -649,7 +649,7 @@ export default function TemporaryRentalsPage() {
                       step="1"
                       value={rentDays}
                       onChange={(e) => setRentDays(Number(e.target.value))}
-                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                      className="w-full h-1 bg-slate-800 dark:bg-slate-300 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                     
                     <div className="flex justify-between text-[8.5px] text-muted-foreground font-black tracking-wider uppercase">
@@ -670,7 +670,7 @@ export default function TemporaryRentalsPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Security Deposit:</span>
                     <span className="text-foreground font-extrabold">
-                      {selectedItem.rentPrice > 1000 ? '₹1,500 Refundable Cash' : 'Collateral Student ID Card'}
+                      {selectedItem.rentPrice > 1000 ? '₹1,500 Refundable Cash' : 'Refundable Security Deposit'}
                     </span>
                   </div>
                   
@@ -683,9 +683,9 @@ export default function TemporaryRentalsPage() {
               </div>
 
               {/* Warning Alert */}
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-2xl text-[9px] font-black leading-relaxed flex items-start gap-1.5">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-2xl text-[9px] font-black leading-relaxed flex items-start gap-1.5">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>Return reminders are automated. Rented assets must be returned in the original working condition to unlock collateral or cash deposits.</span>
+                <span>Return reminders are automated. Rented assets must be returned in the original working condition.</span>
               </div>
 
               {/* Actions */}
