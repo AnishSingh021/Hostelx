@@ -281,7 +281,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
                       min="1"
                       required
                       value={rentPrice}
-                      onChange={(e) => setRentPrice(Number(e.target.value))}
+                      onChange={(e) => setRentPrice(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full px-4 py-2.5 bg-muted/40 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-black transition"
                     />
                   </div>
@@ -294,7 +294,7 @@ export default function UploadOutfitModal({ onClose, onUploadSuccess }) {
                       min="0"
                       required
                       value={securityDeposit}
-                      onChange={(e) => setSecurityDeposit(Number(e.target.value))}
+                      onChange={(e) => setSecurityDeposit(e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full px-4 py-2.5 bg-[#181d28]/40 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-black transition"
                     />
                   </div>

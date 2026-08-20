@@ -46,7 +46,10 @@ export default function TemporaryRentalsPage() {
     rentPrice: '',
     rentalDuration: 'day',
     category: 'Electronics',
-    isUrgent: false
+    isUrgent: false,
+    condition: 'used',
+    rentType: 'offer',
+    images: null
   });
   const [isUploading, setIsUploading] = useState(false);
 
@@ -54,7 +57,7 @@ export default function TemporaryRentalsPage() {
   const fetchRentalsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/products`);
+      const response = await fetch(`${BACKEND_URL}/api/products?listingType=rent`);
       if (!response.ok) throw new Error('Failed to load rentals');
       const data = await response.json();
       
@@ -77,6 +80,15 @@ export default function TemporaryRentalsPage() {
   const handleUploadSubmit = async (e) => {
     e.preventDefault();
     if (!user) return navigate('/auth');
+
+    // Manual Form Validation
+    if (!uploadData.title.trim()) return triggerToast('⚠️ Please provide a title.');
+    if (!uploadData.description.trim()) return triggerToast('⚠️ Please provide a description.');
+    if (!uploadData.rentPrice) return triggerToast('⚠️ Please set a rental rate.');
+    if (uploadData.rentType === 'offer' && (!uploadData.images || uploadData.images.length === 0)) {
+      return triggerToast('⚠️ Please upload at least one image.');
+    }
+
     try {
       setIsUploading(true);
       const formData = new FormData();
@@ -87,6 +99,25 @@ export default function TemporaryRentalsPage() {
       formData.append('category', uploadData.category);
       formData.append('listingType', 'rent');
       formData.append('isUrgent', uploadData.isUrgent);
+      formData.append('condition', uploadData.condition);
+      formData.append('rentType', uploadData.rentType);
+      
+      if (user?.hostel) {
+        formData.append('hostel', user.hostel);
+      }
+      
+      const lat = localStorage.getItem('userLat');
+      const lng = localStorage.getItem('userLng');
+      if (lat && lng) {
+        formData.append('latitude', lat);
+        formData.append('longitude', lng);
+      }
+      
+      if (uploadData.images) {
+        for (let i = 0; i < uploadData.images.length; i++) {
+          formData.append('images', uploadData.images[i]);
+        }
+      }
       
       const response = await fetch(`${BACKEND_URL}/api/products`, {
         method: 'POST',
@@ -99,7 +130,7 @@ export default function TemporaryRentalsPage() {
       if (response.ok) {
         triggerToast('🎉 Rental item listed successfully!');
         setIsUploadOpen(false);
-        setUploadData({ title: '', description: '', rentPrice: '', rentalDuration: 'day', category: 'Electronics', isUrgent: false });
+        setUploadData({ title: '', description: '', rentPrice: '', rentalDuration: 'day', category: 'Electronics', isUrgent: false, condition: 'used', rentType: 'offer', images: null });
         fetchRentalsData();
       } else {
         triggerToast('❌ Failed to list rental item.');
@@ -328,7 +359,7 @@ export default function TemporaryRentalsPage() {
 
         <button 
           onClick={() => setIsUploadOpen(true)}
-          className="flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           List Rental
@@ -344,8 +375,8 @@ export default function TemporaryRentalsPage() {
               key={alert.id}
               className={`p-3.5 border rounded-2xl text-[11px] font-bold flex items-start gap-3 shadow-sm ${
                 alert.type === 'warning' 
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' 
-                  : 'bg-pink-50 border-pink-200 text-pink-700'
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' 
+                  : 'bg-primary/10 border-primary/20 text-primary'
               }`}
             >
               <AlertCircle className="w-4.5 h-4.5 flex-shrink-0 mt-0.5" />
@@ -370,7 +401,7 @@ export default function TemporaryRentalsPage() {
             onClick={() => setActiveTab('offers')}
             className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'offers' 
-                ? 'bg-pink-600 text-white shadow-md' 
+                ? 'bg-primary text-primary-foreground shadow-md' 
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
@@ -380,7 +411,7 @@ export default function TemporaryRentalsPage() {
             onClick={() => setActiveTab('seeks')}
             className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
               activeTab === 'seeks' 
-                ? 'bg-pink-600 text-white shadow-md' 
+                ? 'bg-primary text-primary-foreground shadow-md' 
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
@@ -419,7 +450,7 @@ export default function TemporaryRentalsPage() {
           ) : filteredRentals.length === 0 ? (
             /* High Fidelity Empty States */
             <div className="flex flex-col items-center justify-center text-center p-12 bg-card border border-border rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
-              <div className="p-4 bg-pink-50 text-pink-600 rounded-2xl border border-pink-100">
+              <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20">
                 <RotateCcw className="w-12 h-12" />
               </div>
               <div className="space-y-2">
@@ -441,7 +472,7 @@ export default function TemporaryRentalsPage() {
                 </button>
                 <button 
                   onClick={() => setIsUploadOpen(true)}
-                  className="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {activeTab === 'offers' ? 'Rent Out Your Item' : 'Post Request'}
                   <ArrowRight className="w-4 h-4" />
@@ -462,7 +493,7 @@ export default function TemporaryRentalsPage() {
                   <div 
                     key={item._id}
                     className={`bg-card border rounded-3xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 group ${
-                      isUrgent ? 'border-rose-300 ring-1 ring-rose-200/50' : 'border-border hover:border-pink-400'
+                      isUrgent ? 'border-rose-300 ring-1 ring-rose-200/50' : 'border-border hover:border-primary/50'
                     }`}
                   >
                     <div>
@@ -494,7 +525,7 @@ export default function TemporaryRentalsPage() {
                           {getCategoryIcon(item.category)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-black text-sm text-foreground group-hover:text-pink-600 transition truncate">{item.title}</h4>
+                          <h4 className="font-black text-sm text-foreground group-hover:text-primary transition truncate">{item.title}</h4>
                           <p className="text-[9px] text-muted-foreground font-bold">{ownerHostel} · {ownerRoom}</p>
                         </div>
                       </div>
@@ -510,14 +541,14 @@ export default function TemporaryRentalsPage() {
                           </div>
                           <div className="text-center">
                             <p className="text-[8.5px] text-muted-foreground uppercase font-black">Weekly Tier</p>
-                            <p className="text-base font-black text-pink-600 mt-0.5">₹{rates.weekly}<span className="text-[10px] text-pink-600 font-semibold">/week</span></p>
+                            <p className="text-base font-black text-primary mt-0.5">₹{rates.weekly}<span className="text-[10px] text-primary font-semibold">/week</span></p>
                           </div>
                         </div>
                       ) : (
                         <div className="mt-4 bg-secondary border border-border p-3.5 rounded-2xl">
                           <div className="flex justify-between items-center text-xs font-bold">
                             <span className="text-muted-foreground">Offered Budget:</span>
-                            <span className="text-pink-600 text-sm font-black">₹{item.rentPrice || item.price}<span className="text-[10px] font-bold text-muted-foreground">/{item.rentalDuration || 'day'}</span></span>
+                            <span className="text-primary text-sm font-black">₹{item.rentPrice || item.price}<span className="text-[10px] font-bold text-muted-foreground">/{item.rentalDuration || 'day'}</span></span>
                           </div>
                         </div>
                       )}
@@ -540,7 +571,7 @@ export default function TemporaryRentalsPage() {
                       ) : (
                         <button 
                           onClick={() => handleOfferToRent(item)}
-                          className="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-primary-foreground text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
+                          className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-black rounded-xl transition cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
                         >
                           Offer to Rent
                         </button>
@@ -575,7 +606,7 @@ export default function TemporaryRentalsPage() {
               className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-3xl p-6 z-10 space-y-4"
             >
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-pink-50 text-pink-600 border border-pink-100 rounded-xl">
+                <div className="p-3 bg-primary/10 text-primary border border-primary/20 rounded-xl">
                   <Calendar className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
@@ -608,7 +639,7 @@ export default function TemporaryRentalsPage() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-[8.5px] font-black text-muted-foreground uppercase">
                       <span>Rent Duration</span>
-                      <span className="text-pink-600 font-extrabold">{rentDays} Days</span>
+                      <span className="text-primary font-extrabold">{rentDays} Days</span>
                     </div>
                     
                     <input
@@ -618,7 +649,7 @@ export default function TemporaryRentalsPage() {
                       step="1"
                       value={rentDays}
                       onChange={(e) => setRentDays(Number(e.target.value))}
-                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-pink-500"
+                      className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                     
                     <div className="flex justify-between text-[8.5px] text-muted-foreground font-black tracking-wider uppercase">
@@ -645,7 +676,7 @@ export default function TemporaryRentalsPage() {
                   
                   <div className="flex justify-between items-center pt-2 border-t border-dashed border-border">
                     <span className="text-sm font-black text-foreground">Total Estimate:</span>
-                    <span className="text-xl font-black text-pink-600">₹{calculateTotalCost(selectedItem, rentDays)}</span>
+                    <span className="text-xl font-black text-primary">₹{calculateTotalCost(selectedItem, rentDays)}</span>
                   </div>
                 </div>
 
@@ -669,7 +700,7 @@ export default function TemporaryRentalsPage() {
                 <button 
                   onClick={handleConfirmRentalOrder}
                   disabled={booking}
-                  className="py-2.5 bg-pink-600 text-primary-foreground text-xs font-black rounded-xl hover:bg-pink-700 transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="py-2.5 bg-primary text-primary-foreground text-xs font-black rounded-xl hover:bg-primary/90 transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {booking ? 'Reserving...' : 'Book Hire'}
                 </button>
@@ -716,7 +747,6 @@ export default function TemporaryRentalsPage() {
                   <label className="text-xs font-extrabold text-foreground uppercase">Title</label>
                   <input
                     type="text"
-                    required
                     value={uploadData.title}
                     onChange={(e) => setUploadData({ ...uploadData, title: e.target.value })}
                     className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
@@ -727,7 +757,6 @@ export default function TemporaryRentalsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-extrabold text-foreground uppercase">Description</label>
                   <textarea
-                    required
                     value={uploadData.description}
                     onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
                     className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary outline-none min-h-[100px] resize-none"
@@ -740,7 +769,6 @@ export default function TemporaryRentalsPage() {
                     <label className="text-xs font-extrabold text-foreground uppercase">Rate (₹)</label>
                     <input
                       type="number"
-                      required
                       value={uploadData.rentPrice}
                       onChange={(e) => setUploadData({ ...uploadData, rentPrice: e.target.value })}
                       className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
@@ -777,6 +805,42 @@ export default function TemporaryRentalsPage() {
                   </select>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-foreground uppercase">Listing Type</label>
+                    <select
+                      value={uploadData.rentType}
+                      onChange={(e) => setUploadData({ ...uploadData, rentType: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                    >
+                      <option value="offer">I want to Rent Out</option>
+                      <option value="seek">I am Seeking</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-extrabold text-foreground uppercase">Condition</label>
+                    <select
+                      value={uploadData.condition}
+                      onChange={(e) => setUploadData({ ...uploadData, condition: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                    >
+                      <option value="used">Used / Good</option>
+                      <option value="new">New / Like New</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-foreground uppercase">Images {uploadData.rentType === 'offer' && <span className="text-rose-500">*</span>}</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => setUploadData({ ...uploadData, images: e.target.files })}
+                    className="w-full bg-background border border-border px-4 py-3 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                  />
+                </div>
+
                 <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-secondary/50 transition">
                   <input
                     type="checkbox"
@@ -793,7 +857,7 @@ export default function TemporaryRentalsPage() {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="w-full py-4 mt-2 bg-pink-600 text-white rounded-xl text-sm font-black tracking-wide hover:bg-pink-700 shadow-lg shadow-pink-600/20 active:scale-95 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full py-4 mt-2 bg-primary text-primary-foreground rounded-xl text-sm font-black tracking-wide hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isUploading ? 'Posting...' : 'Post Listing'}
                 </button>

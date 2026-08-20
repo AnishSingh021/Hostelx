@@ -43,19 +43,12 @@ export default function Dashboard() {
   const [emergencyListings, setEmergencyListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showBoostInfo, setShowBoostInfo] = useState(false);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'system');
-
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    root.classList.remove('dark');
+    root.classList.add('light');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   useEffect(() => {
     const fetchEmergencies = async () => {
@@ -106,10 +99,7 @@ export default function Dashboard() {
     );
   }
 
-  let firstName = user.name?.split(' ')[0] || 'there';
-  if (firstName === 'HostelX' || user.name === 'HostelX Student') {
-    firstName = 'there';
-  }
+  const firstName = user.name?.split(' ')[0] || 'there';
 
   // Dynamic Time-Based Greeting System — Real-time updates every minute
   const buildGreetingData = () => {
@@ -261,17 +251,7 @@ export default function Dashboard() {
           {/* Quick Stats Pill with live time */}
           <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
             <div className="flex items-center gap-4 text-right">
-              <button
-                onClick={() => {
-                  if (theme === 'system') setTheme('dark');
-                  else if (theme === 'dark') setTheme('light');
-                  else setTheme('system');
-                }}
-                className="p-2 bg-muted rounded-full hover:bg-muted/80 transition text-muted-foreground hover:text-foreground"
-                title={`Theme: ${theme}`}
-              >
-                {theme === 'dark' ? <Moon className="w-4 h-4" /> : theme === 'light' ? <Sun className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
-              </button>
+
               <p className="text-xs font-semibold text-muted-foreground">
                 Hostel: <span className="text-foreground font-bold">{user.hostel}</span>
               </p>

@@ -124,6 +124,7 @@ export default function FashionRentalPage() {
 
   // Live filtered items
   const filteredOutfits = outfits.filter(item => {
+    if (item.availability === false) return false;
     const matchesCategory = activeCategory === 'All' || item.occasion === activeCategory;
     const matchesGender = genderFilter === 'All' || item.gender === genderFilter;
     const matchesSize = sizeFilter === 'All' || item.size === sizeFilter;

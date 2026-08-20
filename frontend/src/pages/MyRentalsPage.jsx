@@ -160,15 +160,15 @@ export default function MyRentalsPage() {
                   <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                       onClick={() => handleStatusUpdate(req._id, 'rejected')}
-                      className="flex-1 md:flex-none px-4 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-500/20 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                      className="flex-1 md:flex-none px-5 py-2.5 bg-card text-rose-500 hover:bg-rose-500 hover:text-white border border-border hover:border-rose-500 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-lg hover:shadow-rose-500/20"
                     >
-                      <XCircle className="w-4 h-4" /> Reject
+                      <XCircle className="w-4 h-4" /> Decline Request
                     </button>
                     <button 
                       onClick={() => handleStatusUpdate(req._id, 'accepted')}
-                      className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition flex items-center justify-center gap-1.5"
+                      className="flex-1 md:flex-none px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 border border-transparent"
                     >
-                      <CheckCircle2 className="w-4 h-4" /> Accept
+                      <CheckCircle2 className="w-4 h-4" /> Approve Request
                     </button>
                   </div>
                 )}
@@ -176,9 +176,9 @@ export default function MyRentalsPage() {
                 {activeTab === 'incoming' && req.status === 'accepted' && (
                   <button 
                     onClick={() => handleStatusUpdate(req._id, 'completed')}
-                    className="w-full md:w-auto px-4 py-2 bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 hover:bg-indigo-600 transition flex items-center justify-center gap-1.5"
+                    className="w-full md:w-auto px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
                   >
-                    Mark Returned (Completed)
+                    <CheckCircle2 className="w-4 h-4" /> Mark as Returned
                   </button>
                 )}
               </motion.div>

@@ -7,20 +7,11 @@ export default function AppLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -74,12 +65,6 @@ export default function AppLayout({ children }) {
             <Link to="/chat" className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors relative">
               <MessageSquare className="w-5 h-5" />
             </Link>
-            <button 
-              onClick={toggleTheme}
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-            >
-              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-            </button>
             <div className="h-5 w-px bg-border mx-1"></div>
             
             <div className="flex items-center gap-2 pl-1">

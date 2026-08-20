@@ -112,6 +112,13 @@ export default function CameraCapture({ isOpen, onClose, onCapture }) {
     return () => stopCamera();
   }, [isOpen, facingMode]);
 
+  // Attach stream to video element when it becomes available in the DOM
+  useEffect(() => {
+    if (videoRef.current && stream && permissionState === 'granted') {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream, permissionState, capturedImage]);
+
   // Handle capture action
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;

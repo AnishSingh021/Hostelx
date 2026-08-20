@@ -204,7 +204,6 @@ export default function Navbar() {
           <span className="font-extrabold text-2xl tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
             HostelX
           </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-400/5 dark:text-blue-400 dark:border-blue-400/20 rounded-full hidden sm:inline">CAMPUS V2</span>
         </Link>
         
         <div className="flex items-center gap-3">

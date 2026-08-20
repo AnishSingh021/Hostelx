@@ -121,6 +121,9 @@ export default function Marketplace() {
         });
       }
 
+      // Exclude rentals from the main marketplace section
+      data = data.filter(p => p.listingType !== 'rent');
+
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);

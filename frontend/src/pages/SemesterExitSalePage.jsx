@@ -17,6 +17,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/ui/Navbar';
 import { BACKEND_URL } from '../config';
 
 export default function SemesterExitSalePage() {
@@ -281,50 +282,39 @@ export default function SemesterExitSalePage() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/70 text-foreground relative pb-16">
-      {/* Dynamic colorful blur backgrounds */}
-      <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-destructive/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] -z-10" />
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Glassmorphism Background Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full bg-rose-500/10 blur-[100px] pointer-events-none" />
 
-      {/* Nav Header */}
-      <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border/80 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="p-2 rounded-xl bg-card border border-border hover:bg-secondary transition cursor-pointer flex items-center justify-center text-muted-foreground hover:text-foreground"
-            title="Back to Dashboard"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 bg-clip-text text-transparent">
+      <Navbar />
+
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+        
+        {/* Page Title Block */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
                 Semester Exit Sale
-              </span>
-              <span className="text-[9px] font-black px-2 py-0.5 bg-destructive/15 text-destructive border border-destructive/30 rounded-full animate-bounce">
-                CLEARANCE BOARD
-              </span>
+                <span className="text-[10px] font-black px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full">CLEARANCE BOARD</span>
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1 font-semibold">Bulk dormitory liquidation and fast senior negotiations</p>
             </div>
-            <p className="text-[10px] text-muted-foreground font-semibold">Bulk dormitory liquidation and fast senior negotiations</p>
-          </div>
+            <Link 
+              to="/sell?listingType=buy"
+              className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-xl text-xs font-black shadow-md transition"
+            >
+              <Flame className="w-4 h-4" />
+              List Clearance
+            </Link>
         </div>
 
-        <Link 
-          to="/sell?listingType=buy"
-          className="flex items-center gap-1.5 bg-destructive hover:bg-destructive text-white px-4 py-2.5 rounded-xl text-xs font-black shadow-md hover:shadow-lg active:scale-95 transition cursor-pointer"
-        >
-          <Flame className="w-4 h-4 fill-white" />
-          List Clearance
-        </Link>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 py-8 space-y-10">
-
         {/* Informative Header Panel */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-r from-destructive/15 via-card to-amber-500/10 border border-destructive/40 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+        <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-r from-primary/10 via-card to-indigo-500/5 border border-border p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-3">
-            <span className="inline-flex items-center gap-1 bg-destructive/15 text-destructive border border-destructive/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-              <Flame className="w-3.5 h-3.5 fill-red-600 animate-pulse" />
+            <span className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+              <Flame className="w-3.5 h-3.5 fill-primary animate-pulse" />
               Seniors campus checkout ongoing
             </span>
             <h1 className="text-3xl font-black tracking-tight text-foreground">Seniors Moving-Out Liquidation</h1>
@@ -334,10 +324,10 @@ export default function SemesterExitSalePage() {
           </div>
 
           {/* Warning Flag */}
-          <div className="bg-destructive/10 border border-destructive/30 p-4 rounded-2xl max-w-xs self-start md:self-auto flex items-start gap-3 shadow-sm">
-            <BadgeAlert className="w-6 h-6 text-destructive flex-shrink-0 animate-bounce" />
+          <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl max-w-xs self-start md:self-auto flex items-start gap-3 shadow-sm">
+            <BadgeAlert className="w-6 h-6 text-primary flex-shrink-0 animate-bounce" />
             <div>
-              <h4 className="text-xs font-black text-destructive">Strict Exit Timelines</h4>
+              <h4 className="text-xs font-black text-primary">Strict Exit Timelines</h4>
               <p className="text-[9.5px] text-muted-foreground mt-0.5 leading-relaxed font-semibold">
                 Seniors leaving college must empty hostel inventories before room inspection dates. Fast transactions are guaranteed.
               </p>
@@ -379,7 +369,7 @@ export default function SemesterExitSalePage() {
         ) : seniors.length === 0 ? (
           /* Gorgeous Empty State */
           <div className="flex flex-col items-center justify-center text-center p-12 bg-card border border-border rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
-            <div className="p-4 bg-destructive/10 text-destructive rounded-2xl border border-destructive/20">
+            <div className="p-4 bg-primary/10 text-primary rounded-2xl border border-primary/20">
               <Package className="w-12 h-12" />
             </div>
             <div className="space-y-2">
@@ -397,7 +387,7 @@ export default function SemesterExitSalePage() {
               </button>
               <Link 
                 to="/sell?listingType=buy"
-                className="px-5 py-2.5 bg-destructive hover:bg-destructive text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
+                className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
               >
                 List Your Dorm Clearance
                 <ArrowRight className="w-4 h-4" />
@@ -411,22 +401,22 @@ export default function SemesterExitSalePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-extrabold text-base tracking-tight flex items-center gap-1.5 text-foreground">
-                    <Clock className="w-4.5 h-4.5 text-destructive" />
+                    <Clock className="w-4.5 h-4.5 text-primary" />
                     Senior Checkout Departure Timelines
                   </h3>
                   <p className="text-xs text-muted-foreground">Ticking countdown clocks detailing room inspection schedules</p>
                 </div>
-                <span className="text-[9px] font-bold text-destructive bg-destructive/10 border border-destructive/30 px-2.5 py-1 rounded-lg">LIVE SCHEDULE</span>
+                <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-lg">LIVE SCHEDULE</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {seniors.map((snr) => (
                   <div 
                     key={snr.id}
-                    className="bg-card border border-border rounded-2xl p-5 shadow-sm flex items-center gap-4 relative overflow-hidden group hover:border-destructive/50 hover:shadow-md transition-all duration-300"
+                    className="bg-card border border-border rounded-2xl p-5 shadow-sm flex items-center gap-4 relative overflow-hidden group hover:border-primary/50 hover:shadow-md transition-all duration-300"
                   >
                     {/* Visual side marker */}
-                    <div className="absolute top-0 left-0 bottom-0 w-1 bg-destructive"></div>
+                    <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary"></div>
 
                     <img 
                       src={snr.profileImage} 
@@ -440,8 +430,8 @@ export default function SemesterExitSalePage() {
                       <p className="text-[10px] text-muted-foreground leading-normal mt-1 truncate italic">"{snr.headline}"</p>
                       
                       {/* Countdown display */}
-                      <div className="mt-3 flex items-center gap-1.5 text-xs font-black text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 w-fit">
-                        <span className="w-2 h-2 bg-destructive rounded-full animate-ping"></span>
+                      <div className="mt-3 flex items-center gap-1.5 text-xs font-black text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 w-fit">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
                         <span>Departure in: {formatCountdown(snr.exitSecondsLeft)}</span>
                       </div>
                     </div>
@@ -467,10 +457,10 @@ export default function SemesterExitSalePage() {
                 {bundles.map((bundle) => (
                   <div 
                     key={bundle.id}
-                    className="bg-card border border-border rounded-3xl p-5.5 shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-destructive/50 transition-all duration-300 relative group"
+                    className="bg-card border border-border rounded-3xl p-5.5 shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-primary/50 transition-all duration-300 relative group"
                   >
                     {/* Urgently Liquidation Badge */}
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-destructive/10 shadow-sm">
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-primary to-indigo-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-primary/10 shadow-sm">
                       {bundle.badge}
                     </div>
 
@@ -495,7 +485,7 @@ export default function SemesterExitSalePage() {
                         <div className="space-y-1.5">
                           {bundle.items.map((it, idx) => (
                             <div key={idx} className="flex items-start gap-1.5 text-[11px] font-bold text-muted-foreground leading-relaxed">
-                              <CornerDownRight className="w-3.5 h-3.5 text-destructive flex-shrink-0 mt-0.5" />
+                              <CornerDownRight className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
                               <span>{it}</span>
                             </div>
                           ))}
@@ -508,7 +498,7 @@ export default function SemesterExitSalePage() {
                       <div>
                         <span className="text-[10px] text-muted-foreground line-through block font-bold">Combined Value: ₹{bundle.originalValue}</span>
                         <span className="text-xl font-black text-foreground">₹{bundle.clearancePrice}</span>
-                        <span className="text-[9px] text-rose-600 font-extrabold flex items-center gap-0.5 mt-0.5 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 w-fit">
+                        <span className="text-[9px] text-primary font-extrabold flex items-center gap-0.5 mt-0.5 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 w-fit">
                           <TrendingDown className="w-3.5 h-3.5" />
                           Save {Math.round((1 - bundle.clearancePrice / bundle.originalValue) * 100)}%
                         </span>
@@ -539,8 +529,8 @@ export default function SemesterExitSalePage() {
         )}
 
         {/* Negotiation disclaimer panel */}
-        <div className="flex items-center gap-3 bg-destructive/10 border border-destructive/20 p-4.5 rounded-3xl text-xs text-muted-foreground font-semibold leading-relaxed shadow-sm">
-          <Info className="w-5 h-5 text-destructive flex-shrink-0" />
+        <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 p-4.5 rounded-3xl text-xs text-muted-foreground font-semibold leading-relaxed shadow-sm">
+          <Info className="w-5 h-5 text-primary flex-shrink-0" />
           <span>Need items immediately? The Exit Sale terminal lets buyers secure room bundle reserves. The graduating senior receives instant alerts, and meetups are coordinated automatically through dedicated real-time chat rooms.</span>
         </div>
 
@@ -581,7 +571,7 @@ export default function SemesterExitSalePage() {
               className="relative w-full max-w-sm bg-card border border-border shadow-2xl rounded-3xl p-6 z-10 space-y-4"
             >
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-xl">
+                <div className="p-3 bg-primary/10 text-primary border border-primary/20 rounded-xl">
                   <Sliders className="w-6 h-6" />
                 </div>
                 <div>
@@ -604,7 +594,7 @@ export default function SemesterExitSalePage() {
                 <div className="space-y-2 pt-2 bg-secondary p-3.5 rounded-2xl border border-border/80">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Propose Discount Stake</span>
-                    <span className="text-rose-600 font-extrabold text-xs px-2 py-0.5 bg-rose-50 border border-rose-200 rounded-md">
+                    <span className="text-primary font-extrabold text-xs px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md">
                       -{discountPercent}%
                     </span>
                   </div>
@@ -616,7 +606,7 @@ export default function SemesterExitSalePage() {
                     step="5"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-destructive"
+                    className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                   
                   <div className="flex justify-between text-[8.5px] text-muted-foreground font-black tracking-wider uppercase">
@@ -628,7 +618,7 @@ export default function SemesterExitSalePage() {
 
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-sm font-extrabold text-foreground">Proposing Buyout Offer:</span>
-                  <span className="text-xl font-black text-rose-600">₹{offeredPrice}</span>
+                  <span className="text-xl font-black text-primary">₹{offeredPrice}</span>
                 </div>
               </div>
 
@@ -649,7 +639,7 @@ export default function SemesterExitSalePage() {
                 <button 
                   onClick={handleConfirmOffer}
                   disabled={negotiating}
-                  className="py-2.5 bg-destructive text-primary-foreground text-xs font-black rounded-xl hover:bg-destructive transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="py-2.5 bg-primary text-primary-foreground text-xs font-black rounded-xl hover:bg-primary/90 transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {negotiating ? 'Sending Bid...' : 'Submit Stake'}
                 </button>

@@ -309,7 +309,6 @@ export default function AuthPage() {
           college: formData.college,
           hostel: formData.hostel,
           room: formData.room,
-          wing: formData.wing,
           floor: formData.floor
         })
       });
@@ -809,22 +808,8 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  {/* OPTIONAL ADVANCED FIELDS (Wing, Floor, Room Number) */}
-                  <div className="grid grid-cols-3 gap-2 pt-1">
-                    {/* WING (OPTIONAL) */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 block uppercase tracking-wider">Wing (Opt)</label>
-                      <div className="relative">
-                        <Compass className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
-                        <input
-                          type="text"
-                          value={formData.wing}
-                          onChange={(e) => setFormData({ ...formData, wing: e.target.value })}
-                          className="w-full pl-8 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all placeholder:text-[10px]"
-                          placeholder="A Wing"
-                        />
-                      </div>
-                    </div>
+                  {/* OPTIONAL ADVANCED FIELDS (Floor, Room Number) */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
 
                     {/* FLOOR (OPTIONAL) */}
                     <div className="space-y-1">

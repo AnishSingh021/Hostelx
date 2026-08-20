@@ -108,7 +108,7 @@ const createProduct = async (req, res) => {
       price: finalPrice,
       category: finalListingType === 'lost' || finalListingType === 'found' ? 'Others' : category,
       condition: finalListingType === 'lost' || finalListingType === 'found' ? 'used' : condition,
-      hostel,
+      hostel: hostel || req.user.hostel || 'Not Specified',
       images: imageUrls,
       seller: req.user._id,
       location: {
@@ -199,8 +199,8 @@ const getProducts = async (req, res) => {
         query.listingType = listingType;
       }
     } else {
-      // Default: exclude lost/found and auctions from standard results (Marketplace main views)
-      query.listingType = { $in: ['buy', 'rent', 'emergency'] };
+      // Default: exclude lost/found, auctions, and rentals from standard results (Marketplace main views)
+      query.listingType = { $in: ['buy', 'emergency'] };
       query.isAuction = false;
     }
 
